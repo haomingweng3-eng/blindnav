@@ -32,6 +32,21 @@ class SubmissionAuditTests(unittest.TestCase):
         self.assertIn("git_dirty", result["blocking_items"])
         self.assertEqual(result["collection_errors"], ["missing_video:V01"])
 
+    def test_reports_android_contract_as_a_submission_gate(self):
+        result = summarize_audit(
+            tests_ok=True,
+            compile_ok=True,
+            acceptance_ok=True,
+            collection_ready=True,
+            git_clean=True,
+            collection_errors=[],
+            environment_ok=True,
+            android_contract_ok=False,
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertIn("android_contract_failed", result["blocking_items"])
+
 
 if __name__ == "__main__":
     unittest.main()

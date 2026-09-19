@@ -21,3 +21,9 @@ data/processed/
 .DS_Store
 .idea/
 .vscode/
+
+# Android local SDK path
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/

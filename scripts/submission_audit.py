@@ -24,6 +24,7 @@ def summarize_audit(
     collection_errors,
     test_count=None,
     environment_ok=True,
+    android_contract_ok=True,
 ):
     checks = {
         "tests": bool(tests_ok),
@@ -32,6 +33,7 @@ def summarize_audit(
         "environment": bool(environment_ok),
         "collection_ready": bool(collection_ready),
         "git_clean": bool(git_clean),
+        "android_contract": bool(android_contract_ok),
     }
     blocker_names = {
         "tests": "tests_failed",
@@ -40,6 +42,7 @@ def summarize_audit(
         "environment": "environment_mismatch",
         "collection_ready": "collection_not_ready",
         "git_clean": "git_dirty",
+        "android_contract": "android_contract_failed",
     }
     blocking_items = [
         blocker_names[name] for name, passed in checks.items() if not passed
@@ -77,6 +80,9 @@ def audit_project(root="."):
         root,
     )
     acceptance_run = _run([sys.executable, "scripts/acceptance_check.py"], root)
+    android_contract_run = _run(
+        [sys.executable, "scripts/check_android_contract.py"], root
+    )
     requirements_path = root / "requirements.txt"
     environment = check_requirements(
         requirements_path.read_text(encoding="utf-8").splitlines(),
@@ -98,6 +104,7 @@ def audit_project(root="."):
         environment_ok=environment["passed"],
         collection_ready=collection["ready"],
         git_clean=git_run.returncode == 0 and not git_run.stdout.strip(),
+        android_contract_ok=android_contract_run.returncode == 0,
         collection_errors=sorted(set(collection_errors)),
         test_count=test_count,
     )
@@ -107,6 +114,7 @@ def audit_project(root="."):
         "tests_returncode": test_run.returncode,
         "compile_returncode": compile_run.returncode,
         "acceptance_returncode": acceptance_run.returncode,
+        "android_contract_returncode": android_contract_run.returncode,
     }
     return result
 

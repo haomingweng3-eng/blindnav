@@ -14,6 +14,12 @@
 python scripts/submission_audit.py
 ```
 
+Android 首轮工程已放在 `android/`，当前先冻结手机/外接摄像头共用的帧输入契约。若开发机暂未安装 JDK 和 Android SDK，可先运行静态契约检查：
+
+```bash
+python scripts/check_android_contract.py
+```
+
 未采集真实视频时，审计返回失败是预期结果，并会列出 `collection_not_ready`；不能用强行忽略退出码的方式替代真实证据。
 
 真实视频采集按 [DATA_COLLECTION.md](DATA_COLLECTION.md) 执行，场景记录表在 `data/collection_manifest.csv`。
