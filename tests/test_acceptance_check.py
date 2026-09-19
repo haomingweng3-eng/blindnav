@@ -13,6 +13,7 @@ class AcceptanceCheckTests(unittest.TestCase):
 
         self.assertTrue(report["simulation"]["passed"])
         self.assertTrue(report["replay"]["passed"])
+        self.assertTrue(report["replay"]["contract_passed"])
         self.assertEqual(report["replay"]["alert_count"], 1)
         self.assertEqual(report["replay"]["speech"], "注意，前方自行车")
 

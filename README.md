@@ -43,6 +43,12 @@ python scripts/evaluate_risk_engine.py
 python scripts/acceptance_check.py -o /tmp/blindnav-acceptance.json
 ```
 
+如果只想检查已有风险报告是否满足 Android 接口契约：
+
+```bash
+python scripts/feedback_contract.py risk_report.json
+```
+
 仿真评估包含快速接近、慢速接近、临界接近、远离、静止、横向穿过、单帧框突变、噪声和重复帧，并输出 looming 阈值敏感性扫描。
 
 ## 检测记录回放

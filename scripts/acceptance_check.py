@@ -6,9 +6,11 @@ from pathlib import Path
 
 try:
     from .evaluate_risk_engine import run_suite
+    from .feedback_contract import validate_report
     from .replay_detections import replay_detection_file
 except ImportError:  # 支持直接执行 scripts/acceptance_check.py
     from evaluate_risk_engine import run_suite
+    from feedback_contract import validate_report
     from replay_detections import replay_detection_file
 
 
@@ -18,6 +20,7 @@ def build_acceptance_report(fixture_path):
     simulation_passed = not suite["missed_expected_alerts"] and not suite["false_mid_alerts"]
 
     replay = replay_detection_file(Path(fixture_path))
+    contract_errors = validate_report(replay)
     feedback = replay["alerts"][0].get("feedback") if replay["alerts"] else None
     replay_passed = (
         replay["alert_count"] >= 1
@@ -35,7 +38,9 @@ def build_acceptance_report(fixture_path):
             "false_mid_alerts": suite["false_mid_alerts"],
         },
         "replay": {
-            "passed": replay_passed,
+            "passed": replay_passed and not contract_errors,
+            "contract_passed": not contract_errors,
+            "contract_errors": contract_errors,
             "fixture": str(fixture_path),
             "alert_count": replay["alert_count"],
             "speech": feedback.get("speech") if feedback else None,
