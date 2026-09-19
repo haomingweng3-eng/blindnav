@@ -2,6 +2,8 @@
 
 当前仓库没有 Android Studio 工程，因此本文件先冻结 Python 风险引擎与安卓交互层之间的边界。安卓端可以先用固定 JSON 做 UI、震动器和 TTS 的联调，后续再把真实检测器接入。
 
+当前已导出 `models/yolov8n.onnx` 作为端侧候选模型，并通过 ONNX checker 与 CPU 空白帧推理回归；尚未在 Android Runtime、CameraX 或骁龙真机上验证。
+
 ## 1. 数据流
 
 ```text
