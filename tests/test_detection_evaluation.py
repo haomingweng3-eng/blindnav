@@ -92,6 +92,29 @@ class DetectionEvaluationTests(unittest.TestCase):
             report["alerts"][0]["feedback"]["speech"], "注意，前方电动滑板车"
         )
 
+    def test_operational_alerts_are_arbited_after_risk_engine_alerts(self):
+        records = [
+            {
+                "frame": frame,
+                "track_id": "bike_0",
+                "cls": "bicycle",
+                "conf": 0.9,
+                "box": centered_box(side),
+            }
+            for frame, side in enumerate(
+                [60 * 1.08**index for index in range(35)], start=1
+            )
+        ]
+
+        report = evaluate_detection_records(records, width=640, height=640)
+
+        self.assertGreater(report["raw_alert_count"], report["alert_count"])
+        self.assertEqual(
+            report["suppressed_alert_count"],
+            report["raw_alert_count"] - report["alert_count"],
+        )
+        self.assertEqual(report["alert_count"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()

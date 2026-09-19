@@ -9,6 +9,17 @@
   "baseline_looming_threshold": 0.06,
   "baseline_alert_count": 206,
   "baseline_alerts_per_minute": 115.4784,
+  "mitigated_pipeline": {
+    "risk_rule": "require path conflict for looming alerts",
+    "alert_arbiter_track_cooldown_frames": 30,
+    "alert_arbiter_channel_cooldown_frames": 15,
+    "raw_alert_count": 117,
+    "operational_alert_count": 81,
+    "operational_alerts_per_minute": 45.4066,
+    "suppressed_alert_count": 36,
+    "suppression_percent_of_raw": 30.77,
+    "interpretation": "Offline replay of the same detector records; this measures risk/feedback changes, not a new detector accuracy result."
+  },
   "threshold_sweep": [
     {"looming_threshold": 0.06, "alert_count": 206, "alerts_per_minute": 115.4784},
     {"looming_threshold": 0.08, "alert_count": 108, "alerts_per_minute": 60.5614},

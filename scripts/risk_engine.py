@@ -123,10 +123,10 @@ class TrackState:
 
         lvl = LVL_NONE
         reason = ""
-        if looming > self.looming_threshold and close_high:
+        if looming > self.looming_threshold and path_conflict and close_high:
             lvl = LVL_HIGH
             reason = "快速接近且近距离"
-        elif looming > self.looming_threshold:
+        elif looming > self.looming_threshold and path_conflict:
             lvl = LVL_MID
             reason = "快速接近"
         elif abs(lateral) > 0.02 and close_low and path_conflict:

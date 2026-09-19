@@ -6,9 +6,11 @@ from dataclasses import dataclass
 try:
     from .risk_engine import LVL_MID, LVL_NAME, TrackState
     from .feedback_policy import feedback_for
+    from .alert_arbiter import AlertArbiter
 except ImportError:  # 支持直接用 PYTHONPATH=scripts 执行本文件
     from risk_engine import LVL_MID, LVL_NAME, TrackState
     from feedback_policy import feedback_for
+    from alert_arbiter import AlertArbiter
 
 
 ALERT_CLASSES = {
@@ -132,6 +134,7 @@ def evaluate_detection_records(
     looming_threshold=0.06,
     fps=1.0,
     reference_fps=1.0,
+    alert_cooldown_frames=30,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -142,6 +145,9 @@ def evaluate_detection_records(
     """
     if width <= 0 or height <= 0:
         raise ValueError("width and height must be positive")
+
+    if not isinstance(alert_cooldown_frames, int) or alert_cooldown_frames < 0:
+        raise ValueError("alert_cooldown_frames must be a non-negative integer")
 
     scale = 640.0 / max(width, height)
     states = {}
@@ -184,10 +190,14 @@ def evaluate_detection_records(
                 }
             )
 
+    raw_alert_count = len(alerts)
+    alerts = AlertArbiter(cooldown_frames=alert_cooldown_frames).filter(alerts)
     return {
         "frame_count": frame_count,
         "track_count": len(states),
         "detection_stats": detection_stats,
+        "raw_alert_count": raw_alert_count,
+        "suppressed_alert_count": raw_alert_count - len(alerts),
         "alert_count": len(alerts),
         "alerts": alerts,
     }

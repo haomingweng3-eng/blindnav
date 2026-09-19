@@ -101,6 +101,16 @@ class RiskEngineTests(unittest.TestCase):
         self.assertEqual(level, LVL_NONE)
         self.assertFalse(info["path_conflict"])
 
+    def test_fast_approach_outside_walking_corridor_is_ignored(self):
+        state = TrackState("car-1", "car")
+        for side in [70, 76, 83, 91, 100, 110]:
+            state.update(centered_box(side, cx=560))
+
+        level, info = state.assess(frame_idx=6)
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertFalse(info["path_conflict"])
+
     def test_target_direction_is_classified_left_front_right(self):
         expected = [(180, "left"), (320, "front"), (500, "right")]
         for cx, direction in expected:
