@@ -84,6 +84,36 @@ python scripts/batch_detect_videos.py \
 
 它会为每段视频生成同名 JSON，并在 `summary.json` 汇总处理成功、失败、轨迹数和告警数。
 
+### 事件级指标记录
+
+检测后只需对每段视频标出有效事件的 `start_frame` 和 `conflict_frame`，例如：
+
+```json
+{
+  "video_id": "V01",
+  "fps": 30,
+  "duration_s": 30,
+  "events": [
+    {
+      "event_id": "V01-E01",
+      "start_frame": 120,
+      "conflict_frame": 240,
+      "target_class": "electric_bicycle"
+    }
+  ]
+}
+```
+
+保存为 `annotations/V01.json` 后运行：
+
+```bash
+python scripts/evaluate_events.py \
+  annotations/V01.json runs/video_reports/<同名报告>.json \
+  -o runs/video_reports/V01_metrics.json
+```
+
+`start_frame` 是目标进入评估范围的帧，`conflict_frame` 是人工判断最晚仍应预警的冲突帧；两者之间的首个有效告警用于计算提前量。没有事件的无风险视频也应保留空 `events`，这样才能计算误报告警/分钟。
+
 ## 第二阶段（有余力再做）
 
 若要微调检测器，再从 20–30 分钟视频中按约 2 FPS 抽帧，去重后保留 800–1500 张代表性图片做框标注。第一阶段不要为了凑标注量拍大量同质连续帧。

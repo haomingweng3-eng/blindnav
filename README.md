@@ -108,6 +108,36 @@ python scripts/calibrate_reports.py risk_report.json \
 
 阈值扫描只能提供告警数量和首帧的调参证据；真实误报/漏报仍需人工查看视频或标注事件。
 
+## 真实事件指标
+
+视频检测完成后，用一个轻量 JSON 记录每个有效事件的开始帧和冲突帧：
+
+```json
+{
+  "video_id": "V01",
+  "fps": 30,
+  "duration_s": 30,
+  "events": [
+    {
+      "event_id": "V01-E01",
+      "start_frame": 120,
+      "conflict_frame": 240,
+      "target_class": "electric_bicycle"
+    }
+  ]
+}
+```
+
+再运行：
+
+```bash
+python scripts/evaluate_events.py \
+  annotations/V01.json runs/video_reports/<同名报告>.json \
+  -o runs/video_reports/V01_metrics.json
+```
+
+输出包括事件召回率、首个告警到冲突帧的中位提前量，以及每分钟误报告警数。事件窗口是人工定义的评估范围，不是自动生成的“真值”；没有标注就不能宣称真实准确率。
+
 ## 实时 rawvideo 回归
 
 ```bash
