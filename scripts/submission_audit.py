@@ -8,8 +8,10 @@ import sys
 from pathlib import Path
 
 try:
+    from .check_environment import check_requirements, installed_versions
     from .validate_collection import inspect_collection
 except ImportError:  # 支持直接执行脚本
+    from check_environment import check_requirements, installed_versions
     from validate_collection import inspect_collection
 
 
@@ -21,11 +23,13 @@ def summarize_audit(
     git_clean,
     collection_errors,
     test_count=None,
+    environment_ok=True,
 ):
     checks = {
         "tests": bool(tests_ok),
         "syntax": bool(compile_ok),
         "acceptance": bool(acceptance_ok),
+        "environment": bool(environment_ok),
         "collection_ready": bool(collection_ready),
         "git_clean": bool(git_clean),
     }
@@ -33,6 +37,7 @@ def summarize_audit(
         "tests": "tests_failed",
         "syntax": "syntax_failed",
         "acceptance": "acceptance_failed",
+        "environment": "environment_mismatch",
         "collection_ready": "collection_not_ready",
         "git_clean": "git_dirty",
     }
@@ -72,6 +77,11 @@ def audit_project(root="."):
         root,
     )
     acceptance_run = _run([sys.executable, "scripts/acceptance_check.py"], root)
+    requirements_path = root / "requirements.txt"
+    environment = check_requirements(
+        requirements_path.read_text(encoding="utf-8").splitlines(),
+        installed_versions(requirements_path),
+    )
     collection = inspect_collection(
         root / "data/collection_manifest.csv", root / "data/raw"
     )
@@ -85,12 +95,14 @@ def audit_project(root="."):
         tests_ok=test_run.returncode == 0,
         compile_ok=compile_run.returncode == 0,
         acceptance_ok=acceptance_run.returncode == 0,
+        environment_ok=environment["passed"],
         collection_ready=collection["ready"],
         git_clean=git_run.returncode == 0 and not git_run.stdout.strip(),
         collection_errors=sorted(set(collection_errors)),
         test_count=test_count,
     )
     result["collection"] = collection
+    result["environment"] = environment
     result["commands"] = {
         "tests_returncode": test_run.returncode,
         "compile_returncode": compile_run.returncode,

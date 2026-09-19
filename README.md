@@ -6,7 +6,7 @@
 
 提交前的复现、演示和可宣称范围见 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。
 
-提交前可运行单入口只读审计；它会同时检查测试、语法、核心验收、真实采集状态和 Git 工作区：
+提交前可运行单入口只读审计；它会同时检查测试、语法、依赖版本、核心验收、真实采集状态和 Git 工作区：
 
 ```bash
 python scripts/submission_audit.py

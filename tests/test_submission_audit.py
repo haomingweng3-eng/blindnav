@@ -12,6 +12,7 @@ class SubmissionAuditTests(unittest.TestCase):
             collection_ready=True,
             git_clean=True,
             collection_errors=[],
+            environment_ok=True,
         )
         self.assertTrue(result["passed"])
         self.assertEqual(result["blocking_items"], [])
@@ -24,6 +25,7 @@ class SubmissionAuditTests(unittest.TestCase):
             collection_ready=False,
             git_clean=False,
             collection_errors=["missing_video:V01"],
+            environment_ok=True,
         )
         self.assertFalse(result["passed"])
         self.assertIn("collection_not_ready", result["blocking_items"])
