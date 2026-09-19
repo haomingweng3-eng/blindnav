@@ -16,6 +16,10 @@ def main() -> int:
         "frame_contract": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/FrameSource.kt",
         "phone_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/PhoneCameraFrameSource.kt",
         "yuv_converter": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/Yuv420RgbConverter.kt",
+        "yolo_decoder": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/YoloOutputDecoder.kt",
+        "onnx_detector": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/OnnxYoloDetector.kt",
+        "inference_pipeline": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/InferencePipeline.kt",
+        "model_asset": ANDROID / "app/src/main/assets/yolov8n.onnx",
         "external_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/ExternalFrameSource.kt",
         "frame_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/FrameSourceTest.kt",
         "external_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/ExternalFrameSourceTest.kt",
@@ -29,11 +33,18 @@ def main() -> int:
     phone_source = required["phone_source"].read_text()
     external_source = required["external_source"].read_text()
     yuv_converter = required["yuv_converter"].read_text()
+    yolo_decoder = required["yolo_decoder"].read_text()
+    onnx_detector = required["onnx_detector"].read_text()
+    inference_pipeline = required["inference_pipeline"].read_text()
     build = required["app_build"].read_text()
     checks = {
         "source_kinds": "PHONE_CAMERA" in contract and "EXTERNAL_CAMERA" in contract,
         "timestamp_field": "captureTsMs" in contract and "captureTsMs" in phone_source,
         "camera_yuv_to_rgb": "Yuv420RgbConverter.convert" in phone_source and "data class RgbFrame" in yuv_converter,
+        "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
+        "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
+        "inference_pipeline": "class InferencePipeline" in inference_pipeline and "detector.detect" in inference_pipeline,
+        "model_asset_present": required["model_asset"].stat().st_size > 1_000_000,
         "drop_field": "droppedSinceLast" in contract and "droppedSinceLast" in phone_source,
         "external_push_validation": "fun push" in external_source and "validator.validate" in external_source,
         "camera_x": "androidx.camera:camera-camera2" in build,
