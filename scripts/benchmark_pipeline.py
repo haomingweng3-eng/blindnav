@@ -22,6 +22,7 @@ def summarize_timings(timings_ms, warmup, total_frames, target_fps=25.0):
         "steady_fps": round(1000.0 / mean_ms, 2),
         "target_fps": target_fps,
         "meets_25fps": 1000.0 / mean_ms >= target_fps,
+        "meets_p95_latency": ordered[p95_index] <= 200.0,
     }
 
 

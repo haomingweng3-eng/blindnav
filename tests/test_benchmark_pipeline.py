@@ -11,6 +11,7 @@ class BenchmarkPipelineTests(unittest.TestCase):
         self.assertEqual(report["mean_ms"], 30.0)
         self.assertEqual(report["median_ms"], 30.0)
         self.assertEqual(report["p95_ms"], 40.0)
+        self.assertTrue(report["meets_p95_latency"])
         self.assertEqual(report["steady_fps"], 33.33)
         self.assertTrue(report["meets_25fps"])
 

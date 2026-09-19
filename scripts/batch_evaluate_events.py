@@ -26,6 +26,11 @@ def aggregate_results(results):
         "detected_event_count": detected_events,
         "event_recall": round(detected_events / total_events, 4) if total_events else None,
         "median_lead_time_s": round(median(lead_times), 4) if lead_times else None,
+        "p10_lead_time_s": round(
+            sorted(lead_times)[max(0, int(len(lead_times) * 0.10 + 0.999999) - 1)], 4
+        )
+        if lead_times
+        else None,
         "false_alert_count": false_alerts,
         "false_alerts_per_minute": round(false_alerts / duration_minutes, 4)
         if duration_minutes
@@ -62,6 +67,7 @@ CSV_FIELDS = (
     "detected_event_count",
     "event_recall",
     "median_lead_time_s",
+    "p10_lead_time_s",
     "false_alert_count",
     "false_alerts_per_minute",
 )

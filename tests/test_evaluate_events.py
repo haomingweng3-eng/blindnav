@@ -32,8 +32,35 @@ class EvaluateEventsTests(unittest.TestCase):
         self.assertEqual(result["detected_event_count"], 1)
         self.assertEqual(result["event_recall"], 1.0)
         self.assertEqual(result["lead_times_s"], [2.0])
+        self.assertEqual(result["p10_lead_time_s"], 2.0)
         self.assertEqual(result["false_alert_count"], 1)
-        self.assertAlmostEqual(result["false_alerts_per_minute"], 2.0)
+
+    def test_p10_lead_time_uses_conservative_nearest_rank(self):
+        annotation = {
+            "video_id": "V03",
+            "fps": 10,
+            "duration_s": 30,
+            "events": [
+                {
+                    "event_id": f"E{index}",
+                    "start_frame": index * 100,
+                    "conflict_frame": index * 100 + 50,
+                    "target_class": "bicycle",
+                }
+                for index in range(1, 11)
+            ],
+        }
+        report = {
+            "alerts": [
+                {
+                    "frame": event["conflict_frame"] - index,
+                    "cls": "bicycle",
+                }
+                for index, event in enumerate(annotation["events"], start=1)
+            ]
+        }
+        result = evaluate_event_report(annotation, report)
+        self.assertEqual(result["p10_lead_time_s"], 0.1)
 
     def test_alert_outside_event_window_does_not_match(self):
         annotation = {

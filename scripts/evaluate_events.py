@@ -43,6 +43,12 @@ def _alert_matches_event(alert, event):
     return target_class in (None, "any") or alert.get("cls") == target_class
 
 
+def _nearest_rank(values, quantile):
+    ordered = sorted(values)
+    rank = max(1, int((len(ordered) * quantile) + 0.999999))
+    return ordered[rank - 1]
+
+
 def evaluate_event_report(annotation, report):
     """评估一段视频；事件窗口含首尾帧，首个匹配告警用于提前量。"""
     _validate_annotation(annotation)
@@ -95,6 +101,9 @@ def evaluate_event_report(annotation, report):
         "event_recall": round(detected_count / event_count, 4) if event_count else None,
         "lead_times_s": lead_times,
         "median_lead_time_s": round(median(lead_times), 4) if lead_times else None,
+        "p10_lead_time_s": round(_nearest_rank(lead_times, 0.10), 4)
+        if lead_times
+        else None,
         "matched_events": matched_events,
         "alert_count": len(alerts),
         "false_alert_count": len(false_alert_indices),

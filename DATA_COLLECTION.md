@@ -112,7 +112,7 @@ python scripts/evaluate_events.py \
   -o runs/video_reports/V01_metrics.json
 ```
 
-`start_frame` 是目标进入评估范围的帧，`conflict_frame` 是人工判断最晚仍应预警的冲突帧；两者之间的首个有效告警用于计算提前量。没有事件的无风险视频也应保留空 `events`，这样才能计算误报告警/分钟。
+`start_frame` 是目标进入评估范围的帧，`conflict_frame` 是人工判断最晚仍应预警的冲突帧；两者之间的首个有效告警用于计算提前量。汇总同时给出中位和保守的 P10 提前量。没有事件的无风险视频也应保留空 `events`，这样才能计算误报告警/分钟。
 
 全部视频处理完后，使用同名标注和报告批量汇总：
 

@@ -49,6 +49,7 @@ class BatchEvaluateEventsTests(unittest.TestCase):
                 "detected_event_count": 1,
                 "event_recall": 1.0,
                 "median_lead_time_s": 1.5,
+                "p10_lead_time_s": 1.5,
                 "false_alert_count": 0,
                 "false_alerts_per_minute": 0.0,
             },
@@ -60,6 +61,7 @@ class BatchEvaluateEventsTests(unittest.TestCase):
                     "detected_event_count": 1,
                     "event_recall": 1.0,
                     "median_lead_time_s": 1.5,
+                    "p10_lead_time_s": 1.5,
                     "false_alert_count": 0,
                     "false_alerts_per_minute": 0.0,
                 }
@@ -67,8 +69,8 @@ class BatchEvaluateEventsTests(unittest.TestCase):
         }
         csv_text = render_csv(batch)
         self.assertIn("video_id,duration_s,event_count", csv_text)
-        self.assertIn("V01,30,1,1,1.0,1.5,0,0.0", csv_text)
-        self.assertIn("TOTAL,30,1,1,1.0,1.5,0,0.0", csv_text)
+        self.assertIn("V01,30,1,1,1.0,1.5,1.5,0,0.0", csv_text)
+        self.assertIn("TOTAL,30,1,1,1.0,1.5,1.5,0,0.0", csv_text)
 
 
 if __name__ == "__main__":
