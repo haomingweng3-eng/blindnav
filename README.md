@@ -18,7 +18,7 @@ python scripts/submission_audit.py
 
 真实视频采集按 [DATA_COLLECTION.md](DATA_COLLECTION.md) 执行，场景记录表在 `data/collection_manifest.csv`。
 
-视频放入 `data/raw/` 后，用 `python scripts/validate_collection.py` 检查采集进度。
+视频放入 `data/raw/` 后，用 `python scripts/validate_collection.py` 检查采集进度；当前批次的归档说明和 SHA-256 清单见 [VIDEO_ARCHIVE.md](VIDEO_ARCHIVE.md) 与 [`data/raw/manifest.csv`](data/raw/manifest.csv)。
 
 多段视频可以用 `python scripts/batch_detect_videos.py --raw-dir data/raw --output-dir runs/video_reports --device mps` 一次处理。
 
