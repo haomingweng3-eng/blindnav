@@ -114,6 +114,16 @@ python scripts/evaluate_events.py \
 
 `start_frame` 是目标进入评估范围的帧，`conflict_frame` 是人工判断最晚仍应预警的冲突帧；两者之间的首个有效告警用于计算提前量。没有事件的无风险视频也应保留空 `events`，这样才能计算误报告警/分钟。
 
+全部视频处理完后，使用同名标注和报告批量汇总：
+
+```bash
+python scripts/batch_evaluate_events.py \
+  annotations/ runs/video_reports/ \
+  -o runs/video_reports/metrics_summary.json
+```
+
+如果某个标注文件没有对应报告，命令会列出 `missing_reports` 并以失败状态退出，避免提交时漏算视频。
+
 ## 第二阶段（有余力再做）
 
 若要微调检测器，再从 20–30 分钟视频中按约 2 FPS 抽帧，去重后保留 800–1500 张代表性图片做框标注。第一阶段不要为了凑标注量拍大量同质连续帧。

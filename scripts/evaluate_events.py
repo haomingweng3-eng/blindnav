@@ -91,6 +91,7 @@ def evaluate_event_report(annotation, report):
     event_count = len(events)
     return {
         "video_id": annotation.get("video_id"),
+        "duration_s": annotation["duration_s"],
         "event_count": event_count,
         "detected_event_count": detected_count,
         "event_recall": round(detected_count / event_count, 4) if event_count else None,

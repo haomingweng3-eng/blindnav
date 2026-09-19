@@ -138,6 +138,14 @@ python scripts/evaluate_events.py \
 
 输出包括事件召回率、首个告警到冲突帧的中位提前量，以及每分钟误报告警数。事件窗口是人工定义的评估范围，不是自动生成的“真值”；没有标注就不能宣称真实准确率。
 
+12 段视频都完成标注和检测后，可批量汇总：
+
+```bash
+python scripts/batch_evaluate_events.py \
+  annotations/ runs/video_reports/ \
+  -o runs/video_reports/metrics_summary.json
+```
+
 ## 实时 rawvideo 回归
 
 ```bash
