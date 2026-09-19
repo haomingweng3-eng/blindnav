@@ -79,3 +79,17 @@
 - **MicroVision**：官方页面描述为 8,000+ 张、覆盖行人/自行车/骑行者/e-scooter 的 VRU 视角数据；但其研究数据页面目前显示数据访问受限/该版本 withdrawn，不能把它当成明天可直接下载的方案。
 - **TGSIM Foggy Bottom**：美国交通部公开的轨迹数据包含 bicycle、scooter、motorcycle 等，并有速度/加速度；但来自固定基础设施摄像头，主要是 CSV 轨迹而非胸挂图像，适合以后验证运动模型，不适合当前检测器视觉测试。
 - **VisDrone/BDD100K**：可以做通用交通目标基线，但视角和类别定义与本项目差异较大，不作为电动车数据替代品。
+
+## 补充：ONNX 单图 smoke test（非数据集指标）
+
+为验证新写的 ONNX 预处理/解码/NMS 适配器，另取一张 Wikimedia Commons 的公开 scooter 图片 [Copy scooter 01.jpg](https://commons.wikimedia.org/wiki/File:Copy_scooter_01.jpg)，页面标注许可为 CC BY-SA 2.0。该图片是静态侧视图，不是胸挂视角，也不是电动自行车视频样本；原图未提交到仓库，仅下载到临时目录用于一次回归。
+
+在 `models/yolov8n.onnx`、CPU ONNX Runtime、letterbox 640、按类别 NMS 下：
+
+| conf | 输出 |
+|---|---|
+| 0.25 | 1 个 `motorcycle`，置信度 0.836195 |
+| 0.05 | 1 个 `motorcycle`，置信度 0.836195 |
+| 0.01 | 7 个候选框，出现低置信度 person/motorcycle 泛检 |
+
+这只证明 ONNX 适配器在一张公开静态图上能正常加载、解码并输出类别；不能推出 scooter/电动车召回率、视频稳定性或真实场景准确率。
