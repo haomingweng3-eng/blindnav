@@ -4,6 +4,8 @@
 
 当前已导出 `models/yolov8n.onnx` 作为端侧候选模型，并通过 ONNX checker 与 CPU 空白帧推理回归；尚未在 Android Runtime、CameraX 或骁龙真机上验证。
 
+Python 参考适配器位于 `scripts/onnx_inference.py`，冻结了 letterbox、RGB/CHW/归一化、YOLOv8 输出解码和按类别 NMS 的行为。Android 端移植时应先用同一张输入图对比框坐标和类别，再接入风险引擎；该适配器不是 Android API 实现。
+
 ## 1. 数据流
 
 ```text
