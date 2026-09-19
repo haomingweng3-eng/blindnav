@@ -1,8 +1,8 @@
 # 项目交接：视障出行动态预判与主动导航系统
 
-**日期**：2026-09-15
+**日期**：2026-09-19
 **赛事**：软件智能创新大赛（A类赛事，公益赛道，目标国一）
-**当前阶段**：技术验证完成 60%，核心链路已跑通，卡在电动车数据采集
+**当前阶段**：桌面端链路完成，已获得首批真实道路安全距离基线；当前卡在风险阈值校准、正向危险事件和 Android 真机闭环
 
 **权威工作区**：`/Users/mima0000/blindnav`；Desktop 目录不是当前 Git 主工作区，里面的旧版脚本不作为最新结果依据。
 
@@ -97,7 +97,7 @@
 
 ## 四、当前卡点（核心问题）
 
-**电动车数据问题，这是唯一卡住Demo效果的瓶颈，也是项目的技术壁垒所在。**
+**电动车数据问题仍是主要瓶颈，但不再是“完全没有真实视频”。** 用户已提供 13 段真实道路视频；它们均为安全距离场景，适合测无冲突误报告警，不足以测危险事件召回和预警提前量。
 
 现状：
 1. **GitHub实搜结果**：`syy-zt/Electric-Bicycles`（0 star，质量不可信）；头盔检测类仓库（imJouch/helmet-detection 12star、QQ767172261 7star）有电动车图片但是**监控/抓拍视角**且标注的是头盔不是车辆位置
@@ -171,8 +171,8 @@
 - 已补充 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)，冻结 `feedback` 的 JSON 字段、三档动作策略、去重建议和安卓 Dispatcher 伪代码；工作区当前没有 Android Studio 工程。
 - 已补充 [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)，提供无真实电动车视频时的三分钟演示顺序、命令、可展示字段和答辩边界口径。
 - 已补充 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)，区分当前可验证证据、现场演示步骤和不能对外宣称的指标。
-- 已补充 [DATA_COLLECTION.md](DATA_COLLECTION.md) 和 `data/collection_manifest.csv`，把最低 12 段真实视频采集拆成可执行场景清单和记录表。
-- 已补充 `scripts/validate_collection.py`，能检查 manifest、原始文件缺失/空文件和采集元数据是否齐全；当前尚未填入真实视频，因此验收状态应为 `ready: false`。
+- 已补充 [DATA_COLLECTION.md](DATA_COLLECTION.md) 和 `data/collection_manifest.csv`，把最低 12 段真实视频采集拆成可执行场景清单和记录表；当前已登记 13 段用户提供视频。
+- 已补充 `scripts/validate_collection.py`，本轮检查结果为 `expected_count=13`、`present_count=13`、`metadata_incomplete=[]`、`ready: true`。
 - `detect_video.py` 现在保留原始检测 `records`；新增 `scripts/calibrate_reports.py`，可在不重复运行 YOLO 的情况下对真实视频报告扫描多个 looming 阈值。
 - 已实测公开 ScooterDet 抽样：10 张含 scooter 标注的穿戴式视角图片，COCO YOLOv8n 在 `conf=0.25` 和 `0.01` 下均未稳定输出 bicycle/motorcycle；结果和数据集许可/局限见 [EXTERNAL_DATASET_TEST.md](EXTERNAL_DATASET_TEST.md)。
 - 进一步用 ScooterDet 四个连续真实标注框绕过检测器测试风险层：`looming=0.037`，阈值 `0.02/0.03` 在末帧告警，`0.04/0.06` 不告警；这只证明风险层能消费真实框，不证明检测器已识别 scooter，也不足以改生产阈值。
@@ -181,7 +181,7 @@
 - `detect_video.py` 已支持 `--model`、`--device`、`--conf`，保留原有位置参数；用公开集抽样视频做过一次 CLI/JSON 回归，报告含原始 `records`。
 - 新增 `scripts/batch_detect_videos.py`，可扫描 `data/raw/` 批量生成同名报告和 `summary.json`；已用公开样本视频做过一段端到端回归。
 - 新增 `scripts/evaluate_events.py`，按人工事件窗口计算事件召回率、预警提前量和每分钟误报告警数；真实视频到位后可直接生成实验指标，不再只看告警总数。
-- 新增 `scripts/batch_evaluate_events.py`，可按同名标注/报告批量汇总 12 段视频的加权召回率、总体提前量和误报告警率，并对缺失报告报错。
+- 新增 `scripts/batch_evaluate_events.py`，可按同名标注/报告批量汇总视频的加权召回率、总体提前量和误报告警率，并对缺失报告报错。
 - 批量评估可同时导出逐视频与 `TOTAL` 总计 CSV，便于直接生成 Excel/PPT 实验表，减少手工转录错误。
 - 事件汇总新增保守 P10 预警提前量；性能基准新增 P95≤200ms 工程门槛字段，避免只报告平均值或中位数。
 - 新增 `scripts/prepare_annotations.py` 自动生成事件标注模板；模板默认未完成，批量评估会显式报告 `invalid_annotations`，防止空标注污染实验结果。
@@ -208,8 +208,16 @@
 
 ### 仍未完成、不能对外宣称的内容
 
-- 没有真实胸挂视角电动车数据，因此没有真实场景召回率、误报率、漏报率或预警提前量证据。
+- 已有 13 段真实道路安全距离视频，合计约 107.033 秒；它们只形成无冲突基线，不包含可标注的危险事件，因此真实事件召回率、漏报率和预警提前量仍无证据。
 - 合成视频只验证软件链路，不能证明电动车风险识别有效。
 - 当前性能数据不是骁龙7/8系安卓数据，仍需真机验证。
 - 没有完成视障用户或O&M专业人员的交互验证。
 - 未验证真实摄像头权限、长时间发热、手机端音频/震动抢占和导航播报打断策略。
+
+### 2026-09-19 首批真实安全距离基线结果
+
+- 输入：13 段用户提供视频，白天停车道路场景，960×540 或 1280×720，30 FPS，总时长约 107.033 秒。
+- 推理：YOLOv8n + ByteTrack + 当前风险引擎，`conf=0.25`、`looming_threshold=0.06`；13/13 段成功处理，无批处理失败。
+- 结果：检测到 206 次告警，即 115.4784 次/分钟。由于用户确认这些画面均为安全距离，按当前定义全部属于无冲突基线中的操作性误报告警；事件召回率和提前量记为“不适用”，不能写成 0% 召回。
+- 阈值扫描：`looming_threshold=0.10/0.15/0.20` 时告警分别为 59/18/10 次；即使提高到 0.20，仍为 5.6056 次/分钟。阈值提高能降低告警，但尚未证明不会漏掉危险事件。
+- 结论：当前检测框抖动、停车场静态目标和/或视角运动会把“快速接近”触发得过于频繁；本批视频不能支持“系统已可用”，但成功把真实问题从“没有数据”推进到“有数据、阈值不合格、需要针对性校准”。完整汇总见 [`data/safe_baseline_summary.json`](data/safe_baseline_summary.json)。

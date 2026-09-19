@@ -1,0 +1,22 @@
+{
+  "dataset": "user_provided_safe_distance_videos",
+  "video_count": 13,
+  "total_duration_s": 107.033,
+  "scene": "daylight parking-road clips; user confirmed all interactions remained at a safe distance",
+  "ground_truth_event_count": 0,
+  "baseline_model": "models/yolov8n.pt",
+  "baseline_conf": 0.25,
+  "baseline_looming_threshold": 0.06,
+  "baseline_alert_count": 206,
+  "baseline_alerts_per_minute": 115.4784,
+  "threshold_sweep": [
+    {"looming_threshold": 0.06, "alert_count": 206, "alerts_per_minute": 115.4784},
+    {"looming_threshold": 0.08, "alert_count": 108, "alerts_per_minute": 60.5614},
+    {"looming_threshold": 0.1, "alert_count": 59, "alerts_per_minute": 33.0717},
+    {"looming_threshold": 0.12, "alert_count": 29, "alerts_per_minute": 16.2451},
+    {"looming_threshold": 0.15, "alert_count": 18, "alerts_per_minute": 10.0726},
+    {"looming_threshold": 0.2, "alert_count": 10, "alerts_per_minute": 5.6056},
+    {"looming_threshold": 0.3, "alert_count": 8, "alerts_per_minute": 4.4845}
+  ],
+  "interpretation": "This is a no-conflict safety baseline. Event recall and lead time are undefined. The high alert rate shows the current detector/risk threshold is not ready for a user-facing demo; threshold tuning alone must not be presented as accuracy improvement."
+}
