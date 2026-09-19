@@ -24,6 +24,8 @@ python scripts/submission_audit.py
 
 外部公开数据集的实际抽样结果见 [EXTERNAL_DATASET_TEST.md](EXTERNAL_DATASET_TEST.md)。
 
+视觉、导航、端侧部署和助盲项目的横向对比见 [RELATED_PROJECTS_COMPARISON.md](RELATED_PROJECTS_COMPARISON.md)。
+
 ## 环境
 
 项目基线是 Python 3.11、Apple Silicon MPS、YOLOv8n、Ultralytics、OpenCV 和 ByteTrack。
