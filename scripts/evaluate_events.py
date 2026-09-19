@@ -51,7 +51,6 @@ def evaluate_event_report(annotation, report):
 
     alerts = [alert for alert in report["alerts"] if isinstance(alert, dict)]
     events = annotation["events"]
-    matched_alert_indices = set()
     matched_events = []
     lead_times = []
 
@@ -64,8 +63,7 @@ def evaluate_event_report(annotation, report):
         if not candidates:
             matched_events.append({"event_id": event["event_id"], "detected": False})
             continue
-        index, first_alert = min(candidates, key=lambda item: item[1]["frame"])
-        matched_alert_indices.add(index)
+        _, first_alert = min(candidates, key=lambda item: item[1]["frame"])
         lead_time = (event["conflict_frame"] - first_alert["frame"]) / annotation["fps"]
         lead_times.append(round(lead_time, 4))
         matched_events.append(
