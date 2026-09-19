@@ -1,5 +1,7 @@
 # 视障出行动态预判与主动导航
 
+当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
+
 当前代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。它不宣称已经完成真实道路或胸挂视角验证。
 
 没有真实视频时的三分钟演示顺序和统一答辩口径见 [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)。
