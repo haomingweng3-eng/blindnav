@@ -8,6 +8,7 @@
 - [ ] 安装 `requirements.txt` 中的依赖，并确认 Python、PyTorch、Ultralytics 版本。
 - [ ] 运行 `python -m unittest discover -s tests`，记录测试数量和结果。
 - [ ] 运行 `python scripts/acceptance_check.py -o acceptance.json`，确认 `passed: true`。
+- [ ] 运行 `python scripts/submission_audit.py`，确认 `passed: true`；若失败，处理 `blocking_items`，不要只看单元测试绿灯。
 - [ ] 运行 `python scripts/evaluate_risk_engine.py`，保留阈值扫描输出。
 - [ ] 用一份可公开使用的视频或检测框 JSON 跑 `detect_video.py` / `replay_detections.py`，保存原始 JSON 报告。
 - [ ] 若展示性能，使用 `benchmark_pipeline.py`，同时记录设备、模型、分辨率、输入 FPS、预热帧数。

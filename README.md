@@ -6,6 +6,14 @@
 
 提交前的复现、演示和可宣称范围见 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。
 
+提交前可运行单入口只读审计；它会同时检查测试、语法、核心验收、真实采集状态和 Git 工作区：
+
+```bash
+python scripts/submission_audit.py
+```
+
+未采集真实视频时，审计返回失败是预期结果，并会列出 `collection_not_ready`；不能用强行忽略退出码的方式替代真实证据。
+
 真实视频采集按 [DATA_COLLECTION.md](DATA_COLLECTION.md) 执行，场景记录表在 `data/collection_manifest.csv`。
 
 视频放入 `data/raw/` 后，用 `python scripts/validate_collection.py` 检查采集进度。

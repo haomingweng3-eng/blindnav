@@ -183,6 +183,7 @@
 - 批量评估可同时导出逐视频与 `TOTAL` 总计 CSV，便于直接生成 Excel/PPT 实验表，减少手工转录错误。
 - 事件汇总新增保守 P10 预警提前量；性能基准新增 P95≤200ms 工程门槛字段，避免只报告平均值或中位数。
 - 新增 `scripts/prepare_annotations.py` 自动生成事件标注模板；模板默认未完成，批量评估会显式报告 `invalid_annotations`，防止空标注污染实验结果。
+- 新增 `scripts/submission_audit.py` 作为提交门禁，统一检查测试、语法、核心验收、采集就绪状态和 Git 清洁度；当前真实视频未到位时会明确返回 `collection_not_ready`。
 - 已初始化 Git 仓库并建立基线提交 `606a613`；`.gitignore` 排除了原始视频和运行输出，便于后续追踪实验版本。
 - 告警语音支持左侧/前方/右侧三级方向词，不播报未经标定的精确距离。
 - `live_demo.py` 支持 `--headless`、`--max-frames`、`--device`、`--input-fps`、`--looming-threshold` 和 `--report`，可以用 rawvideo stdin 做无摄像头权限的回归测试并保存 JSON 证据。
