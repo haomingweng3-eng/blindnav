@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
 import com.blindnav.mobile.inference.RgbFrame
 import com.blindnav.mobile.inference.Yuv420RgbConverter
@@ -20,6 +23,7 @@ import java.util.concurrent.Executors
 class PhoneCameraFrameSource(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
+    private val previewView: PreviewView? = null,
     private val executor: Executor = Executors.newSingleThreadExecutor(),
 ) : FrameSource {
     override val kind: SourceKind = SourceKind.PHONE_CAMERA
@@ -43,10 +47,16 @@ class PhoneCameraFrameSource(
             useCase.setAnalyzer(executor) { image -> onImage(image) }
 
             provider.unbindAll()
+            val useCases = mutableListOf<UseCase>(useCase)
+            previewView?.let { view ->
+                val preview = Preview.Builder().build()
+                preview.setSurfaceProvider(view.surfaceProvider)
+                useCases += preview
+            }
             provider.bindToLifecycle(
                 lifecycleOwner,
                 CameraSelector.DEFAULT_BACK_CAMERA,
-                useCase,
+                *useCases.toTypedArray(),
             )
             cameraProvider = provider
             analysis = useCase

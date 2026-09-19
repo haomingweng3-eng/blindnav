@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.camera.view.PreviewView
 import com.blindnav.mobile.inference.InferencePipeline
 import com.blindnav.mobile.inference.OnnxYoloDetector
 import com.blindnav.mobile.sensing.PhoneCameraFrameSource
@@ -16,6 +17,7 @@ class MainActivity : ComponentActivity() {
     private var cameraSource: PhoneCameraFrameSource? = null
     private var detector: OnnxYoloDetector? = null
     private var statusText: TextView? = null
+    private var previewView: PreviewView? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -27,6 +29,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
+        previewView = findViewById(R.id.preview_view)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -39,7 +42,7 @@ class MainActivity : ComponentActivity() {
     private fun startInference() {
         try {
             val model = OnnxYoloDetector(this)
-            val source = PhoneCameraFrameSource(this, this)
+            val source = PhoneCameraFrameSource(this, this, previewView)
             val pipeline = InferencePipeline(
                 detector = model,
                 onResult = { result ->
@@ -69,6 +72,7 @@ class MainActivity : ComponentActivity() {
         detector?.close()
         cameraSource = null
         detector = null
+        previewView = null
         super.onDestroy()
     }
 }
