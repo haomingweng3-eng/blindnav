@@ -4,6 +4,7 @@
 
 ## A. 提交前在当前电脑完成
 
+- [x] 已初始化 Git 并建立可复现基线提交；后续实验按功能或验证批次提交。
 - [ ] 安装 `requirements.txt` 中的依赖，并确认 Python、PyTorch、Ultralytics 版本。
 - [ ] 运行 `python -m unittest discover -s tests`，记录测试数量和结果。
 - [ ] 运行 `python scripts/acceptance_check.py -o acceptance.json`，确认 `passed: true`。

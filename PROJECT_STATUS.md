@@ -176,6 +176,7 @@
 - 风险链路已兼容自定义微出行类别 `scooter`、`electric_bicycle`、`electric_bike` 和 `e-bike`，不会因类别白名单被静默丢弃；`scooter` 反馈语音为“电动滑板车”。
 - `detect_video.py` 已支持 `--model`、`--device`、`--conf`，保留原有位置参数；用公开集抽样视频做过一次 CLI/JSON 回归，报告含原始 `records`。
 - 新增 `scripts/batch_detect_videos.py`，可扫描 `data/raw/` 批量生成同名报告和 `summary.json`；已用公开样本视频做过一段端到端回归。
+- 已初始化 Git 仓库并建立基线提交 `606a613`；`.gitignore` 排除了原始视频和运行输出，便于后续追踪实验版本。
 - 告警语音支持左侧/前方/右侧三级方向词，不播报未经标定的精确距离。
 - `live_demo.py` 支持 `--headless`、`--max-frames`、`--device`、`--input-fps`、`--looming-threshold` 和 `--report`，可以用 rawvideo stdin 做无摄像头权限的回归测试并保存 JSON 证据。
 - 实时采集队列保留源视频帧号；即使丢帧，风险引擎仍按源帧号计算间隔。
