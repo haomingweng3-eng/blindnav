@@ -1,6 +1,8 @@
 """批量汇总事件标注与风险报告，生成提交前的总体指标。"""
 
 import argparse
+import csv
+import io
 import json
 from pathlib import Path
 from statistics import median
@@ -53,16 +55,45 @@ def evaluate_directories(annotations_dir, reports_dir):
     }
 
 
+CSV_FIELDS = (
+    "video_id",
+    "duration_s",
+    "event_count",
+    "detected_event_count",
+    "event_recall",
+    "median_lead_time_s",
+    "false_alert_count",
+    "false_alerts_per_minute",
+)
+
+
+def render_csv(batch_result):
+    """把逐视频指标和总体指标导出为可直接粘贴到表格/PPT的 CSV。"""
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, extrasaction="ignore")
+    writer.writeheader()
+    for result in batch_result["videos"]:
+        writer.writerow(result)
+    summary = dict(batch_result["summary"])
+    summary["video_id"] = "TOTAL"
+    summary["duration_s"] = summary.get("total_duration_s")
+    writer.writerow(summary)
+    return output.getvalue()
+
+
 def main():
     parser = argparse.ArgumentParser(description="批量汇总真实视频事件指标")
     parser.add_argument("annotations_dir", help="事件标注 JSON 目录")
     parser.add_argument("reports_dir", help="风险报告 JSON 目录")
     parser.add_argument("-o", "--output", help="输出汇总 JSON")
+    parser.add_argument("--csv-output", help="可选的表格 CSV 输出")
     args = parser.parse_args()
     result = evaluate_directories(args.annotations_dir, args.reports_dir)
     text = json.dumps(result, ensure_ascii=False, indent=2)
     if args.output:
         Path(args.output).write_text(text + "\n", encoding="utf-8")
+    if args.csv_output:
+        Path(args.csv_output).write_text(render_csv(result), encoding="utf-8")
     print(text)
     raise SystemExit(1 if result["missing_reports"] else 0)
 

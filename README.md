@@ -143,8 +143,11 @@ python scripts/evaluate_events.py \
 ```bash
 python scripts/batch_evaluate_events.py \
   annotations/ runs/video_reports/ \
-  -o runs/video_reports/metrics_summary.json
+  -o runs/video_reports/metrics_summary.json \
+  --csv-output runs/video_reports/metrics_summary.csv
 ```
+
+CSV 同时包含逐视频行和 `TOTAL` 总计行，可直接导入 Excel 或作为答辩实验表的数据源。
 
 ## 实时 rawvideo 回归
 

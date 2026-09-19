@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.batch_evaluate_events import aggregate_results
+from scripts.batch_evaluate_events import aggregate_results, render_csv
 
 
 class BatchEvaluateEventsTests(unittest.TestCase):
@@ -39,6 +39,36 @@ class BatchEvaluateEventsTests(unittest.TestCase):
         self.assertEqual(summary["video_count"], 0)
         self.assertIsNone(summary["event_recall"])
         self.assertIsNone(summary["false_alerts_per_minute"])
+
+    def test_renders_per_video_and_total_csv(self):
+        batch = {
+            "summary": {
+                "video_count": 1,
+                "total_duration_s": 30,
+                "event_count": 1,
+                "detected_event_count": 1,
+                "event_recall": 1.0,
+                "median_lead_time_s": 1.5,
+                "false_alert_count": 0,
+                "false_alerts_per_minute": 0.0,
+            },
+            "videos": [
+                {
+                    "video_id": "V01",
+                    "duration_s": 30,
+                    "event_count": 1,
+                    "detected_event_count": 1,
+                    "event_recall": 1.0,
+                    "median_lead_time_s": 1.5,
+                    "false_alert_count": 0,
+                    "false_alerts_per_minute": 0.0,
+                }
+            ],
+        }
+        csv_text = render_csv(batch)
+        self.assertIn("video_id,duration_s,event_count", csv_text)
+        self.assertIn("V01,30,1,1,1.0,1.5,0,0.0", csv_text)
+        self.assertIn("TOTAL,30,1,1,1.0,1.5,0,0.0", csv_text)
 
 
 if __name__ == "__main__":

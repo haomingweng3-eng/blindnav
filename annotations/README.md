@@ -42,5 +42,6 @@ runs/video_reports/V01.json
 ```bash
 python scripts/batch_evaluate_events.py \
   annotations/ runs/video_reports/ \
-  -o runs/video_reports/metrics_summary.json
+  -o runs/video_reports/metrics_summary.json \
+  --csv-output runs/video_reports/metrics_summary.csv
 ```

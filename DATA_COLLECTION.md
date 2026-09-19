@@ -119,10 +119,11 @@ python scripts/evaluate_events.py \
 ```bash
 python scripts/batch_evaluate_events.py \
   annotations/ runs/video_reports/ \
-  -o runs/video_reports/metrics_summary.json
+  -o runs/video_reports/metrics_summary.json \
+  --csv-output runs/video_reports/metrics_summary.csv
 ```
 
-如果某个标注文件没有对应报告，命令会列出 `missing_reports` 并以失败状态退出，避免提交时漏算视频。
+CSV 包含逐视频和 `TOTAL` 总计行，可直接用于实验表。如果某个标注文件没有对应报告，命令会列出 `missing_reports` 并以失败状态退出，避免提交时漏算视频。
 
 ## 第二阶段（有余力再做）
 
