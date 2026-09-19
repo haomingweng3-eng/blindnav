@@ -7,12 +7,15 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.blindnav.mobile.inference.RgbFrame
+import com.blindnav.mobile.inference.Yuv420RgbConverter
+import com.blindnav.mobile.inference.YuvPlane
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 /**
- * CameraX adapter for the default input path. It deliberately exposes an
- * ImageProxy as an opaque payload; the ONNX adapter owns pixel conversion.
+ * CameraX adapter for the default input path. It copies each YUV frame into
+ * an owned RGB payload before closing ImageProxy.
  */
 class PhoneCameraFrameSource(
     private val context: Context,
@@ -51,23 +54,32 @@ class PhoneCameraFrameSource(
     }
 
     private fun onImage(image: ImageProxy) {
-        val frame = if (lastFrame < 0) 0 else lastFrame + 1
-        lastFrame = frame
-        val timestampMs = image.imageInfo.timestamp / 1_000_000L
-        val packet = FramePacket(
-            source = SourceKind.PHONE_CAMERA,
-            sourceFrame = frame,
-            captureTsMs = timestampMs,
-            width = image.width,
-            height = image.height,
-            transport = "camera2",
-            // CameraX's KEEP_ONLY_LATEST strategy does not expose the exact
-            // number of discarded frames; the transport adapter must report
-            // it when the external protocol provides that information.
-            droppedSinceLast = 0,
-            payload = image,
-        )
         try {
+            val planes = image.planes
+            require(planes.size >= 3) { "CameraX image must provide YUV_420_888 planes" }
+            val rgb = Yuv420RgbConverter.convert(
+                width = image.width,
+                height = image.height,
+                y = plane(planes[0]),
+                u = plane(planes[1]),
+                v = plane(planes[2]),
+            )
+            val frame = if (lastFrame < 0) 0 else lastFrame + 1
+            lastFrame = frame
+            val timestampMs = image.imageInfo.timestamp / 1_000_000L
+            val packet = FramePacket(
+                source = SourceKind.PHONE_CAMERA,
+                sourceFrame = frame,
+                captureTsMs = timestampMs,
+                width = image.width,
+                height = image.height,
+                transport = "camera2",
+                // CameraX's KEEP_ONLY_LATEST strategy does not expose the exact
+                // number of discarded frames; the transport adapter must report
+                // it when the external protocol provides that information.
+                droppedSinceLast = 0,
+                payload = RgbFrame(image.width, image.height, rgb),
+            )
             val validation = validator.validate(packet)
             if (validation.accepted) {
                 listener?.invoke(packet)
@@ -75,6 +87,17 @@ class PhoneCameraFrameSource(
         } finally {
             image.close()
         }
+    }
+
+    private fun plane(imagePlane: ImageProxy.PlaneProxy): YuvPlane {
+        val buffer = imagePlane.buffer.duplicate()
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return YuvPlane(
+            bytes = bytes,
+            rowStride = imagePlane.rowStride,
+            pixelStride = imagePlane.pixelStride,
+        )
     }
 
     override fun stop() {

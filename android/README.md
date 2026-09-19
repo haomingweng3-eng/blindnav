@@ -5,6 +5,7 @@
 - `PhoneCameraFrameSource`：默认手机 CameraX 摄像头输入；
 - `ExternalFrameSource`：胸挂摄像头或其他传感器通过 USB/Wi-Fi 解码后调用 `push()`；
 - `FrameSequenceValidator`：统一校验帧号、单调时间戳、尺寸和丢帧字段；
+- `Yuv420RgbConverter` + `LetterboxPreprocessor`：将 CameraX 的 YUV 帧复制为自有 RGB 缓冲区，再生成 YOLO 的 CHW float 输入；
 - 后续推理层只接收合法帧，不关心输入来自手机还是外接节点。
 
 ## 当前限制

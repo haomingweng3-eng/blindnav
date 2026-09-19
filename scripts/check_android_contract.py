@@ -15,6 +15,7 @@ def main() -> int:
         "manifest": ANDROID / "app/src/main/AndroidManifest.xml",
         "frame_contract": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/FrameSource.kt",
         "phone_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/PhoneCameraFrameSource.kt",
+        "yuv_converter": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/Yuv420RgbConverter.kt",
         "external_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/ExternalFrameSource.kt",
         "frame_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/FrameSourceTest.kt",
         "external_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/ExternalFrameSourceTest.kt",
@@ -27,10 +28,12 @@ def main() -> int:
     contract = required["frame_contract"].read_text()
     phone_source = required["phone_source"].read_text()
     external_source = required["external_source"].read_text()
+    yuv_converter = required["yuv_converter"].read_text()
     build = required["app_build"].read_text()
     checks = {
         "source_kinds": "PHONE_CAMERA" in contract and "EXTERNAL_CAMERA" in contract,
         "timestamp_field": "captureTsMs" in contract and "captureTsMs" in phone_source,
+        "camera_yuv_to_rgb": "Yuv420RgbConverter.convert" in phone_source and "data class RgbFrame" in yuv_converter,
         "drop_field": "droppedSinceLast" in contract and "droppedSinceLast" in phone_source,
         "external_push_validation": "fun push" in external_source and "validator.validate" in external_source,
         "camera_x": "androidx.camera:camera-camera2" in build,
