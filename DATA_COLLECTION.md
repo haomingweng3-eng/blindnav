@@ -86,11 +86,21 @@ python scripts/batch_detect_videos.py \
 
 ### 事件级指标记录
 
+先根据检测报告生成标注模板：
+
+```bash
+python scripts/prepare_annotations.py \
+  runs/video_reports/ annotations/
+```
+
+模板中的 `annotation_complete` 初始为 `false`。人工填写完 `events` 后改成 `true`；未完成模板不会被批量评估器静默计入结果。
+
 检测后只需对每段视频标出有效事件的 `start_frame` 和 `conflict_frame`，例如：
 
 ```json
 {
   "video_id": "V01",
+  "annotation_complete": true,
   "fps": 30,
   "duration_s": 30,
   "events": [

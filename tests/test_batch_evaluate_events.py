@@ -1,6 +1,9 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from scripts.batch_evaluate_events import aggregate_results, render_csv
+from scripts.batch_evaluate_events import aggregate_results, evaluate_directories, render_csv
 
 
 class BatchEvaluateEventsTests(unittest.TestCase):
@@ -71,6 +74,32 @@ class BatchEvaluateEventsTests(unittest.TestCase):
         self.assertIn("video_id,duration_s,event_count", csv_text)
         self.assertIn("V01,30,1,1,1.0,1.5,1.5,0,0.0", csv_text)
         self.assertIn("TOTAL,30,1,1,1.0,1.5,1.5,0,0.0", csv_text)
+
+    def test_reports_incomplete_annotation_without_crashing_batch(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            annotations = root / "annotations"
+            reports = root / "reports"
+            annotations.mkdir()
+            reports.mkdir()
+            (annotations / "V01.json").write_text(
+                json.dumps(
+                    {
+                        "video_id": "V01",
+                        "annotation_complete": False,
+                        "fps": 30,
+                        "duration_s": 10,
+                        "events": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (reports / "V01.json").write_text(json.dumps({"alerts": []}), encoding="utf-8")
+
+            result = evaluate_directories(annotations, reports)
+
+            self.assertEqual(result["videos"], [])
+            self.assertEqual(result["invalid_annotations"][0]["video_id"], "V01")
 
 
 if __name__ == "__main__":

@@ -44,12 +44,19 @@ def evaluate_directories(annotations_dir, reports_dir):
     reports_dir = Path(reports_dir)
     results = []
     missing_reports = []
+    invalid_annotations = []
     for annotation_path in sorted(annotations_dir.glob("*.json")):
         report_path = reports_dir / annotation_path.name
         if not report_path.exists():
             missing_reports.append(annotation_path.stem)
             continue
-        result = evaluate_event_files(annotation_path, report_path)
+        try:
+            result = evaluate_event_files(annotation_path, report_path)
+        except (ValueError, OSError, json.JSONDecodeError) as exc:
+            invalid_annotations.append(
+                {"video_id": annotation_path.stem, "annotation": str(annotation_path), "error": str(exc)}
+            )
+            continue
         result["annotation"] = str(annotation_path)
         result["report"] = str(report_path)
         results.append(result)
@@ -57,6 +64,7 @@ def evaluate_directories(annotations_dir, reports_dir):
         "summary": aggregate_results(results),
         "videos": results,
         "missing_reports": missing_reports,
+        "invalid_annotations": invalid_annotations,
     }
 
 
@@ -101,7 +109,7 @@ def main():
     if args.csv_output:
         Path(args.csv_output).write_text(render_csv(result), encoding="utf-8")
     print(text)
-    raise SystemExit(1 if result["missing_reports"] else 0)
+    raise SystemExit(1 if result["missing_reports"] or result["invalid_annotations"] else 0)
 
 
 if __name__ == "__main__":

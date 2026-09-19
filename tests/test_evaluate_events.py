@@ -4,9 +4,23 @@ from scripts.evaluate_events import evaluate_event_report
 
 
 class EvaluateEventsTests(unittest.TestCase):
+    def test_incomplete_template_is_rejected(self):
+        with self.assertRaises(ValueError):
+            evaluate_event_report(
+                {
+                    "video_id": "V01",
+                    "annotation_complete": False,
+                    "fps": 30,
+                    "duration_s": 10,
+                    "events": [],
+                },
+                {"alerts": []},
+            )
+
     def test_matches_alerts_and_calculates_lead_time(self):
         annotation = {
             "video_id": "V01",
+            "annotation_complete": True,
             "fps": 10,
             "duration_s": 30,
             "events": [
@@ -38,6 +52,7 @@ class EvaluateEventsTests(unittest.TestCase):
     def test_p10_lead_time_uses_conservative_nearest_rank(self):
         annotation = {
             "video_id": "V03",
+            "annotation_complete": True,
             "fps": 10,
             "duration_s": 30,
             "events": [
@@ -65,6 +80,7 @@ class EvaluateEventsTests(unittest.TestCase):
     def test_alert_outside_event_window_does_not_match(self):
         annotation = {
             "video_id": "V02",
+            "annotation_complete": True,
             "fps": 30,
             "duration_s": 10,
             "events": [
@@ -85,7 +101,13 @@ class EvaluateEventsTests(unittest.TestCase):
         self.assertEqual(result["false_alert_count"], 1)
 
     def test_no_events_has_undefined_recall_but_measurable_false_rate(self):
-        annotation = {"video_id": "V11", "fps": 20, "duration_s": 60, "events": []}
+        annotation = {
+            "video_id": "V11",
+            "annotation_complete": True,
+            "fps": 20,
+            "duration_s": 60,
+            "events": [],
+        }
         result = evaluate_event_report(
             annotation,
             {"alerts": [{"frame": 10, "cls": "person"}, {"frame": 20, "cls": "car"}]},

@@ -16,6 +16,8 @@ def _validate_annotation(annotation):
         raise ValueError("annotation 必须是对象")
     _require_positive_number(annotation.get("fps"), "fps")
     _require_positive_number(annotation.get("duration_s"), "duration_s")
+    if annotation.get("annotation_complete") is False:
+        raise ValueError("annotation_complete 为 false，必须先完成人工事件标注")
     events = annotation.get("events")
     if not isinstance(events, list):
         raise ValueError("events 必须是数组")

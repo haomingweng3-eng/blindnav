@@ -16,6 +16,7 @@ runs/video_reports/V01.json
 ```json
 {
   "video_id": "V01",
+  "annotation_complete": true,
   "fps": 30,
   "duration_s": 30,
   "events": [
@@ -33,6 +34,7 @@ runs/video_reports/V01.json
 字段约定：
 
 - `start_frame`：目标进入评估范围的帧，不是视频第一帧。
+- `annotation_complete`：只有人工确认 `events` 已填写完毕后才设为 `true`；自动生成的模板为 `false`。
 - `conflict_frame`：人工判断最晚仍应预警的帧；提前量为 `(conflict_frame - 首个有效告警帧) / fps`。
 - `target_class`：使用报告里的类别名；不确定时可写 `null` 或 `any`，但应在 `notes` 说明原因。
 - 没有风险事件的视频保留空数组 `"events": []`，不能省略文件。

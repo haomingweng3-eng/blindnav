@@ -110,11 +110,21 @@ python scripts/calibrate_reports.py risk_report.json \
 
 ## 真实事件指标
 
+检测报告生成后，先自动创建待填写的事件标注模板：
+
+```bash
+python scripts/prepare_annotations.py \
+  runs/video_reports/ annotations/
+```
+
+模板默认标记 `annotation_complete: false`，在人工填写 `events` 并确认后改为 `true`；评估器会拒绝未完成模板，避免把空事件误当成无风险视频。
+
 视频检测完成后，用一个轻量 JSON 记录每个有效事件的开始帧和冲突帧：
 
 ```json
 {
   "video_id": "V01",
+  "annotation_complete": true,
   "fps": 30,
   "duration_s": 30,
   "events": [
