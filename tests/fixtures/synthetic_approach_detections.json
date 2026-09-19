@@ -1,0 +1,13 @@
+{
+  "width": 640,
+  "height": 640,
+  "records": [
+    {"frame": 1, "track_id": "bike_0", "cls": "bicycle", "conf": 0.90, "box": [290, 270, 350, 330]},
+    {"frame": 2, "track_id": "bike_0", "cls": "bicycle", "conf": 0.90, "box": [287, 267, 353, 333]},
+    {"frame": 3, "track_id": "bike_0", "cls": "bicycle", "conf": 0.91, "box": [283.5, 263.5, 356.5, 336.5]},
+    {"frame": 4, "track_id": "bike_0", "cls": "bicycle", "conf": 0.92, "box": [279, 259, 361, 341]},
+    {"frame": 5, "track_id": "bike_0", "cls": "bicycle", "conf": 0.93, "box": [273.5, 253.5, 366.5, 346.5]},
+    {"frame": 6, "track_id": "bike_0", "cls": "bicycle", "conf": 0.94, "box": [267, 247, 373, 353]},
+    {"frame": 7, "track_id": "bike_0", "cls": "bicycle", "conf": 0.95, "box": [259.5, 239.5, 380.5, 360.5]}
+  ]
+}

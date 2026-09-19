@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Runtime outputs and local experiments
+runs/
+*.log
+
+# Raw/private media and generated datasets
+data/raw/
+data/processed/
+*.mp4
+*.mov
+*.m4v
+*.avi
+*.mkv
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/

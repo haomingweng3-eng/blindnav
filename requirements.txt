@@ -1,0 +1,7 @@
+# Apple Silicon / Python 3.11 baseline used by the current project environment.
+torch==2.14.0
+torchvision==0.29.0
+ultralytics==8.4.152
+opencv-python==5.0.0.93
+onnx==1.22.0
+lap>=0.5.12
