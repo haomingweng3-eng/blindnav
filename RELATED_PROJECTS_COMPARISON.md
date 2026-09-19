@@ -79,3 +79,25 @@
 - [MIT Wearable Blind Navigation](https://www.csail.mit.edu/research/wearable-blind-navigation)
 - [Motor Focus](https://arxiv.org/abs/2404.17031)
 - [OpenGlass](https://github.com/OpenSQZ/OpenGlass)
+
+## 对 AI-FanGe Issues 的二次审查
+
+Issue #17 的五点建议很有价值，但优先级不能照单全收。它们来自使用者和复现者的真实反馈，尤其能暴露“演示能跑”和“长期可用”之间的差距；例如该仓库还有声音卡顿、重复初始化、交通灯误检/漏检和分割性能等公开问题。
+
+| 建议 | 判断 | 本项目决策 |
+|---|---|---|
+| 摄像头放脖子/胸口下方 | 值得做形态实验；胸口更稳定、可容纳更大电池和手机支架，但会改变视野、俯角和隐私边界 | **P0 形态对比**：手持、胸挂、颈下三种只比较稳定性/视野/遮挡，不立即冻结外壳 |
+| 手机本地模型、避免云端 | 方向正确；安全告警不能依赖网络。Issue #14 也出现了地区 API 不可用的问题 | **P0**：安全检测、追踪和风险在手机本地；云端只允许作为非关键的场景描述 |
+| 双摄、深度或 SLAM | 技术上有帮助，但会引入标定、同步、功耗和端侧算力成本；SLAM 也不等于碰撞预测 | **P2**：先用单摄 + 光流/IMU 自运动补偿；若误报仍受限，再评估双目/ToF |
+| 地图导航或常走路线模型 | 高层路线导航有价值，但“给盲人常走的路预训练”涉及数据隐私、泛化和样本量，不能作为短期技术壁垒 | **P1**：接入成熟地图 SDK 做路线；不训练个人路线模型 |
+| 与红绿灯等 IoT 互联 | 长期可扩展，但依赖道路基础设施和标准；不能在基础设施缺失时影响安全判断 | **P3**：只做未来扩展接口，不放入当前 MVP，也不输出“可以安全过街”的自动决策 |
+
+### Issue 中最值得吸收的工程教训
+
+- **声音卡顿不是小问题**：反馈必须有队列、短提示音优先、TTS 非关键路径和可测的播放延迟；不要在危险链路里等待云端语音。
+- **交通灯不能只靠单帧 YOLO**：必须结合信号灯类别、时间稳定性、视角和行人/车辆信号关系；当前项目暂不承担过街安全决策。
+- **模型效果取决于领域数据**：Issue #23 对斑马线分割效果的质疑说明，公开数据集验证不能替代目标视角测试。
+- **生命周期必须幂等**：Issue #16 的重复初始化问题对应我们未来 Android 的相机、推理线程、音频播放器和导航状态机；启动、暂停、恢复、销毁都要可重复执行。
+- **空间音频可以作为低成本加分项**：Issue #12 的“用立体声描绘画面”适合先做左右方向短音，不必一开始引入完整 3D 音频引擎。
+
+Issue 来源：[#17](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/17)、[#20](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/20)、[#23](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/23)、[#24](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/24)、[#14](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/14)、[#16](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/16)、[#12](https://github.com/AI-FanGe/OpenAIglasses_for_Navigation/issues/12)。
