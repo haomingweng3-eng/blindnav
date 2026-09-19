@@ -116,8 +116,18 @@ def decode_yolov8(output, original_shape, ratio, pad, conf_threshold=0.25, iou_t
 
 def infer_image(image, model_path, conf_threshold=0.25, iou_threshold=0.7, providers=None):
     """运行一次 ONNX 推理并返回检测列表；Android 可据此移植输入/输出契约。"""
+    session = create_session(model_path, providers=providers)
+    return infer_with_session(image, session, conf_threshold, iou_threshold)
+
+
+def create_session(model_path, providers=None):
+    return ort.InferenceSession(
+        str(Path(model_path)), providers=providers or ["CPUExecutionProvider"]
+    )
+
+
+def infer_with_session(image, session, conf_threshold=0.25, iou_threshold=0.7):
     tensor, ratio, pad = letterbox(image)
-    session = ort.InferenceSession(str(Path(model_path)), providers=providers or ["CPUExecutionProvider"])
     input_name = session.get_inputs()[0].name
     output = session.run(None, {input_name: tensor})[0]
     return decode_yolov8(output, image.shape, ratio, pad, conf_threshold, iou_threshold)

@@ -190,6 +190,15 @@ python scripts/benchmark_pipeline.py input.mp4 --device mps -o benchmark.json
 
 性能结果必须注明设备、模型、分辨率、视频帧率和是否排除预热帧；基准同时输出 P95 逐帧延迟及是否达到 200ms 工程门槛。当前 Mac 合成视频测得约 30 FPS，不能外推到安卓骁龙设备。
 
+ONNX 候选模型可单独测量推理层：
+
+```bash
+python scripts/benchmark_onnx.py models/yolov8n.onnx \
+  --frames 30 --warmup 5 -o runs/onnx_benchmark.json
+```
+
+该结果只覆盖 ONNX Runtime 模型推理，不包含 CameraX、ByteTrack、风险引擎或系统反馈延迟。
+
 ## 当前边界
 
 - 阈值扫描结果来自参数化仿真，不是真实道路准确率。

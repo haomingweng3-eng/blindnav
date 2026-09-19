@@ -187,6 +187,7 @@
 - 新增 `scripts/check_environment.py`，离线核验 `requirements.txt` 中依赖是否存在并满足版本约束；当前 pt 环境 7 项依赖均通过。
 - 已将 YOLOv8n 导出为 `models/yolov8n.onnx`，固定输入 `1×3×640×640`、opset 12，并通过 ONNX checker 与 CPU 空白帧推理回归；这仍不是 Android Runtime 或骁龙真机验证。
 - 新增 `scripts/onnx_inference.py`，冻结 ONNX 的 letterbox、输出解码和按类别 NMS 参考行为，并用真实模型与合成框测试；可作为 Android 移植的数值对照基线。
+- 新增 `scripts/benchmark_onnx.py`；当前 Apple M1 CPU 实测 15 帧/3 帧预热，ONNX Runtime 平均 38.57ms、P95 40.38ms、25.93 FPS，仅代表模型推理层，不代表安卓真机端到端性能。
 - 已初始化 Git 仓库并建立基线提交 `606a613`；`.gitignore` 排除了原始视频和运行输出，便于后续追踪实验版本。
 - 告警语音支持左侧/前方/右侧三级方向词，不播报未经标定的精确距离。
 - `live_demo.py` 支持 `--headless`、`--max-frames`、`--device`、`--input-fps`、`--looming-threshold` 和 `--report`，可以用 rawvideo stdin 做无摄像头权限的回归测试并保存 JSON 证据。

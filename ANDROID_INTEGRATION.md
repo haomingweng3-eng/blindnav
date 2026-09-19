@@ -6,6 +6,8 @@
 
 Python 参考适配器位于 `scripts/onnx_inference.py`，冻结了 letterbox、RGB/CHW/归一化、YOLOv8 输出解码和按类别 NMS 的行为。Android 端移植时应先用同一张输入图对比框坐标和类别，再接入风险引擎；该适配器不是 Android API 实现。
 
+模型推理层基准命令为 `python scripts/benchmark_onnx.py models/yolov8n.onnx`。它只测 ONNX Runtime，不代表 CameraX→检测→追踪→反馈的端到端延迟。
+
 ## 1. 数据流
 
 ```text

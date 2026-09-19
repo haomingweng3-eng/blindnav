@@ -9,4 +9,6 @@
 
 ONNX 导出参数：输入 `640×640`、固定 batch `1`、opset `12`、未启用 simplify。当前已用 ONNX checker 和 Ultralytics + ONNX Runtime CPU 对空白帧做过加载/推理回归；这不等于 Android 真机性能或目标类别召回率验证。
 
+参考基准命令：`python scripts/benchmark_onnx.py models/yolov8n.onnx --frames 30 --warmup 5`。任何性能数字都必须同时记录 CPU/设备、预热帧数和是否只测模型推理。
+
 模型来源、许可证和公开发布边界在正式提交前仍需按所使用的 Ultralytics 版本和赛事要求复核；不要把模型文件本身的可加载性表述成已完成产品化授权。

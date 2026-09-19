@@ -13,6 +13,7 @@
 - [ ] 运行 `python scripts/evaluate_risk_engine.py`，保留阈值扫描输出。
 - [ ] 用一份可公开使用的视频或检测框 JSON 跑 `detect_video.py` / `replay_detections.py`，保存原始 JSON 报告。
 - [ ] 若展示性能，使用 `benchmark_pipeline.py`，同时记录设备、模型、分辨率、输入 FPS、预热帧数。
+- [ ] 若展示 ONNX 端侧候选，使用 `benchmark_onnx.py`，并明确这是当前电脑的 ONNX Runtime 推理，不是安卓真机结果。
 - [ ] 检查所有对外材料没有把合成数据写成真实道路准确率。
 
 ## B. 答辩现场演示顺序
