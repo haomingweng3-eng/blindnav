@@ -11,4 +11,4 @@ ONNX 导出参数：输入 `640×640`、固定 batch `1`、opset `12`、未启�
 
 参考基准命令：`python scripts/benchmark_onnx.py models/yolov8n.onnx --frames 30 --warmup 5`。任何性能数字都必须同时记录 CPU/设备、预热帧数和是否只测模型推理。
 
-模型来源、许可证和公开发布边界在正式提交前仍需按所使用的 Ultralytics 版本和赛事要求复核；不要把模型文件本身的可加载性表述成已完成产品化授权。
+Ultralytics 当前官方许可说明见：[Ultralytics License](https://www.ultralytics.com/license)。页面将 AGPL-3.0 作为开源路径，并说明不希望公开完整项目、或要做闭源/嵌入式产品时需要另行确认 Enterprise License。这里仅记录许可风险，不构成法律意见；比赛提交、公开仓库和未来产品化应分别复核适用条款。不要把模型文件本身的可加载性表述成已完成产品化授权。
