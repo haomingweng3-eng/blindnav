@@ -83,7 +83,7 @@
 - **OpenCV直连摄像头被macOS TCC拦截**（PermissionError），改用ffmpeg管道喂帧
 - ffmpeg采集1280x720 rawvideo → Python后台线程读流 → deque(maxlen=1)只保留最新帧 → YOLO MPS推理 → cv2.imshow显示
 - 历史实测：CPU模式23.3fps（卡），MPS模式**66.8fps**（流畅）；原始视频和报告当前不在工作区，不能视为本轮复现结果
-- 历史记录：真实画面450帧检出person 682次；当前没有对应原始视频，不能用于真实场景准确率宣称
+- 已重新跑通桌面目录中的 `/Users/mima0000/Desktop/盲行导航/data/raw/test_cam.mp4`：1280×720、30 FPS、450 帧，检出 `person` 633 条记录、6 个轨迹、0 次告警；该视频是室内自拍测试画面，只能作为检测/追踪回归，不能用于真实道路准确率或电动车场景指标。
 - **注意**：640x480分辨率FaceTime摄像头不支持，会卡死采集
 
 ### 已验证结论
