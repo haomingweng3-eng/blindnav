@@ -1,5 +1,25 @@
 # 视障出行动态预判与主动导航
 
+## 队友入口：先看这里
+
+如果你负责模型、数据或训练，先读 [MODEL_TRAINING_HANDOFF.md](MODEL_TRAINING_HANDOFF.md)。你的主任务是：
+
+```text
+公开 ScooterDet 数据 → 统一四类标签 → 训练 YOLOv8n 基线
+→ 标注本地胸前视角视频 → 微调 → 用独立本地视频测试
+```
+
+必须交付：数据集配置、训练/验证/测试划分、`best.pt`、训练日志、每类 precision/recall/mAP、预测可视化和失败说明。不要把未画框的视频帧直接当检测训练数据；“目标接近但最后避开”要标为 `near_miss`，不能当成无事件。
+
+如果你负责 Android，先读 [ANDROID_HANDOFF.md](ANDROID_HANDOFF.md)。如果你负责真实视频和事件标注，先读 [DATA_COLLECTION.md](DATA_COLLECTION.md) 和 [VIDEO_ARCHIVE.md](VIDEO_ARCHIVE.md)。
+
+克隆后第一步：
+
+```bash
+git clone https://github.com/haomingweng3-eng/blindnav.git
+cd blindnav
+```
+
 当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
 
 当前代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 端规划为手机摄像头默认运行、胸挂式独立摄像头可选增强输入；目前尚未完成 CameraX、外接摄像头传输和安卓真机验证。
