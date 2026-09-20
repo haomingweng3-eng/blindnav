@@ -21,8 +21,11 @@ def main() -> int:
         "inference_pipeline": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/InferencePipeline.kt",
         "model_asset": ANDROID / "app/src/main/assets/yolov8n.onnx",
         "external_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/ExternalFrameSource.kt",
+        "feedback_action": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackAction.kt",
+        "feedback_dispatcher": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackDispatcher.kt",
         "frame_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/FrameSourceTest.kt",
         "external_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/ExternalFrameSourceTest.kt",
+        "feedback_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackActionTest.kt",
     }
     missing = [name for name, path in required.items() if not path.is_file()]
     if missing:
@@ -36,6 +39,8 @@ def main() -> int:
     yolo_decoder = required["yolo_decoder"].read_text()
     onnx_detector = required["onnx_detector"].read_text()
     inference_pipeline = required["inference_pipeline"].read_text()
+    feedback_action = required["feedback_action"].read_text()
+    feedback_dispatcher = required["feedback_dispatcher"].read_text()
     build = required["app_build"].read_text()
     checks = {
         "source_kinds": "PHONE_CAMERA" in contract and "EXTERNAL_CAMERA" in contract,
@@ -51,6 +56,12 @@ def main() -> int:
         "camera_permission": "android.permission.CAMERA" in required["manifest"].read_text(),
         "tests_cover_rewind": "rejectsFrameNumberRewind" in required["frame_tests"].read_text(),
         "external_tests_cover_rewind": "reportsRewoundFrame" in required["external_tests"].read_text(),
+        "feedback_contract_validation": "fromContract" in feedback_action and "malformed input" in feedback_action,
+        "feedback_hardware_dispatch": all(
+            token in feedback_dispatcher
+            for token in ("Vibrator", "ToneGenerator", "TextToSpeech", "SPEECH_DEDUPE_WINDOW_MS")
+        ),
+        "feedback_tests_present": "malformedContractIsRejected" in required["feedback_tests"].read_text(),
     }
     failed = [name for name, passed in checks.items() if not passed]
     result = {"passed": not failed, "checks": checks, "failed": failed}

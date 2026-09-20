@@ -10,7 +10,7 @@
 
 ## 当前限制
 
-仓库已提交 Gradle Wrapper、CameraX 输入、ONNX Runtime 推理和 JVM 单元测试源码；但当前开发机没有可用 JDK，因而本机尚未声称 APK 或 Android 单元测试编译通过。没有 Android SDK/JDK 时，可以先运行仓库根目录的静态检查：
+仓库已提交 Gradle Wrapper、CameraX 输入、ONNX Runtime 推理、反馈执行层和 JVM 单元测试源码。当前已在 OpenJDK 17 下完成 `clean test assembleDebug`，构建证据见 [BUILD_REPORT.md](BUILD_REPORT.md)；真机安装、摄像头和端到端延迟仍待验证。没有 Android SDK/JDK 时，可以先运行仓库根目录的静态检查：
 
 ```bash
 python scripts/check_android_contract.py
@@ -23,4 +23,4 @@ python scripts/check_android_contract.py
 ./gradlew assembleDebug
 ```
 
-第一轮真机验证顺序：手机摄像头权限 → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → 固定 JSON 风险回放 → 震动/提示音。当前 `MainActivity` 已接通预览和检测状态显示，但风险 JSON 的 Vibrator/TTS Dispatcher 尚未接入；外接摄像头必须在手机输入路径稳定后再接入。
+第一轮真机验证顺序：手机摄像头权限 → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → 固定 JSON 风险回放 → 震动/提示音。`FeedbackDispatcher` 已实现反馈契约的硬件执行层，但尚未在 `MainActivity` 中接入真实风险 JSON；外接摄像头必须在手机输入路径稳定后再接入。
