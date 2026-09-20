@@ -21,6 +21,7 @@ data/processed/
 .DS_Store
 .idea/
 .vscode/
+.worktrees/
 
 # Android local SDK path
 android/local.properties
