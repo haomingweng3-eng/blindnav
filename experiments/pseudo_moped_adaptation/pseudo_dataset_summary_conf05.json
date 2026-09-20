@@ -1,0 +1,13 @@
+{
+  "source": "/tmp/blindnav-world/prompt_scan.json",
+  "min_conf": 0.5,
+  "images": 172,
+  "boxes": 172,
+  "split_images": {
+    "train": 112,
+    "val": 23,
+    "test": 37
+  },
+  "video_count": 13,
+  "annotation_status": "pseudo_candidate_review_required"
+}

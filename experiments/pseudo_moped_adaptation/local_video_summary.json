@@ -1,0 +1,89 @@
+{
+  "raw_dir": "data/raw",
+  "output_dir": "/tmp/blindnav-pseudo/evidence_local",
+  "model": "models/electric_bicycle_pseudo_yolov8n_320_v1.pt",
+  "looming_threshold": 0.06,
+  "video_count": 13,
+  "processed": [
+    {
+      "video": "data/raw/14741432fd33a5eddbff130427e6f1fd.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/14741432fd33a5eddbff130427e6f1fd.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/2233eeefc8eca0e81e8a40898c43e9ec.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/2233eeefc8eca0e81e8a40898c43e9ec.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/325dcdde4f5ead4880f489109a44425f.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/325dcdde4f5ead4880f489109a44425f.json",
+      "track_count": 1,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/38a01edebf1e336e5bf3e81dc88aaff0.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/38a01edebf1e336e5bf3e81dc88aaff0.json",
+      "track_count": 1,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/5a045ebab32fba3fb1e41b8fd1c540a4.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/5a045ebab32fba3fb1e41b8fd1c540a4.json",
+      "track_count": 1,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/64b7905de41ebc0dbbd3251d563e9d0f.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/64b7905de41ebc0dbbd3251d563e9d0f.json",
+      "track_count": 1,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/6cadf5edaefeec5a42c70ea427bf13f4.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/6cadf5edaefeec5a42c70ea427bf13f4.json",
+      "track_count": 1,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/7d1eda95749c55dd118accf22dee1e65.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/7d1eda95749c55dd118accf22dee1e65.json",
+      "track_count": 1,
+      "alert_count": 1
+    },
+    {
+      "video": "data/raw/ba4d9f70dd3188609245b59bfdb5b151.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/ba4d9f70dd3188609245b59bfdb5b151.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/c106e17d4821ea61a6c570c2fb98555a.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/c106e17d4821ea61a6c570c2fb98555a.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/d58926f8e1c127edda4648e71d5e6bbd.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/d58926f8e1c127edda4648e71d5e6bbd.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/dc686fd6996ba553e1a6e0fe9250b7f2.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/dc686fd6996ba553e1a6e0fe9250b7f2.json",
+      "track_count": 0,
+      "alert_count": 0
+    },
+    {
+      "video": "data/raw/e5cf50283ef262fdb1512c09136d49a7.mp4",
+      "report": "/tmp/blindnav-pseudo/evidence_local/e5cf50283ef262fdb1512c09136d49a7.json",
+      "track_count": 0,
+      "alert_count": 0
+    }
+  ],
+  "failed": [],
+  "ready_for_calibration": true
+}

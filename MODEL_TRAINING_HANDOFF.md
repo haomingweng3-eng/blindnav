@@ -164,6 +164,8 @@ python scripts/open_vocab_detect.py \
 
 输出中的 `candidate_review` 只是候选状态，不能直接转成 YOLO 标签；需要人工确认类别和矩形框后再进入训练集。开放词汇模型只作为标注加速器和横向对照，不作为当前 Android 安全告警模型。
 
+如果需要先验证本地视角适配流程，可以运行 `scripts/build_pseudo_labels.py` 生成明确标记为 `pseudo_candidate_review_required` 的单类实验集，再训练 `models/electric_bicycle_pseudo_yolov8n_320_v1.pt` 的同类学生模型。该实验已归档在 `experiments/pseudo_moped_adaptation/`，只能证明蒸馏流程和工程闭环，不能替代人工标注验收。
+
 为了先快速建立人工复核集，可从 13 段视频各均匀抽取 20 帧：
 
 ```bash

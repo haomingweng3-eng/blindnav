@@ -56,6 +56,8 @@ Android 模型接入和队友执行顺序见 [ANDROID_HANDOFF.md](ANDROID_HANDOF
 
 最新可复现 ScooterDet 四类训练基线见 [BASELINE_REPORT.md](BASELINE_REPORT.md)。该报告包含独立测试结果和失败边界；当前电动车测试召回仍为 0，模型只能作为后续本地数据微调起点。
 
+开放词汇候选和本地视角伪标签适配实验见 [experiments/pseudo_moped_adaptation/README.md](experiments/pseudo_moped_adaptation/README.md)。该模型用于验证本地闭环和标注加速，不等同于人工标注后的真实准确率。
+
 视觉、导航、端侧部署和助盲项目的横向对比见 [RELATED_PROJECTS_COMPARISON.md](RELATED_PROJECTS_COMPARISON.md)。
 
 ## 环境
