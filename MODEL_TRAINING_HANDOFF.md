@@ -159,7 +159,8 @@ python scripts/open_vocab_detect.py \
   /path/to/local-frames/frames_manifest.csv \
   /path/to/local-frames/open_vocab_candidates.json \
   --model models/yolov8s-worldv2.pt \
-  --device mps --chunk-size 32
+  --device mps --chunk-size 32 \
+  --classes moped electric\ bicycle electric\ scooter
 ```
 
 输出中的 `candidate_review` 只是候选状态，不能直接转成 YOLO 标签；需要人工确认类别和矩形框后再进入训练集。开放词汇模型只作为标注加速器和横向对照，不作为当前 Android 安全告警模型。

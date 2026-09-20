@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.build_pseudo_labels import assign_video_splits, box_to_yolo
+from scripts.build_pseudo_labels import assign_video_splits, box_to_yolo, select_candidates
 
 
 class BuildPseudoLabelsTest(unittest.TestCase):
@@ -12,6 +12,15 @@ class BuildPseudoLabelsTest(unittest.TestCase):
         self.assertEqual(set(splits), {"v1", "v2", "v3", "v4", "v5", "v6"})
         self.assertEqual(len(set(splits.values())), 3)
         self.assertEqual(len(set(splits.values()) & {"train"}), 1)
+
+    def test_select_candidates_accepts_public_scan_field(self):
+        scan = {
+            "detections": [
+                {"source_class": "moped", "confidence": 0.8},
+                {"source_class": "person", "confidence": 0.9},
+            ]
+        }
+        self.assertEqual(select_candidates(scan, "moped", 0.7), [scan["detections"][0]])
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@ from typing import Iterator, Sequence
 
 
 DEFAULT_CLASSES = [
+    "moped",
     "electric bicycle",
     "electric scooter",
     "bicycle",
@@ -75,6 +76,7 @@ def scan_manifest(
                         "timestamp_s": float(row["timestamp_s"]),
                         "image": row["image"],
                         "source_class": source_class,
+                        "term": source_class,
                         "canonical_class": canonical_class(source_class),
                         "confidence": round(float(score), 6),
                         "box": [round(float(value), 2) for value in box],
@@ -100,6 +102,7 @@ def main() -> None:
     parser.add_argument("--conf", type=float, default=0.05)
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--chunk-size", type=int, default=32)
+    parser.add_argument("--classes", nargs="+", default=DEFAULT_CLASSES)
     args = parser.parse_args()
 
     with args.manifest.open(newline="", encoding="utf-8") as handle:
@@ -107,6 +110,7 @@ def main() -> None:
     result = scan_manifest(
         rows,
         model_path=args.model,
+        classes=args.classes,
         device=args.device,
         conf=args.conf,
         imgsz=args.imgsz,

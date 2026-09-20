@@ -36,15 +36,20 @@ def assign_video_splits(video_ids: list[str]) -> dict[str, str]:
     }
 
 
-def build_dataset(scan_path: str | Path, output_dir: str | Path, min_conf: float = 0.7) -> dict:
+def select_candidates(scan: dict, source_term: str, min_conf: float) -> list[dict]:
+    return [
+        detection
+        for detection in scan.get("detections", [])
+        if detection.get("term", detection.get("source_class")) == source_term
+        and float(detection["confidence"]) >= min_conf
+    ]
+
+
+def build_dataset(scan_path: str | Path, output_dir: str | Path, min_conf: float = 0.7, source_term: str = "moped") -> dict:
     import cv2
 
     scan = json.loads(Path(scan_path).read_text(encoding="utf-8"))
-    candidates = [
-        detection
-        for detection in scan["detections"]
-        if detection.get("term") == "moped" and float(detection["confidence"]) >= min_conf
-    ]
+    candidates = select_candidates(scan, source_term, min_conf)
     by_image = defaultdict(list)
     for detection in candidates:
         by_image[detection["image"]].append(detection)
@@ -77,7 +82,7 @@ def build_dataset(scan_path: str | Path, output_dir: str | Path, min_conf: float
                 "video_id": first["video_id"],
                 "frame": first["frame"],
                 "split": split,
-                "source_term": "moped",
+                "source_term": source_term,
                 "min_conf": min_conf,
                 "annotation_status": "pseudo_candidate_review_required",
             }
@@ -96,6 +101,7 @@ def build_dataset(scan_path: str | Path, output_dir: str | Path, min_conf: float
     summary = {
         "source": str(scan_path),
         "min_conf": min_conf,
+        "source_term": source_term,
         "images": len(manifest_rows),
         "boxes": len(candidates),
         "split_images": dict(counts),
@@ -111,8 +117,9 @@ def main() -> None:
     parser.add_argument("scan_json", type=Path)
     parser.add_argument("output_dir", type=Path)
     parser.add_argument("--min-conf", type=float, default=0.7)
+    parser.add_argument("--source-term", default="moped")
     args = parser.parse_args()
-    print(json.dumps(build_dataset(args.scan_json, args.output_dir, args.min_conf), ensure_ascii=False, indent=2))
+    print(json.dumps(build_dataset(args.scan_json, args.output_dir, args.min_conf, args.source_term), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

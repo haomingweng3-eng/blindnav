@@ -41,11 +41,14 @@
 python scripts/open_vocab_detect.py \
   /path/to/local-frames/frames_manifest.csv \
   /tmp/open_vocab_candidates.json \
-  --model models/yolov8s-worldv2.pt --device mps --chunk-size 32
+  --model models/yolov8s-worldv2.pt --device mps --chunk-size 32 --conf 0.03 \
+  --classes "electric bicycle" "electric scooter" "electric bike" e-bike \
+            moped scooter motorcycle "person riding a scooter" \
+            "person riding a bicycle"
 
 python scripts/build_pseudo_labels.py \
   /tmp/open_vocab_candidates.json \
-  /tmp/blindnav-pseudo --min-conf 0.70
+  /tmp/blindnav-pseudo --source-term moped --min-conf 0.70
 
 yolo detect train \
   model=models/yolov8n.pt \
