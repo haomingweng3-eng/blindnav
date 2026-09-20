@@ -20,6 +20,8 @@ git clone https://github.com/haomingweng3-eng/blindnav.git
 cd blindnav
 ```
 
+公开 ScooterDet 转换使用 `scripts/prepare_scooterdet.py`；本地视频抽帧使用 `scripts/extract_video_frames.py`。两者生成的数据目录都应放在仓库外，详细参数和验收要求见模型训练交接文档。
+
 当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
 
 当前代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 端规划为手机摄像头默认运行、胸挂式独立摄像头可选增强输入；目前尚未完成 CameraX、外接摄像头传输和安卓真机验证。
@@ -51,6 +53,8 @@ Android 模型接入和队友执行顺序见 [ANDROID_HANDOFF.md](ANDROID_HANDOF
 多段视频可以用 `python scripts/batch_detect_videos.py --raw-dir data/raw --output-dir runs/video_reports --device mps` 一次处理。
 
 外部公开数据集的实际抽样结果见 [EXTERNAL_DATASET_TEST.md](EXTERNAL_DATASET_TEST.md)。
+
+最新可复现 ScooterDet 四类训练基线见 [BASELINE_REPORT.md](BASELINE_REPORT.md)。该报告包含独立测试结果和失败边界；当前电动车测试召回仍为 0，模型只能作为后续本地数据微调起点。
 
 视觉、导航、端侧部署和助盲项目的横向对比见 [RELATED_PROJECTS_COMPARISON.md](RELATED_PROJECTS_COMPARISON.md)。
 

@@ -124,6 +124,17 @@
 
 这一步的作用是验证训练流程，不是证明本项目真实场景效果。
 
+仓库已经提供可复现转换器。解压数据后执行：
+
+```bash
+python scripts/prepare_scooterdet.py \
+  /path/to/Mixed \
+  /path/to/prepared-scooterdet \
+  --max-gap 10 --seed 20260919
+```
+
+脚本会生成 `data.yaml`、`split_manifest.csv` 和 `summary.json`。划分单位是连续帧组，而不是单张图片；最大的电动车连续组保留在训练集，验证集和测试集各保留独立电动车组。
+
 ### 阶段 B：加入本地胸前视角
 
 1. 从本地视频抽帧并人工画框。
@@ -131,6 +142,15 @@
 3. 先使用公开数据训练出的权重，再用本地训练集微调。
 4. 用本地验证集调置信度阈值，不要用测试集调参。
 5. 最后只在本地测试视频上评估。
+
+本地视频可以先按固定间隔抽成待标注帧：
+
+```bash
+python scripts/extract_video_frames.py \
+  data/raw /path/to/local-frames --stride 5
+```
+
+输出的 `frames_manifest.csv` 中所有图片初始状态都是 `unlabeled`。只有完成人工框标注后才能加入检测训练集；抽帧工具不会生成伪标签。
 
 ### 阶段 C：与风险引擎联调
 

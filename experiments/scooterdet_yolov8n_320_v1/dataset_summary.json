@@ -1,0 +1,25 @@
+{
+  "source_dir": "/tmp/blindnav-external/scooterdet/extracted/Mixed",
+  "output_dir": "/tmp/blindnav-external/scooterdet/prepared-v2",
+  "class_names": [
+    "electric_bicycle",
+    "person",
+    "bicycle",
+    "motorcycle"
+  ],
+  "images_total": 2013,
+  "groups_total": 79,
+  "images_by_split": {
+    "train": 1611,
+    "test": 201,
+    "val": 201
+  },
+  "boxes_by_class": {
+    "person": 1272,
+    "electric_bicycle": 49,
+    "bicycle": 98,
+    "motorcycle": 36
+  },
+  "max_gap": 10,
+  "seed": 20260919
+}
