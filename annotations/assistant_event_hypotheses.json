@@ -1,0 +1,73 @@
+{
+  "status": "assistant_visual_prelabel_requires_human_confirmation",
+  "source": "manual inspection of uniformly sampled local frames; not ground truth",
+  "notes": "Do not replace annotations/*.json automatically. User previously described the clips as safe-distance; these entries only identify clips worth checking for near_miss because the target approaches and then passes/avoids.",
+  "hypotheses": [
+    {
+      "video_id": "5a045ebab32fba3fb1e41b8fd1c540a4",
+      "event_type": "near_miss_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 1,
+      "approx_closest_frame": 248,
+      "approx_end_frame": 248,
+      "path_relation": "approaching_front",
+      "confidence": "medium",
+      "reason": "Rider remains on the central approach corridor and becomes large in the final frames; confirm whether the path was actually conflict-free from the rider's intended motion."
+    },
+    {
+      "video_id": "64b7905de41ebc0dbbd3251d563e9d0f",
+      "event_type": "near_miss_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 1,
+      "approx_closest_frame": 100,
+      "approx_end_frame": 152,
+      "path_relation": "approaching_then_passing_right",
+      "confidence": "medium",
+      "reason": "Rider approaches the camera and passes very close on the right side; visual perspective may overstate distance."
+    },
+    {
+      "video_id": "6cadf5edaefeec5a42c70ea427bf13f4",
+      "event_type": "near_miss_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 80,
+      "approx_closest_frame": 216,
+      "approx_end_frame": 299,
+      "path_relation": "approaching_from_right_then_passing",
+      "confidence": "medium",
+      "reason": "Rider enters from the right, reaches the front corridor, and passes close before leaving the view."
+    },
+    {
+      "video_id": "7d1eda95749c55dd118accf22dee1e65",
+      "event_type": "near_miss_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 1,
+      "approx_closest_frame": 146,
+      "approx_end_frame": 175,
+      "path_relation": "approaching_then_veering_left",
+      "confidence": "high",
+      "reason": "Rider approaches along the center and visibly veers left near the camera; this is the strongest candidate for an avoided conflict."
+    },
+    {
+      "video_id": "2233eeefc8eca0e81e8a40898c43e9ec",
+      "event_type": "safe_pass_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 1,
+      "approx_closest_frame": 106,
+      "approx_end_frame": 207,
+      "path_relation": "lateral_crossing",
+      "confidence": "medium",
+      "reason": "Rider remains on the far side of the roadway and crosses laterally without entering the camera corridor."
+    },
+    {
+      "video_id": "38a01edebf1e336e5bf3e81dc88aaff0",
+      "event_type": "safe_pass_candidate",
+      "target_class": "electric_bicycle",
+      "approx_start_frame": 1,
+      "approx_closest_frame": 1,
+      "approx_end_frame": 211,
+      "path_relation": "same_direction_away",
+      "confidence": "high",
+      "reason": "Rider is ahead in the same direction and continuously recedes; no approach trend is visible."
+    }
+  ]
+}

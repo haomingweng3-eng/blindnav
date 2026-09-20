@@ -47,3 +47,5 @@ python scripts/batch_evaluate_events.py \
   -o runs/video_reports/metrics_summary.json \
   --csv-output runs/video_reports/metrics_summary.csv
 ```
+
+`assistant_event_hypotheses.json` 是基于抽帧的预审核清单，不是已确认真值，也不会自动覆盖同目录下的正式标注。优先复核其中的 `near_miss_candidate`，然后在浏览器审核工具中确认事件和目标框。
