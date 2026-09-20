@@ -152,6 +152,18 @@ python scripts/extract_video_frames.py \
 
 输出的 `frames_manifest.csv` 中所有图片初始状态都是 `unlabeled`。只有完成人工框标注后才能加入检测训练集；抽帧工具不会生成伪标签。
 
+如果人工筛选量较大，可以用开放词汇模型先生成待审核候选框：
+
+```bash
+python scripts/open_vocab_detect.py \
+  /path/to/local-frames/frames_manifest.csv \
+  /path/to/local-frames/open_vocab_candidates.json \
+  --model models/yolov8s-worldv2.pt \
+  --device mps --chunk-size 32
+```
+
+输出中的 `candidate_review` 只是候选状态，不能直接转成 YOLO 标签；需要人工确认类别和矩形框后再进入训练集。开放词汇模型只作为标注加速器和横向对照，不作为当前 Android 安全告警模型。
+
 为了先快速建立人工复核集，可从 13 段视频各均匀抽取 20 帧：
 
 ```bash
