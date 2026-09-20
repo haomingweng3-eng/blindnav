@@ -166,6 +166,31 @@ python scripts/open_vocab_detect.py \
 
 如果需要先验证本地视角适配流程，可以运行 `scripts/build_pseudo_labels.py` 生成明确标记为 `pseudo_candidate_review_required` 的单类实验集，再训练 `models/electric_bicycle_pseudo_yolov8n_320_v1.pt` 的同类学生模型。该实验已归档在 `experiments/pseudo_moped_adaptation/`，只能证明蒸馏流程和工程闭环，不能替代人工标注验收。
 
+### 4.4 本地人工审核页面
+
+仓库提供零依赖的浏览器审核工具。它会显示模型候选框，允许人工补框、选择类别和填写事件类型，并把结果保存为 JSON：
+
+```bash
+python scripts/label_review_server.py \
+  /path/to/local-frames/frames_manifest.csv \
+  --frames-root /path/to/local-frames \
+  --candidates /path/to/open_vocab_candidates.json \
+  --only-candidates \
+  --output /path/to/local-frames/local_review.json
+```
+
+浏览器打开 `http://127.0.0.1:8765/`。黄色框是候选框，红色框是人工框；右键可清空当前人工框。`near_miss` 表示接近但最后避开，`conflict` 表示进入或预计进入行走路径。只有审核完成后，才能把人工框转换为正式 YOLO 标签；`candidate_review` 和伪标签都不能直接当真值。
+
+审核完成后转换为四类 YOLO 数据集：
+
+```bash
+python scripts/review_to_yolo.py \
+  /path/to/local-frames/local_review.json \
+  /path/to/local-reviewed-yolo
+```
+
+转换器会按视频段重新划分 train/val/test，避免相邻视频帧泄漏，并保留事件类型到 `manifest.csv`。
+
 为了先快速建立人工复核集，可从 13 段视频各均匀抽取 20 帧：
 
 ```bash

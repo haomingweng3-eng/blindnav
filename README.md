@@ -58,6 +58,8 @@ Android 模型接入和队友执行顺序见 [ANDROID_HANDOFF.md](ANDROID_HANDOF
 
 开放词汇候选和本地视角伪标签适配实验见 [experiments/pseudo_moped_adaptation/README.md](experiments/pseudo_moped_adaptation/README.md)。该模型用于验证本地闭环和标注加速，不等同于人工标注后的真实准确率。
 
+本地视频人工框和事件审核可直接使用 `scripts/label_review_server.py`，用法和标注口径见 [MODEL_TRAINING_HANDOFF.md](MODEL_TRAINING_HANDOFF.md) 第 4.4 节。
+
 视觉、导航、端侧部署和助盲项目的横向对比见 [RELATED_PROJECTS_COMPARISON.md](RELATED_PROJECTS_COMPARISON.md)。
 
 ## 环境
