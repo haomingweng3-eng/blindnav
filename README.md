@@ -20,7 +20,7 @@ git clone https://github.com/haomingweng3-eng/blindnav.git
 cd blindnav
 ```
 
-公开 ScooterDet 转换使用 `scripts/prepare_scooterdet.py`；本地视频抽帧使用 `scripts/extract_video_frames.py`。两者生成的数据目录都应放在仓库外，详细参数和验收要求见模型训练交接文档。
+公开 ScooterDet 转换使用 `scripts/prepare_scooterdet.py`；本地视频抽帧使用 `scripts/extract_video_frames.py`，人工复核子集使用 `scripts/select_review_frames.py`。三者生成的数据目录都应放在仓库外，详细参数和验收要求见模型训练交接文档。
 
 当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
 

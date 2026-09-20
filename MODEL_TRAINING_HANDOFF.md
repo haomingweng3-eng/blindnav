@@ -152,6 +152,17 @@ python scripts/extract_video_frames.py \
 
 输出的 `frames_manifest.csv` 中所有图片初始状态都是 `unlabeled`。只有完成人工框标注后才能加入检测训练集；抽帧工具不会生成伪标签。
 
+为了先快速建立人工复核集，可从 13 段视频各均匀抽取 20 帧：
+
+```bash
+python scripts/select_review_frames.py \
+  /path/to/local-frames/frames_manifest.csv \
+  /path/to/local-frames/review_manifest.csv \
+  --max-per-video 20
+```
+
+这只生成审核清单，不生成标签。审核人必须在 `review_manifest.csv` 对应图片上补充目标框，并另行填写事件 JSON；均匀抽样不能替代对接近、横穿和遮挡片段的加密抽帧。
+
 ### 阶段 C：与风险引擎联调
 
 训练模型只负责输出稳定检测框。不要在训练阶段修改 `scripts/risk_engine.py` 的阈值来掩盖漏检。
