@@ -168,7 +168,7 @@
 - `scripts/detect_video.py` 和 `scripts/live_demo.py` 均使用 Ultralytics 官方 ByteTrack，不再使用旧的最近中心点匹配。
 - `detect_video.py` 支持将检测、轨迹和告警输出为 JSON。
 - 告警 JSON 已包含平台无关的 `feedback` 策略：低风险短震动、警告提示音加延后语音、危险强震动加危险音和紧急语音；具体 Android API 尚未接入。
-- 已补充 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)，冻结 `feedback` 的 JSON 字段、三档动作策略、去重建议和安卓 Dispatcher 伪代码；工作区当前没有 Android Studio 工程。
+- 已补充 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)，冻结 `feedback` 的 JSON 字段、三档动作策略、去重建议和安卓 Dispatcher 伪代码；Android Gradle 工程已提交到 `android/`，但当前开发机缺 JDK，尚未完成编译和真机验证。
 - 已补充 [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)，提供无真实电动车视频时的三分钟演示顺序、命令、可展示字段和答辩边界口径。
 - 已补充 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)，区分当前可验证证据、现场演示步骤和不能对外宣称的指标。
 - 已补充 [DATA_COLLECTION.md](DATA_COLLECTION.md) 和 `data/collection_manifest.csv`，把最低 12 段真实视频采集拆成可执行场景清单和记录表；当前已登记 13 段用户提供视频。

@@ -24,7 +24,7 @@ cd blindnav
 
 当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
 
-当前代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 端规划为手机摄像头默认运行、胸挂式独立摄像头可选增强输入；目前尚未完成 CameraX、外接摄像头传输和安卓真机验证。
+当前 Python 代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 工程已提交并接通手机 CameraX→RGB→ONNX 检测状态链路；外接摄像头传输、feedback 到 Vibrator/TTS 的 Dispatcher 和安卓真机验证仍未完成。
 
 没有真实视频时的三分钟演示顺序和统一答辩口径见 [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)。
 
@@ -144,7 +144,7 @@ python scripts/detect_video.py input.mp4 risk_report.json 0.04 \
 
 第三个参数是 looming 阈值。脚本使用 Ultralytics 官方 ByteTrack，并输出检测类别、轨迹数量、告警帧和风险特征。
 
-告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。具体 Android 振动器、TTS 和音频 API 尚未接入。安卓端接入边界和字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)；当前仓库没有 Android Studio 工程，先用回放 JSON 做跨模块联调。
+告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。具体 Android 振动器、TTS 和音频 API 尚未接入。安卓端接入边界和字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)；当前先用回放 JSON 做跨模块联调。
 
 检测报告会保留原始 `records`，因此可在不重复运行 YOLO 的情况下扫描阈值：
 
