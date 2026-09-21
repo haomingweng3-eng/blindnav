@@ -49,6 +49,12 @@ def parse_args(argv=None):
         default=0.25,
         help="检测置信度阈值，默认 0.25",
     )
+    parser.add_argument(
+        "--min-approach-area",
+        type=float,
+        default=0.01,
+        help="快速接近告警所需的最小归一化框面积，默认 0.01；需用正向事件重新校准",
+    )
     return parser.parse_args(argv)
 
 
@@ -58,6 +64,7 @@ def process_video(
     looming_threshold=0.06,
     device=None,
     conf=0.25,
+    min_approach_area=0.01,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -128,6 +135,7 @@ def process_video(
         looming_threshold=looming_threshold,
         fps=source_fps,
         reference_fps=30.0,
+        min_approach_area=min_approach_area,
     )
     return {
         "video": str(video_path),
@@ -139,6 +147,7 @@ def process_video(
         "height": video_height,
         "total_frames": total,
         "looming_threshold": looming_threshold,
+        "min_approach_area": min_approach_area,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -153,6 +162,7 @@ def main(argv=None):
         looming_threshold=args.looming_threshold,
         device=args.device,
         conf=args.conf,
+        min_approach_area=args.min_approach_area,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "

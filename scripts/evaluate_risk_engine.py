@@ -135,6 +135,7 @@ def evaluate_detection_records(
     fps=1.0,
     reference_fps=1.0,
     alert_cooldown_frames=30,
+    min_approach_area=0.01,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -171,6 +172,7 @@ def evaluate_detection_records(
                 looming_threshold=looming_threshold,
                 fps=fps,
                 reference_fps=reference_fps,
+                min_approach_area=min_approach_area,
             ),
         )
         box = [float(value) * scale for value in record["box"]]

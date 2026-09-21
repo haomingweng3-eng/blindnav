@@ -34,6 +34,7 @@ class TrackState:
         prediction_frames=5,
         fps=1.0,
         reference_fps=1.0,
+        min_approach_area=0.0,
     ):
         if looming_threshold < 0:
             raise ValueError("looming_threshold must be non-negative")
@@ -43,6 +44,8 @@ class TrackState:
             raise ValueError("prediction_frames must be positive")
         if fps <= 0 or reference_fps <= 0:
             raise ValueError("fps and reference_fps must be positive")
+        if min_approach_area < 0:
+            raise ValueError("min_approach_area must be non-negative")
         self.tid = tid
         self.cls = cls
         self.looming_threshold = float(looming_threshold)
@@ -50,6 +53,7 @@ class TrackState:
         self.prediction_frames = int(prediction_frames)
         self.fps = float(fps)
         self.reference_fps = float(reference_fps)
+        self.min_approach_area = float(min_approach_area)
         self.boxes = []
         self.frame_indices = []
         self.last_alert = -999
@@ -123,10 +127,19 @@ class TrackState:
 
         lvl = LVL_NONE
         reason = ""
-        if looming > self.looming_threshold and path_conflict and close_high:
+        if (
+            looming > self.looming_threshold
+            and path_conflict
+            and a_new_n >= self.min_approach_area
+            and close_high
+        ):
             lvl = LVL_HIGH
             reason = "快速接近且近距离"
-        elif looming > self.looming_threshold and path_conflict:
+        elif (
+            looming > self.looming_threshold
+            and path_conflict
+            and a_new_n >= self.min_approach_area
+        ):
             lvl = LVL_MID
             reason = "快速接近"
         elif abs(lateral) > 0.02 and close_low and path_conflict:
@@ -150,6 +163,7 @@ class TrackState:
             "direction": direction,
             "path_conflict": path_conflict,
             "area_n": round(a_new_n, 4),
+            "min_approach_area": self.min_approach_area,
             "close": close_high,
             "reason": reason,
         }

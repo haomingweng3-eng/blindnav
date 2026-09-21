@@ -79,6 +79,21 @@ class RiskEngineTests(unittest.TestCase):
         self.assertEqual(default_level, LVL_NONE)
         self.assertEqual(sensitive_level, LVL_MID)
 
+    def test_small_approach_is_deferred_until_target_is_large_enough(self):
+        state = TrackState(
+            "bike-small",
+            "bicycle",
+            looming_threshold=0.02,
+            min_approach_area=0.01,
+        )
+        for side in [50, 51, 52, 53, 54, 55, 56]:
+            state.update(centered_box(side))
+
+        level, info = state.assess(frame_idx=7)
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertLess(info["area_n"], info["min_approach_area"])
+
     def test_lateral_drift_is_rate_not_cumulative_displacement(self):
         state = TrackState("person-1", "person")
         centers = [320 - 4 * index for index in range(10)]

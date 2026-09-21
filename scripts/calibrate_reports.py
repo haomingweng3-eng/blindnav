@@ -15,7 +15,7 @@ except ImportError:  # 支持直接执行脚本
 DEFAULT_THRESHOLDS = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10]
 
 
-def calibrate_report_payload(payload, thresholds=DEFAULT_THRESHOLDS):
+def calibrate_report_payload(payload, thresholds=DEFAULT_THRESHOLDS, min_approach_area=0.01):
     """返回每个阈值下的告警摘要；payload 必须含原始 records。"""
     required = {"width", "height", "records"}
     missing = sorted(required - payload.keys())
@@ -39,6 +39,7 @@ def calibrate_report_payload(payload, thresholds=DEFAULT_THRESHOLDS):
             looming_threshold=threshold,
             fps=source_fps,
             reference_fps=reference_fps,
+            min_approach_area=min_approach_area,
         )
         results.append(
             {
@@ -67,6 +68,7 @@ def calibrate_report_payload(payload, thresholds=DEFAULT_THRESHOLDS):
         "fps": source_fps,
         "reference_fps": reference_fps,
         "thresholds": normalized_thresholds,
+        "min_approach_area": min_approach_area,
         "results": results,
         "interpretation": "告警数量和首帧用于调参，不等于真实准确率；需结合人工标注判断误报/漏报。",
     }
@@ -82,13 +84,23 @@ def main():
         default=DEFAULT_THRESHOLDS,
         help="待扫描阈值，默认 0.02 0.03 0.04 0.05 0.06 0.08 0.10",
     )
+    parser.add_argument(
+        "--min-approach-area",
+        type=float,
+        default=0.01,
+        help="快速接近告警最小归一化框面积，默认 0.01",
+    )
     parser.add_argument("-o", "--output", help="输出汇总 JSON")
     args = parser.parse_args()
 
     reports = []
     for report_path in args.reports:
         payload = json.loads(Path(report_path).read_text(encoding="utf-8"))
-        calibrated = calibrate_report_payload(payload, thresholds=args.thresholds)
+        calibrated = calibrate_report_payload(
+            payload,
+            thresholds=args.thresholds,
+            min_approach_area=args.min_approach_area,
+        )
         calibrated["input"] = report_path
         reports.append(calibrated)
 

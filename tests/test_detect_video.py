@@ -25,6 +25,7 @@ class DetectVideoArgumentTests(unittest.TestCase):
         self.assertEqual(args.model, "runs/scooter.pt")
         self.assertEqual(args.device, "mps")
         self.assertEqual(args.conf, 0.2)
+        self.assertEqual(args.min_approach_area, 0.01)
 
     def test_old_positional_form_keeps_defaults(self):
         args = parse_args(["input.mp4", "report.json", "0.06"])
@@ -32,6 +33,7 @@ class DetectVideoArgumentTests(unittest.TestCase):
         self.assertEqual(args.model, "models/yolov8n.pt")
         self.assertIsNone(args.device)
         self.assertEqual(args.conf, 0.25)
+        self.assertEqual(args.min_approach_area, 0.01)
 
 
 if __name__ == "__main__":
