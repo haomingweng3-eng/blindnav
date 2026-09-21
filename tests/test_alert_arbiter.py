@@ -60,6 +60,38 @@ class AlertArbiterTests(unittest.TestCase):
             [(10, "car_1"), (30, "car_3")],
         )
 
+    def test_different_classes_share_the_same_direction_budget(self):
+        arbiter = AlertArbiter(cooldown_frames=30, channel_cooldown_frames=15)
+
+        accepted = arbiter.filter(
+            [
+                alert(10, track_id="car_1", cls="car"),
+                alert(15, track_id="person_1", cls="person"),
+                alert(30, track_id="motorcycle_1", cls="motorcycle"),
+            ]
+        )
+
+        self.assertEqual(
+            [(item["frame"], item["cls"]) for item in accepted],
+            [(10, "car"), (30, "motorcycle")],
+        )
+
+    def test_urgent_alerts_are_not_suppressed_by_direction_budget(self):
+        arbiter = AlertArbiter(cooldown_frames=30, channel_cooldown_frames=15)
+
+        accepted = arbiter.filter(
+            [
+                alert(10, track_id="car_1", level=2),
+                alert(12, track_id="person_1", level=3),
+                alert(13, track_id="motorcycle_1", level=3),
+            ]
+        )
+
+        self.assertEqual(
+            [(item["frame"], item["level"]) for item in accepted],
+            [(10, 2), (12, 3), (13, 3)],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
