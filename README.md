@@ -2,7 +2,7 @@
 
 ## 队友入口：先看这里
 
-如果你负责模型、数据或训练，先读 [MODEL_TRAINING_HANDOFF.md](MODEL_TRAINING_HANDOFF.md)。你的主任务是：
+如果你负责模型、数据或训练，先读 [MODEL_TRAINING_HANDOFF.md](MODEL_TRAINING_HANDOFF.md)。四人近期任务按 [TEAM_TASK_ASSIGNMENT.md](TEAM_TASK_ASSIGNMENT.md) 执行，数据规范见 [DATASET_HANDOFF.md](DATASET_HANDOFF.md)。你的主任务是：
 
 ```text
 公开 ScooterDet 数据 → 统一四类标签 → 训练 YOLOv8n 基线
