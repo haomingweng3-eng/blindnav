@@ -49,6 +49,8 @@ python3 scripts/submission_audit.py
 
 APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 
+拿到手机后，在仓库根目录优先运行 `python scripts/android_smoke_test.py`，它会检查 adb 设备、安装 Debug APK 并启动 `MainActivity`；然后按下面顺序记录真机结果。
+
 ## 真机接手顺序
 
 1. 安装 Debug APK，授予相机权限。

@@ -23,6 +23,14 @@ python scripts/check_android_contract.py
 ./gradlew assembleDebug
 ```
 
+拿到手机并开启 USB 调试后，在仓库根目录执行一键安装/启动检查：
+
+```bash
+python scripts/android_smoke_test.py
+```
+
+脚本要求恰好连接一台状态为 `device` 的 Android 设备；没有设备时会返回 `no_device`，不会把构建成功误报为真机成功。
+
 第一轮真机验证顺序：手机摄像头权限 → 点击“反馈自检”确认震动/提示音/TTS → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → `TemporalRiskEngine` MVP → 固定 JSON 风险回放。`FeedbackReportParser` 和 `FeedbackDispatcher` 已实现报告解析及硬件执行，`MainActivity` 已接入自检和端侧 MVP；正式 ByteTrack/风险仲裁仍需标定。外接摄像头必须在手机输入路径稳定后再接入。
 
 也可以不依赖实时摄像头，直接回放 Python 风险报告验证 Android 反馈链路：
