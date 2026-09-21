@@ -19,4 +19,12 @@
         android:text="BlindNav\n感知模块尚未连接"
         android:textColor="#FFFFFF"
         android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/feedback_test_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:text="反馈自检" />
 </FrameLayout>

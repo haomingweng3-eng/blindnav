@@ -3,6 +3,7 @@ package com.blindnav.mobile
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,12 +11,15 @@ import androidx.core.content.ContextCompat
 import androidx.camera.view.PreviewView
 import com.blindnav.mobile.inference.InferencePipeline
 import com.blindnav.mobile.inference.OnnxYoloDetector
+import com.blindnav.mobile.feedback.FeedbackAction
+import com.blindnav.mobile.feedback.FeedbackDispatcher
 import com.blindnav.mobile.sensing.PhoneCameraFrameSource
 
 /** Minimal shell; camera binding is intentionally kept behind FrameSource. */
 class MainActivity : ComponentActivity() {
     private var cameraSource: PhoneCameraFrameSource? = null
     private var detector: OnnxYoloDetector? = null
+    private var feedbackDispatcher: FeedbackDispatcher? = null
     private var statusText: TextView? = null
     private var previewView: PreviewView? = null
 
@@ -30,6 +34,10 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
         previewView = findViewById(R.id.preview_view)
+        feedbackDispatcher = FeedbackDispatcher(this)
+        findViewById<Button>(R.id.feedback_test_button).setOnClickListener {
+            runFeedbackSelfTest()
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -67,11 +75,25 @@ class MainActivity : ComponentActivity() {
         statusText?.text = text
     }
 
+    private fun runFeedbackSelfTest() {
+        val action = FeedbackAction.fromContract(
+            priority = "warning",
+            vibrationMs = listOf(120, 70, 120),
+            tone = "warning",
+            speech = "BlindNav 反馈自检",
+            speechDelayMs = 250,
+        ) ?: return
+        feedbackDispatcher?.dispatch("self-test", action)
+        showStatus("反馈自检：应出现两段震动、提示音和语音")
+    }
+
     override fun onDestroy() {
         cameraSource?.stop()
         detector?.close()
+        feedbackDispatcher?.close()
         cameraSource = null
         detector = null
+        feedbackDispatcher = null
         previewView = null
         super.onDestroy()
     }

@@ -23,9 +23,11 @@ def main() -> int:
         "external_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/ExternalFrameSource.kt",
         "feedback_action": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackAction.kt",
         "feedback_dispatcher": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackDispatcher.kt",
+        "feedback_parser": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackReportParser.kt",
         "frame_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/FrameSourceTest.kt",
         "external_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/ExternalFrameSourceTest.kt",
         "feedback_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackActionTest.kt",
+        "feedback_parser_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackReportParserTest.kt",
     }
     missing = [name for name, path in required.items() if not path.is_file()]
     if missing:
@@ -41,7 +43,10 @@ def main() -> int:
     inference_pipeline = required["inference_pipeline"].read_text()
     feedback_action = required["feedback_action"].read_text()
     feedback_dispatcher = required["feedback_dispatcher"].read_text()
+    feedback_parser = required["feedback_parser"].read_text()
     build = required["app_build"].read_text()
+    manifest = required["manifest"].read_text()
+    main_activity = (ANDROID / "app/src/main/java/com/blindnav/mobile/MainActivity.kt").read_text()
     checks = {
         "source_kinds": "PHONE_CAMERA" in contract and "EXTERNAL_CAMERA" in contract,
         "timestamp_field": "captureTsMs" in contract and "captureTsMs" in phone_source,
@@ -53,7 +58,8 @@ def main() -> int:
         "drop_field": "droppedSinceLast" in contract and "droppedSinceLast" in phone_source,
         "external_push_validation": "fun push" in external_source and "validator.validate" in external_source,
         "camera_x": "androidx.camera:camera-camera2" in build,
-        "camera_permission": "android.permission.CAMERA" in required["manifest"].read_text(),
+        "camera_permission": "android.permission.CAMERA" in manifest,
+        "vibration_permission": "android.permission.VIBRATE" in manifest,
         "tests_cover_rewind": "rejectsFrameNumberRewind" in required["frame_tests"].read_text(),
         "external_tests_cover_rewind": "reportsRewoundFrame" in required["external_tests"].read_text(),
         "feedback_contract_validation": "fromContract" in feedback_action and "malformed input" in feedback_action,
@@ -61,7 +67,10 @@ def main() -> int:
             token in feedback_dispatcher
             for token in ("Vibrator", "ToneGenerator", "TextToSpeech", "SPEECH_DEDUPE_WINDOW_MS")
         ),
+        "feedback_report_parser": "FeedbackReportParser" in feedback_parser and "optJSONArray" in feedback_parser,
+        "feedback_self_test_wired": "runFeedbackSelfTest" in main_activity and "FeedbackDispatcher" in main_activity,
         "feedback_tests_present": "malformedContractIsRejected" in required["feedback_tests"].read_text(),
+        "feedback_parser_tests_present": "parsesOnlyAlertsWithValidFeedback" in required["feedback_parser_tests"].read_text(),
     }
     failed = [name for name, passed in checks.items() if not passed]
     result = {"passed": not failed, "checks": checks, "failed": failed}

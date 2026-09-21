@@ -42,4 +42,7 @@ dependencies {
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
 
     testImplementation("junit:junit:4.13.2")
+    // Android provides org.json at runtime; this implementation makes the
+    // same parser executable in local JVM unit tests instead of framework stubs.
+    testImplementation("org.json:json:20240303")
 }

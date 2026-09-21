@@ -64,6 +64,13 @@ class FeedbackDispatcher(
         handler.postDelayed(runnable, action.speechDelayMs ?: 0L)
     }
 
+    /** Parses and dispatches every valid action in one Python risk report. */
+    fun dispatchReport(reportJson: String): Int {
+        val parsed = FeedbackReportParser.parse(reportJson)
+        parsed.forEach { dispatch(it.trackId, it.action) }
+        return parsed.size
+    }
+
     private fun playVibration(patternMs: List<Long>) {
         val target = vibrator ?: return
         if (!target.hasVibrator()) return

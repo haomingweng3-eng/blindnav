@@ -16,14 +16,14 @@ cd android
 
 - Android JVM 单元测试：Debug/Release 均通过
 - Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
-- APK 大小：89,510,810 bytes
-- APK SHA-256：`e9f7dda7c7dc2fd1c48339bf96ea9465d77fdc3f7a279e49bf03fe9e811e93b3`
+- APK 大小：89,530,119 bytes
+- APK SHA-256：`870b94d43de5e6fe9afee384230d1717a2ec36a91ed5071accbd88a2d80bd85e`
 - Android 静态契约检查：通过
 
 构建时有两类非阻断提示：Android SDK XML 版本提示，以及 ONNX Runtime/CameraX 原生库无法 strip、因此按原样打包。这两项没有导致构建失败，也不等于真机性能已验证。
 
 ## 尚未完成的验证
 
-当前机器没有连接到可用 Android 真机，因此没有声称 APK 已安装、摄像头权限已授予、CameraX 预览已显示、端侧 FPS/延迟已测量或长时间运行稳定。
+当前机器没有连接到可用 Android 真机，因此没有声称 APK 已安装、摄像头权限已授予、CameraX 预览已显示、反馈自检已实际发声/振动、端侧 FPS/延迟已测量或长时间运行稳定。
 
 拿到测试机后，队友应先安装该 APK，再按 [android/README.md](README.md) 的顺序记录：权限、预览、帧回调、ONNX 检测、反馈执行和连续运行温度。
