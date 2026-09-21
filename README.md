@@ -144,7 +144,7 @@ python scripts/detect_video.py input.mp4 risk_report.json 0.04 \
 
 第三个参数是 looming 阈值。脚本使用 Ultralytics 官方 ByteTrack，并输出检测类别、轨迹数量、告警帧和风险特征。
 
-告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。具体 Android 振动器、TTS 和音频 API 尚未接入。安卓端接入边界和字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)；当前先用回放 JSON 做跨模块联调。
+告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。Android 已实现报告解析、振动器、提示音、TTS 和页面自检；实时风险生产者尚未接入。字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)。
 
 检测报告会保留原始 `records`，因此可在不重复运行 YOLO 的情况下扫描阈值：
 

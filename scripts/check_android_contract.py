@@ -16,6 +16,7 @@ def main() -> int:
         "frame_contract": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/FrameSource.kt",
         "phone_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/PhoneCameraFrameSource.kt",
         "yuv_converter": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/Yuv420RgbConverter.kt",
+        "rgb_rotator": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/RgbFrameRotator.kt",
         "yolo_decoder": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/YoloOutputDecoder.kt",
         "onnx_detector": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/OnnxYoloDetector.kt",
         "inference_pipeline": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/InferencePipeline.kt",
@@ -28,6 +29,7 @@ def main() -> int:
         "external_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/sensing/ExternalFrameSourceTest.kt",
         "feedback_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackActionTest.kt",
         "feedback_parser_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackReportParserTest.kt",
+        "rgb_rotator_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/inference/RgbFrameRotatorTest.kt",
     }
     missing = [name for name, path in required.items() if not path.is_file()]
     if missing:
@@ -51,6 +53,7 @@ def main() -> int:
         "source_kinds": "PHONE_CAMERA" in contract and "EXTERNAL_CAMERA" in contract,
         "timestamp_field": "captureTsMs" in contract and "captureTsMs" in phone_source,
         "camera_yuv_to_rgb": "Yuv420RgbConverter.convert" in phone_source and "data class RgbFrame" in yuv_converter,
+        "camera_rotation_applied": "RgbFrameRotator.rotate" in phone_source and "rotationDegrees" in phone_source,
         "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
         "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
         "inference_pipeline": "class InferencePipeline" in inference_pipeline and "detector.detect" in inference_pipeline,
@@ -71,6 +74,7 @@ def main() -> int:
         "feedback_self_test_wired": "runFeedbackSelfTest" in main_activity and "FeedbackDispatcher" in main_activity,
         "feedback_tests_present": "malformedContractIsRejected" in required["feedback_tests"].read_text(),
         "feedback_parser_tests_present": "parsesOnlyAlertsWithValidFeedback" in required["feedback_parser_tests"].read_text(),
+        "camera_rotation_tests_present": "rotatesClockwiseAndSwapsDimensions" in required["rgb_rotator_tests"].read_text(),
     }
     failed = [name for name, passed in checks.items() if not passed]
     result = {"passed": not failed, "checks": checks, "failed": failed}

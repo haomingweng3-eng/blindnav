@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
 import com.blindnav.mobile.inference.RgbFrame
+import com.blindnav.mobile.inference.RgbFrameRotator
 import com.blindnav.mobile.inference.Yuv420RgbConverter
 import com.blindnav.mobile.inference.YuvPlane
 import java.util.concurrent.Executor
@@ -74,6 +75,10 @@ class PhoneCameraFrameSource(
                 u = plane(planes[1]),
                 v = plane(planes[2]),
             )
+            val ownedFrame = RgbFrameRotator.rotate(
+                RgbFrame(image.width, image.height, rgb),
+                image.imageInfo.rotationDegrees,
+            )
             val frame = if (lastFrame < 0) 0 else lastFrame + 1
             lastFrame = frame
             val timestampMs = image.imageInfo.timestamp / 1_000_000L
@@ -81,14 +86,14 @@ class PhoneCameraFrameSource(
                 source = SourceKind.PHONE_CAMERA,
                 sourceFrame = frame,
                 captureTsMs = timestampMs,
-                width = image.width,
-                height = image.height,
+                width = ownedFrame.width,
+                height = ownedFrame.height,
                 transport = "camera2",
                 // CameraX's KEEP_ONLY_LATEST strategy does not expose the exact
                 // number of discarded frames; the transport adapter must report
                 // it when the external protocol provides that information.
                 droppedSinceLast = 0,
-                payload = RgbFrame(image.width, image.height, rgb),
+                payload = ownedFrame,
             )
             val validation = validator.validate(packet)
             if (validation.accepted) {
