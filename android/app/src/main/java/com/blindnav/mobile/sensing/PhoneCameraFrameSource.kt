@@ -32,15 +32,18 @@ class PhoneCameraFrameSource(
     private var cameraProvider: ProcessCameraProvider? = null
     private var analysis: ImageAnalysis? = null
     private var lastFrame: Long = -1L
+    private var runGeneration: Long = 0L
     private var listener: ((FramePacket) -> Unit)? = null
     private val validator = FrameSequenceValidator()
 
     override fun start(listener: (FramePacket) -> Unit) {
         check(this.listener == null) { "Phone camera source is already running" }
         this.listener = listener
+        val generation = ++runGeneration
 
         val providerFuture = ProcessCameraProvider.getInstance(context)
         providerFuture.addListener({
+            if (generation != runGeneration || this.listener == null) return@addListener
             val provider = providerFuture.get()
             val useCase = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -116,6 +119,7 @@ class PhoneCameraFrameSource(
     }
 
     override fun stop() {
+        runGeneration++
         analysis?.let { cameraProvider?.unbind(it) }
         cameraProvider = null
         analysis = null

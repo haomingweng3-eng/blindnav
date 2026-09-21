@@ -56,6 +56,7 @@ def main() -> int:
         "timestamp_field": "captureTsMs" in contract and "captureTsMs" in phone_source,
         "camera_yuv_to_rgb": "Yuv420RgbConverter.convert" in phone_source and "data class RgbFrame" in yuv_converter,
         "camera_rotation_applied": "RgbFrameRotator.rotate" in phone_source and "rotationDegrees" in phone_source,
+        "camera_async_stop_guard": "runGeneration" in phone_source and "return@addListener" in phone_source,
         "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
         "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
         "inference_pipeline": "class InferencePipeline" in inference_pipeline and "detector.detect" in inference_pipeline,
