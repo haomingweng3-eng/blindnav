@@ -9,6 +9,8 @@ fun interface Detector {
 data class FrameDetections(
     val sourceFrame: Long,
     val captureTsMs: Long,
+    val frameWidth: Int,
+    val frameHeight: Int,
     val detections: List<Detection>,
 )
 
@@ -22,7 +24,15 @@ class InferencePipeline(
             val frame = packet.payload as? RgbFrame
                 ?: error("Frame payload is not an owned RgbFrame")
             val detections = detector.detect(frame)
-            onResult(FrameDetections(packet.sourceFrame, packet.captureTsMs, detections))
+            onResult(
+                FrameDetections(
+                    sourceFrame = packet.sourceFrame,
+                    captureTsMs = packet.captureTsMs,
+                    frameWidth = frame.width,
+                    frameHeight = frame.height,
+                    detections = detections,
+                ),
+            )
         } catch (error: Throwable) {
             onError(error)
         }

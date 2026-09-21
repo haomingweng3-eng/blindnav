@@ -20,6 +20,7 @@ def main() -> int:
         "yolo_decoder": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/YoloOutputDecoder.kt",
         "onnx_detector": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/OnnxYoloDetector.kt",
         "inference_pipeline": ANDROID / "app/src/main/java/com/blindnav/mobile/inference/InferencePipeline.kt",
+        "risk_engine": ANDROID / "app/src/main/java/com/blindnav/mobile/risk/TemporalRiskEngine.kt",
         "model_asset": ANDROID / "app/src/main/assets/yolov8n.onnx",
         "external_source": ANDROID / "app/src/main/java/com/blindnav/mobile/sensing/ExternalFrameSource.kt",
         "feedback_action": ANDROID / "app/src/main/java/com/blindnav/mobile/feedback/FeedbackAction.kt",
@@ -30,6 +31,7 @@ def main() -> int:
         "feedback_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackActionTest.kt",
         "feedback_parser_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/feedback/FeedbackReportParserTest.kt",
         "rgb_rotator_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/inference/RgbFrameRotatorTest.kt",
+        "risk_engine_tests": ANDROID / "app/src/test/java/com/blindnav/mobile/risk/TemporalRiskEngineTest.kt",
     }
     missing = [name for name, path in required.items() if not path.is_file()]
     if missing:
@@ -57,6 +59,7 @@ def main() -> int:
         "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
         "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
         "inference_pipeline": "class InferencePipeline" in inference_pipeline and "detector.detect" in inference_pipeline,
+        "android_temporal_risk": "loomingThresholdPerSecond" in required["risk_engine"].read_text() and "FeedbackAction" in required["risk_engine"].read_text(),
         "model_asset_present": required["model_asset"].stat().st_size > 1_000_000,
         "drop_field": "droppedSinceLast" in contract and "droppedSinceLast" in phone_source,
         "external_push_validation": "fun push" in external_source and "validator.validate" in external_source,
@@ -75,6 +78,7 @@ def main() -> int:
         "feedback_tests_present": "malformedContractIsRejected" in required["feedback_tests"].read_text(),
         "feedback_parser_tests_present": "parsesOnlyAlertsWithValidFeedback" in required["feedback_parser_tests"].read_text(),
         "camera_rotation_tests_present": "rotatesClockwiseAndSwapsDimensions" in required["rgb_rotator_tests"].read_text(),
+        "risk_engine_tests_present": "growingCentralTargetProducesWarningFeedback" in required["risk_engine_tests"].read_text(),
     }
     failed = [name for name, passed in checks.items() if not passed]
     result = {"passed": not failed, "checks": checks, "failed": failed}

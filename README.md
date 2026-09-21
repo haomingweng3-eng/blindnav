@@ -24,7 +24,7 @@ cd blindnav
 
 当前权威 Git 工作区是 `/Users/mima0000/blindnav`。`/Users/mima0000/Desktop/盲行导航` 只保留了旧版少量脚本和 `data/raw/test_cam.mp4` 测试素材；不要在 Desktop 目录直接运行旧版 `risk_engine.py`，否则不会得到本仓库记录的最新风险引擎和验收结果。
 
-当前 Python 代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 工程已提交并接通手机 CameraX→RGB→ONNX 检测状态链路，也已实现 feedback JSON→Vibrator/提示音/TTS 和页面自检；实时风险生产者接入、外接摄像头传输和安卓真机验证仍未完成。
+当前 Python 代码验证的是“检测/追踪结果 → 风险趋势判断 → 分级告警 → JSON 报告”链路。Android 工程已提交并接通手机 CameraX→RGB→ONNX→端侧 `TemporalRiskEngine` MVP，也已实现 feedback JSON→Vibrator/提示音/TTS 和页面自检；正式 ByteTrack/风险仲裁标定、外接摄像头传输和安卓真机验证仍未完成。
 
 没有真实视频时的三分钟演示顺序和统一答辩口径见 [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)。
 
@@ -144,7 +144,7 @@ python scripts/detect_video.py input.mp4 risk_report.json 0.04 \
 
 第三个参数是 looming 阈值。脚本使用 Ultralytics 官方 ByteTrack，并输出检测类别、轨迹数量、告警帧和风险特征。
 
-告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。Android 已实现报告解析、振动器、提示音、TTS 和页面自检；实时风险生产者尚未接入。字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)。
+告警 JSON 还包含平台无关的 `feedback` 字段：低风险短震动，警告级提示音加延后语音，危险级优先强震动和危险音。语音使用左侧/前方/右侧三级方向词，不播报未经标定的精确距离。Android 已实现报告解析、振动器、提示音、TTS、页面自检和端侧 MVP 风险基线；字段约定见 [ANDROID_INTEGRATION.md](ANDROID_INTEGRATION.md)。
 
 检测报告会保留原始 `records`，因此可在不重复运行 YOLO 的情况下扫描阈值：
 

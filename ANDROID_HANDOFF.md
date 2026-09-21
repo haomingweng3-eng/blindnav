@@ -55,14 +55,14 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 2. 确认页面出现“运行中”，观察帧号是否递增。
 3. 用静态物体和行人测试检测数量变化；不要把检测结果当成安全保证。
 4. 记录启动耗时、端到端帧率、发热、丢帧和模型推理异常。
-5. 点击“反馈自检”确认震动、提示音和 TTS，再把 `FrameDetections` 接到风险生产者并调用现有 `FeedbackDispatcher`。
+5. 点击“反馈自检”确认震动、提示音和 TTS；当前工程已接入一个保守的 `TemporalRiskEngine` MVP，会把连续帧的面积增长趋势转换为反馈。
 
 ## 尚未完成，不能对外宣称
 
 - 尚未在真实 Android 手机上完成 CameraX 权限、持续运行和功耗验证。
-- 当前页面只显示检测数量，还没有接入 Python 风险引擎的 `looming`、轨迹和分级反馈。
+- 当前页面已显示检测数量和 Android MVP 告警计数；该基线不是 Python ByteTrack 的等价移植，阈值和轨迹关联仍需真实视频标定。
 - 尚未实现外接摄像头的 USB/Wi-Fi 协议和断连恢复。
-- Android 已实现反馈 JSON 解析和震动/提示音/TTS 执行层，但尚未完成 ByteTrack、风险仲裁到 Dispatcher 的实时闭环和真机验证。
+- Android 已实现反馈 JSON 解析、震动/提示音/TTS 执行层和 `TemporalRiskEngine` MVP；尚未完成 ByteTrack、风险仲裁的正式移植和真机验证。
 - 当前模型仍是 YOLOv8n COCO 模型，不能宣称已经解决国内电动车类别识别问题。
 - 模型许可和比赛公开展示、后续闭源产品化需要分别复核；不要把 APK 构建成功表述为许可已解决。
 
@@ -74,4 +74,4 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 启动 → 相机权限 → 30 秒持续推理 → 记录 FPS/延迟/温度 → 正常停止
 ```
 
-如果这一步稳定，再实现 `FrameDetections → 风险生产者 → FeedbackDispatcher`；JSON 解析器和 Dispatcher 已在仓库中，不要重复开发。不要先做地图、双摄、SLAM 或云端多模态功能。
+如果这一步稳定，优先用标注视频校准 `TemporalRiskEngine` 的阈值和关联策略，再决定是否替换为 ByteTrack；不要先做地图、双摄、SLAM 或云端多模态功能。

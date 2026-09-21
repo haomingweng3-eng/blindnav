@@ -13,6 +13,7 @@ import com.blindnav.mobile.inference.InferencePipeline
 import com.blindnav.mobile.inference.OnnxYoloDetector
 import com.blindnav.mobile.feedback.FeedbackAction
 import com.blindnav.mobile.feedback.FeedbackDispatcher
+import com.blindnav.mobile.risk.TemporalRiskEngine
 import com.blindnav.mobile.sensing.PhoneCameraFrameSource
 
 /** Minimal shell; camera binding is intentionally kept behind FrameSource. */
@@ -20,6 +21,7 @@ class MainActivity : ComponentActivity() {
     private var cameraSource: PhoneCameraFrameSource? = null
     private var detector: OnnxYoloDetector? = null
     private var feedbackDispatcher: FeedbackDispatcher? = null
+    private val riskEngine = TemporalRiskEngine()
     private var statusText: TextView? = null
     private var previewView: PreviewView? = null
 
@@ -54,8 +56,13 @@ class MainActivity : ComponentActivity() {
             val pipeline = InferencePipeline(
                 detector = model,
                 onResult = { result ->
+                    val alerts = riskEngine.update(result)
+                    alerts.forEach { alert ->
+                        feedbackDispatcher?.dispatch(alert.trackId, alert.feedback)
+                    }
                     runOnUiThread {
-                        showStatus("运行中\n帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标")
+                        val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
+                        showStatus("运行中\n帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标$alertText")
                     }
                 },
                 onError = { error ->
@@ -91,6 +98,7 @@ class MainActivity : ComponentActivity() {
         cameraSource?.stop()
         detector?.close()
         feedbackDispatcher?.close()
+        riskEngine.reset()
         cameraSource = null
         detector = null
         feedbackDispatcher = null

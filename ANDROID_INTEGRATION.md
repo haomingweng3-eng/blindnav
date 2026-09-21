@@ -1,6 +1,6 @@
 # 安卓端接入契约（v0.1）
 
-仓库已提交 Android Studio/Gradle 工程，位于 `android/`；本文件同时冻结 Python 风险引擎与 Android 交互层之间的边界。当前工程已接通 CameraX→RGB→ONNX 检测状态链路，并实现 `feedback` JSON 解析、Vibrator/提示音/TTS Dispatcher 和页面自检。Android 测试与 Debug APK 已在 JDK 17 下构建通过；实时风险生产者接入和真机运行仍待复核。
+仓库已提交 Android Studio/Gradle 工程，位于 `android/`；本文件同时冻结 Python 风险引擎与 Android 交互层之间的边界。当前工程已接通 CameraX→RGB→ONNX→`TemporalRiskEngine` MVP，并实现 `feedback` JSON 解析、Vibrator/提示音/TTS Dispatcher 和页面自检。Android 测试与 Debug APK 已在 JDK 17 下构建通过；正式 ByteTrack/风险仲裁标定和真机运行仍待复核。
 
 当前已导出 `models/yolov8n.onnx` 作为端侧候选模型，并通过 ONNX checker 与 CPU 空白帧推理回归；尚未在 Android Runtime、CameraX 或骁龙真机上验证。
 

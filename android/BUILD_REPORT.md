@@ -16,8 +16,8 @@ cd android
 
 - Android JVM 单元测试：Debug/Release 均通过
 - Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
-- APK 大小：89,510,966 bytes
-- APK SHA-256：`5a51ed343e28eb8294801f9f57bdf11df3542ff45b7325ef5ef15de8a76909bb`
+- APK 大小：89,527,847 bytes
+- APK SHA-256：`ab20bfeff72ce39ba5f8e2185339d28159784b34d72df654323ba200d96942c1`
 - Android 静态契约检查：通过
 
 构建时有两类非阻断提示：Android SDK XML 版本提示，以及 ONNX Runtime/CameraX 原生库无法 strip、因此按原样打包。这两项没有导致构建失败，也不等于真机性能已验证。

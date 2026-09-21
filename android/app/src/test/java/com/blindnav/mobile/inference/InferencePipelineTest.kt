@@ -20,6 +20,8 @@ class InferencePipelineTest {
         assertEquals(1, results.size)
         assertEquals(7L, results[0].sourceFrame)
         assertEquals(1234L, results[0].captureTsMs)
+        assertEquals(1, results[0].frameWidth)
+        assertEquals(1, results[0].frameHeight)
         assertEquals(1, results[0].detections.size)
     }
 }

@@ -23,4 +23,4 @@ python scripts/check_android_contract.py
 ./gradlew assembleDebug
 ```
 
-第一轮真机验证顺序：手机摄像头权限 → 点击“反馈自检”确认震动/提示音/TTS → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → 固定 JSON 风险回放。`FeedbackReportParser` 和 `FeedbackDispatcher` 已实现报告解析及硬件执行，`MainActivity` 已接入独立自检；实时风险生产者仍未接入该 Dispatcher。外接摄像头必须在手机输入路径稳定后再接入。
+第一轮真机验证顺序：手机摄像头权限 → 点击“反馈自检”确认震动/提示音/TTS → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → `TemporalRiskEngine` MVP → 固定 JSON 风险回放。`FeedbackReportParser` 和 `FeedbackDispatcher` 已实现报告解析及硬件执行，`MainActivity` 已接入自检和端侧 MVP；正式 ByteTrack/风险仲裁仍需标定。外接摄像头必须在手机输入路径稳定后再接入。
