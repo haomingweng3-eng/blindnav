@@ -11,6 +11,7 @@ data class FrameDetections(
     val captureTsMs: Long,
     val frameWidth: Int,
     val frameHeight: Int,
+    val processingMs: Long = 0L,
     val detections: List<Detection>,
 )
 
@@ -20,6 +21,7 @@ class InferencePipeline(
     private val onError: (Throwable) -> Unit = {},
 ) {
     fun onFrame(packet: FramePacket) {
+        val startedAtNs = System.nanoTime()
         try {
             val frame = packet.payload as? RgbFrame
                 ?: error("Frame payload is not an owned RgbFrame")
@@ -30,6 +32,7 @@ class InferencePipeline(
                     captureTsMs = packet.captureTsMs,
                     frameWidth = frame.width,
                     frameHeight = frame.height,
+                    processingMs = ((System.nanoTime() - startedAtNs) / 1_000_000L).coerceAtLeast(0L),
                     detections = detections,
                 ),
             )

@@ -60,6 +60,7 @@ def main() -> int:
         "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
         "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
         "inference_pipeline": "class InferencePipeline" in inference_pipeline and "detector.detect" in inference_pipeline,
+        "inference_timing": "processingMs" in inference_pipeline and "System.nanoTime" in inference_pipeline,
         "android_temporal_risk": "loomingThresholdPerSecond" in required["risk_engine"].read_text() and "FeedbackAction" in required["risk_engine"].read_text(),
         "model_asset_present": required["model_asset"].stat().st_size > 1_000_000,
         "drop_field": "droppedSinceLast" in contract and "droppedSinceLast" in phone_source,

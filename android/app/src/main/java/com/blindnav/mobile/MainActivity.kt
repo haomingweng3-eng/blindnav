@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
                     }
                     runOnUiThread {
                         val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
-                        showStatus("运行中\n帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标$alertText")
+                        showStatus("运行中\n帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标 · 推理 ${result.processingMs}ms$alertText")
                     }
                 },
                 onError = { error ->
