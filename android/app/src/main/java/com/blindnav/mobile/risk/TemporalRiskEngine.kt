@@ -19,10 +19,11 @@ data class AndroidRiskAlert(
  * Conservative Android MVP risk adapter for the live camera path.
  *
  * This is intentionally not presented as ByteTrack or a calibrated collision
- * predictor. It keeps one temporal state per supported COCO class, requires a
- * central target and a positive area-growth trend, and emits feedback only
- * after consecutive frames. The Python risk engine remains the experiment
- * reference until Android-side thresholds are calibrated on real footage.
+ * predictor. It keeps lightweight temporal states for multiple targets of each
+ * supported COCO class, requires a central target and a positive area-growth
+ * trend, and emits feedback only after consecutive frames. The Python risk
+ * engine remains the experiment reference until Android-side thresholds are
+ * calibrated on real footage.
  */
 class TemporalRiskEngine(
     private val loomingThresholdPerSecond: Float = 2f,
@@ -31,6 +32,7 @@ class TemporalRiskEngine(
     private val cooldownMs: Long = 1_000L,
 ) {
     private data class State(
+        val trackId: String,
         val centerX: Float,
         val centerY: Float,
         val areaFraction: Float,
@@ -39,27 +41,36 @@ class TemporalRiskEngine(
         val lastAlertMs: Long,
     )
 
-    private val states = mutableMapOf<Int, State>()
+    private val states = mutableMapOf<Int, MutableList<State>>()
+    private val nextTrackNumber = mutableMapOf<Int, Int>()
 
     fun update(frame: FrameDetections): List<AndroidRiskAlert> {
         require(frame.frameWidth > 0 && frame.frameHeight > 0)
         val output = mutableListOf<AndroidRiskAlert>()
         val imageArea = frame.frameWidth.toFloat() * frame.frameHeight.toFloat()
-        val seenClasses = mutableSetOf<Int>()
+        val seenTrackIds = mutableSetOf<String>()
 
         for (detection in frame.detections) {
             val className = CLASS_NAMES[detection.classId] ?: continue
             if (detection.confidence < MIN_CONFIDENCE || !validBox(detection.box)) continue
             val classId = detection.classId
-            if (!seenClasses.add(classId)) continue
 
             val box = detection.box
             val centerX = (box[0] + box[2]) / 2f
             val centerY = (box[1] + box[3]) / 2f
             val areaFraction = ((box[2] - box[0]) * (box[3] - box[1])) / imageArea
-            val previous = states[classId]
-            val next = State(centerX, centerY, areaFraction, frame.captureTsMs, (previous?.observations ?: 0) + 1, previous?.lastAlertMs ?: Long.MIN_VALUE)
-            states[classId] = next
+            val classStates = states.getOrPut(classId) { mutableListOf() }
+            val previous = classStates
+                .filter { it.trackId !in seenTrackIds && frame.captureTsMs - it.timestampMs in 0..STALE_TRACK_MS }
+                .minByOrNull { distanceFraction(it.centerX, it.centerY, centerX, centerY, frame.frameWidth, frame.frameHeight) }
+                ?.takeIf {
+                    distanceFraction(it.centerX, it.centerY, centerX, centerY, frame.frameWidth, frame.frameHeight) <= maxCenterJumpFraction
+                }
+            val trackId = previous?.trackId ?: newTrackId(classId)
+            seenTrackIds += trackId
+            val next = State(trackId, centerX, centerY, areaFraction, frame.captureTsMs, (previous?.observations ?: 0) + 1, previous?.lastAlertMs ?: Long.MIN_VALUE)
+            if (previous != null) classStates.remove(previous)
+            classStates += next
 
             if (previous == null || previous.timestampMs >= frame.captureTsMs) continue
             val centerJump = distanceFraction(previous.centerX, previous.centerY, centerX, centerY, frame.frameWidth, frame.frameHeight)
@@ -83,13 +94,24 @@ class TemporalRiskEngine(
                 speech = if (priority == FeedbackPriority.URGENT) "危险，${directionName(direction)}${className}快速接近" else "注意，${directionName(direction)}$className",
                 speechDelayMs = if (priority == FeedbackPriority.URGENT) 100 else 250,
             ) ?: continue
-            states[classId] = next.copy(lastAlertMs = frame.captureTsMs)
-            output += AndroidRiskAlert("${CLASS_KEYS[classId]}-$classId", className, direction, looming, feedback)
+            classStates.remove(next)
+            classStates += next.copy(lastAlertMs = frame.captureTsMs)
+            output += AndroidRiskAlert(trackId, className, direction, looming, feedback)
         }
+        states.values.forEach { tracks -> tracks.removeAll { frame.captureTsMs - it.timestampMs > STALE_TRACK_MS } }
         return output
     }
 
-    fun reset() = states.clear()
+    fun reset() {
+        states.clear()
+        nextTrackNumber.clear()
+    }
+
+    private fun newTrackId(classId: Int): String {
+        val number = (nextTrackNumber[classId] ?: 0) + 1
+        nextTrackNumber[classId] = number
+        return "${CLASS_KEYS[classId]}-$number"
+    }
 
     private fun validBox(box: FloatArray): Boolean =
         box.size == 4 && box[2] > box[0] && box[3] > box[1]
@@ -114,6 +136,7 @@ class TemporalRiskEngine(
 
     private companion object {
         const val MIN_CONFIDENCE = 0.25f
+        const val STALE_TRACK_MS = 1_500L
         val WALKING_CORRIDOR = 0.2f..0.8f
         val CLASS_NAMES = mapOf(0 to "行人", 1 to "自行车", 2 to "汽车", 3 to "摩托车", 5 to "公交车", 7 to "卡车")
         val CLASS_KEYS = mapOf(0 to "person", 1 to "bicycle", 2 to "car", 3 to "motorcycle", 5 to "bus", 7 to "truck")

@@ -37,12 +37,43 @@ class TemporalRiskEngineTest {
         assertTrue(engine.update(frame(100, 1, 2f, 40f, 20f, 50f)).isEmpty())
     }
 
+    @Test
+    fun associatesTwoSameClassTargetsIndependently() {
+        val engine = TemporalRiskEngine(loomingThresholdPerSecond = 2f, urgentThresholdPerSecond = 20f)
+        engine.update(
+            frameWithDetections(
+                0,
+                0,
+                detection(40f, 40f, 50f, 50f),
+                detection(5f, 40f, 15f, 50f),
+            ),
+        )
+
+        val alerts = engine.update(
+            frameWithDetections(
+                100,
+                1,
+                detection(35f, 35f, 55f, 55f),
+                detection(5f, 40f, 15f, 50f),
+            ),
+        )
+
+        assertEquals(1, alerts.size)
+        assertEquals("bicycle-1", alerts[0].trackId)
+    }
+
     private fun frame(ts: Long, sourceFrame: Long, left: Float, top: Float, right: Float, bottom: Float) =
+        frameWithDetections(ts, sourceFrame, detection(left, top, right, bottom))
+
+    private fun frameWithDetections(ts: Long, sourceFrame: Long, vararg detections: Detection) =
         FrameDetections(
             sourceFrame = sourceFrame,
             captureTsMs = ts,
             frameWidth = 100,
             frameHeight = 100,
-            detections = listOf(Detection(1, 0.9f, floatArrayOf(left, top, right, bottom))),
+            detections = detections.toList(),
         )
+
+    private fun detection(left: Float, top: Float, right: Float, bottom: Float) =
+        Detection(1, 0.9f, floatArrayOf(left, top, right, bottom))
 }
