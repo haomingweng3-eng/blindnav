@@ -40,6 +40,10 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.feedback_test_button).setOnClickListener {
             runFeedbackSelfTest()
         }
+        intent.getStringExtra(EXTRA_RISK_REPORT_JSON)?.let { reportJson ->
+            val count = feedbackDispatcher?.dispatchReport(reportJson) ?: 0
+            showStatus("风险报告回放：执行 $count 条反馈")
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -104,5 +108,9 @@ class MainActivity : ComponentActivity() {
         feedbackDispatcher = null
         previewView = null
         super.onDestroy()
+    }
+
+    companion object {
+        const val EXTRA_RISK_REPORT_JSON = "blindnav.risk_report_json"
     }
 }

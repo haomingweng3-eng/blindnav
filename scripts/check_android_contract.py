@@ -75,6 +75,7 @@ def main() -> int:
         ),
         "feedback_report_parser": "FeedbackReportParser" in feedback_parser and "optJSONArray" in feedback_parser,
         "feedback_self_test_wired": "runFeedbackSelfTest" in main_activity and "FeedbackDispatcher" in main_activity,
+        "feedback_report_replay_entry": "EXTRA_RISK_REPORT_JSON" in main_activity and "dispatchReport" in main_activity,
         "feedback_tests_present": "malformedContractIsRejected" in required["feedback_tests"].read_text(),
         "feedback_parser_tests_present": "parsesOnlyAlertsWithValidFeedback" in required["feedback_parser_tests"].read_text(),
         "camera_rotation_tests_present": "rotatesClockwiseAndSwapsDimensions" in required["rgb_rotator_tests"].read_text(),

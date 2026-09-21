@@ -24,3 +24,12 @@ python scripts/check_android_contract.py
 ```
 
 第一轮真机验证顺序：手机摄像头权限 → 点击“反馈自检”确认震动/提示音/TTS → CameraX 预览与帧回调 → 帧号/时间戳日志 → ONNX 推理输出 → `TemporalRiskEngine` MVP → 固定 JSON 风险回放。`FeedbackReportParser` 和 `FeedbackDispatcher` 已实现报告解析及硬件执行，`MainActivity` 已接入自检和端侧 MVP；正式 ByteTrack/风险仲裁仍需标定。外接摄像头必须在手机输入路径稳定后再接入。
+
+也可以不依赖实时摄像头，直接回放 Python 风险报告验证 Android 反馈链路：
+
+```bash
+adb shell am start -n com.blindnav.mobile/.MainActivity \
+  --es blindnav.risk_report_json '{"alerts":[{"frame":1,"track_id":"demo-1","cls":"bicycle","level":2,"feedback":{"priority":"warning","vibration_ms":[120,70,120],"tone":"warning","speech":"注意，前方自行车","speech_delay_ms":250}}]}'
+```
+
+页面应显示“风险报告回放：执行 1 条反馈”，设备应执行对应震动、提示音和语音。该命令只验证跨模块契约，不代表真实道路准确率。
