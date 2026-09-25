@@ -35,6 +35,8 @@ def process_batch(
     device=None,
     conf=0.25,
     min_approach_area=0.01,
+    corridor_center=0.0,
+    corridor_half_width=0.18,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -51,6 +53,8 @@ def process_batch(
                 device=device,
                 conf=conf,
                 min_approach_area=min_approach_area,
+                corridor_center=corridor_center,
+                corridor_half_width=corridor_half_width,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -74,6 +78,8 @@ def process_batch(
         "model": model_path,
         "looming_threshold": looming_threshold,
         "min_approach_area": min_approach_area,
+        "corridor_center": corridor_center,
+        "corridor_half_width": corridor_half_width,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -95,6 +101,8 @@ def main():
     parser.add_argument("--conf", type=float, default=0.25)
     parser.add_argument("--looming-threshold", type=float, default=0.06)
     parser.add_argument("--min-approach-area", type=float, default=0.01)
+    parser.add_argument("--corridor-center", type=float, default=0.0)
+    parser.add_argument("--corridor-half-width", type=float, default=0.18)
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -102,6 +110,8 @@ def main():
         model_path=args.model,
         looming_threshold=args.looming_threshold,
         min_approach_area=args.min_approach_area,
+        corridor_center=args.corridor_center,
+        corridor_half_width=args.corridor_half_width,
         device=args.device,
         conf=args.conf,
     )

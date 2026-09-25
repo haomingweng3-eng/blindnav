@@ -126,6 +126,37 @@ class RiskEngineTests(unittest.TestCase):
         self.assertEqual(level, LVL_NONE)
         self.assertFalse(info["path_conflict"])
 
+    def test_route_center_can_be_shifted_for_camera_mounting_angle(self):
+        state = TrackState(
+            "car-shifted-route",
+            "car",
+            corridor_center=0.15,
+            corridor_half_width=0.10,
+        )
+        for side in [70, 76, 83, 91, 100, 110]:
+            state.update(centered_box(side, cx=320))
+
+        level, info = state.assess(frame_idx=6)
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertFalse(info["path_conflict"])
+        self.assertEqual(info["corridor_center"], 0.15)
+
+    def test_reports_when_target_enters_the_walking_corridor(self):
+        state = TrackState(
+            "person-entering-route",
+            "person",
+            corridor_half_width=0.12,
+        )
+        centers = [520, 500, 470, 440, 410, 380, 350]
+        for frame_idx, cx in enumerate(centers, start=1):
+            state.update(centered_box(100, cx=cx), frame_idx=frame_idx)
+
+        _, info = state.assess(frame_idx=len(centers))
+
+        self.assertTrue(info["route_entry"])
+        self.assertTrue(info["path_conflict"])
+
     def test_target_direction_is_classified_left_front_right(self):
         expected = [(180, "left"), (320, "front"), (500, "right")]
         for cx, direction in expected:

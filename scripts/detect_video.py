@@ -55,6 +55,18 @@ def parse_args(argv=None):
         default=0.01,
         help="快速接近告警所需的最小归一化框面积，默认 0.01；需用正向事件重新校准",
     )
+    parser.add_argument(
+        "--corridor-center",
+        type=float,
+        default=0.0,
+        help="行走路线中心相对画面中心的归一化偏移，范围 -0.5 到 0.5",
+    )
+    parser.add_argument(
+        "--corridor-half-width",
+        type=float,
+        default=0.18,
+        help="行走路线半宽，归一化坐标，默认 0.18",
+    )
     return parser.parse_args(argv)
 
 
@@ -65,6 +77,8 @@ def process_video(
     device=None,
     conf=0.25,
     min_approach_area=0.01,
+    corridor_center=0.0,
+    corridor_half_width=0.18,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -136,6 +150,8 @@ def process_video(
         fps=source_fps,
         reference_fps=30.0,
         min_approach_area=min_approach_area,
+        corridor_center=corridor_center,
+        corridor_half_width=corridor_half_width,
     )
     return {
         "video": str(video_path),
@@ -148,6 +164,8 @@ def process_video(
         "total_frames": total,
         "looming_threshold": looming_threshold,
         "min_approach_area": min_approach_area,
+        "corridor_center": corridor_center,
+        "corridor_half_width": corridor_half_width,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -163,6 +181,8 @@ def main(argv=None):
         device=args.device,
         conf=args.conf,
         min_approach_area=args.min_approach_area,
+        corridor_center=args.corridor_center,
+        corridor_half_width=args.corridor_half_width,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "

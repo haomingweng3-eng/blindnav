@@ -92,6 +92,30 @@ class DetectionEvaluationTests(unittest.TestCase):
             report["alerts"][0]["feedback"]["speech"], "注意，前方电动滑板车"
         )
 
+    def test_route_geometry_is_passed_to_each_track(self):
+        records = [
+            {
+                "frame": frame,
+                "track_id": "car_0",
+                "cls": "car",
+                "conf": 0.9,
+                "box": centered_box(side),
+            }
+            for frame, side in enumerate([70, 76, 83, 91, 100, 110], start=1)
+        ]
+
+        report = evaluate_detection_records(
+            records,
+            width=640,
+            height=640,
+            corridor_center=0.15,
+            corridor_half_width=0.10,
+        )
+
+        self.assertEqual(report["alert_count"], 0)
+        self.assertEqual(report["corridor_center"], 0.15)
+        self.assertEqual(report["corridor_half_width"], 0.10)
+
     def test_operational_alerts_are_arbited_after_risk_engine_alerts(self):
         records = [
             {

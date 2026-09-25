@@ -31,7 +31,14 @@ def _approx_time(row):
         raise ValueError(f"approx_time_s 不是数字: {row.get('video_file')}") from exc
 
 
-def _metrics_for_threshold(labels, reports, threshold, min_approach_area):
+def _metrics_for_threshold(
+    labels,
+    reports,
+    threshold,
+    min_approach_area,
+    corridor_center,
+    corridor_half_width,
+):
     per_video = []
     for row in labels:
         video_file = str(row.get("video_file", "")).strip()
@@ -52,6 +59,8 @@ def _metrics_for_threshold(labels, reports, threshold, min_approach_area):
             fps=float(payload.get("fps", 1.0)),
             reference_fps=float(payload.get("reference_fps", 1.0)),
             min_approach_area=min_approach_area,
+            corridor_center=corridor_center,
+            corridor_half_width=corridor_half_width,
         )
         alerts = report.get("alerts", [])
         first_frame = alerts[0]["frame"] if alerts else None
@@ -122,6 +131,8 @@ def evaluate_labeled_videos(
     reports,
     thresholds=(0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10),
     min_approach_area=0.01,
+    corridor_center=0.0,
+    corridor_half_width=0.18,
 ):
     """对已有检测报告做视频级代理评估，不重新运行模型。"""
     if not labels:
@@ -130,7 +141,14 @@ def evaluate_labeled_videos(
     if any(value <= 0 for value in normalized_thresholds):
         raise ValueError("looming thresholds must be positive")
     results = [
-        _metrics_for_threshold(labels, reports, threshold, min_approach_area)
+        _metrics_for_threshold(
+            labels,
+            reports,
+            threshold,
+            min_approach_area,
+            corridor_center,
+            corridor_half_width,
+        )
         for threshold in normalized_thresholds
     ]
     return {
@@ -138,6 +156,8 @@ def evaluate_labeled_videos(
         "label_count": len(labels),
         "thresholds": normalized_thresholds,
         "min_approach_area": min_approach_area,
+        "corridor_center": corridor_center,
+        "corridor_half_width": corridor_half_width,
         "results": results,
         "interpretation": (
             "指标以整段视频是否出现告警为单位，不能替代逐帧目标框精度；"
@@ -172,6 +192,8 @@ def main():
         default=[0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10],
     )
     parser.add_argument("--min-approach-area", type=float, default=0.01)
+    parser.add_argument("--corridor-center", type=float, default=0.0)
+    parser.add_argument("--corridor-half-width", type=float, default=0.18)
     parser.add_argument("-o", "--output")
     args = parser.parse_args()
     result = evaluate_labeled_videos(
@@ -179,6 +201,8 @@ def main():
         _load_reports(args.reports_dir),
         thresholds=args.thresholds,
         min_approach_area=args.min_approach_area,
+        corridor_center=args.corridor_center,
+        corridor_half_width=args.corridor_half_width,
     )
     text = json.dumps(result, ensure_ascii=False, indent=2)
     print(text)

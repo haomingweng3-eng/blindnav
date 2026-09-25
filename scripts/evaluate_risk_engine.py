@@ -136,6 +136,8 @@ def evaluate_detection_records(
     reference_fps=1.0,
     alert_cooldown_frames=30,
     min_approach_area=0.01,
+    corridor_center=0.0,
+    corridor_half_width=0.18,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -173,6 +175,8 @@ def evaluate_detection_records(
                 fps=fps,
                 reference_fps=reference_fps,
                 min_approach_area=min_approach_area,
+                corridor_center=corridor_center,
+                corridor_half_width=corridor_half_width,
             ),
         )
         box = [float(value) * scale for value in record["box"]]
@@ -202,6 +206,8 @@ def evaluate_detection_records(
         "suppressed_alert_count": raw_alert_count - len(alerts),
         "alert_count": len(alerts),
         "alerts": alerts,
+        "corridor_center": float(corridor_center),
+        "corridor_half_width": float(corridor_half_width),
     }
 
 

@@ -31,6 +31,7 @@ class TrackState:
         cls,
         looming_threshold=0.06,
         corridor_half_width=0.18,
+        corridor_center=0.0,
         prediction_frames=5,
         fps=1.0,
         reference_fps=1.0,
@@ -40,6 +41,8 @@ class TrackState:
             raise ValueError("looming_threshold must be non-negative")
         if corridor_half_width <= 0:
             raise ValueError("corridor_half_width must be positive")
+        if not -0.5 <= corridor_center <= 0.5:
+            raise ValueError("corridor_center must be between -0.5 and 0.5")
         if prediction_frames <= 0:
             raise ValueError("prediction_frames must be positive")
         if fps <= 0 or reference_fps <= 0:
@@ -50,6 +53,7 @@ class TrackState:
         self.cls = cls
         self.looming_threshold = float(looming_threshold)
         self.corridor_half_width = float(corridor_half_width)
+        self.corridor_center = float(corridor_center)
         self.prediction_frames = int(prediction_frames)
         self.fps = float(fps)
         self.reference_fps = float(reference_fps)
@@ -113,8 +117,16 @@ class TrackState:
         else:
             direction = "front"
         future_x = current_x + lateral * self.prediction_frames
-        corridor_min = -self.corridor_half_width
-        corridor_max = self.corridor_half_width
+        corridor_min = self.corridor_center - self.corridor_half_width
+        corridor_max = self.corridor_center + self.corridor_half_width
+        previous_xs = [
+            box_center(box)[0] / 640.0 - 0.5 for box in self.boxes[window_start:-1]
+        ]
+        current_inside = corridor_min <= current_x <= corridor_max
+        route_entry = current_inside and any(
+            not (corridor_min <= previous_x <= corridor_max)
+            for previous_x in previous_xs
+        )
         path_conflict = (
             corridor_min <= current_x <= corridor_max
             or min(current_x, future_x) <= corridor_max
@@ -162,6 +174,9 @@ class TrackState:
             "lateral": round(lateral, 4),
             "direction": direction,
             "path_conflict": path_conflict,
+            "route_entry": route_entry,
+            "corridor_center": self.corridor_center,
+            "corridor_half_width": self.corridor_half_width,
             "area_n": round(a_new_n, 4),
             "min_approach_area": self.min_approach_area,
             "close": close_high,
