@@ -32,6 +32,7 @@ class TrackState:
         looming_threshold=0.06,
         corridor_half_width=0.18,
         corridor_center=0.0,
+        entry_lateral_threshold=0.04,
         prediction_frames=5,
         fps=1.0,
         reference_fps=1.0,
@@ -43,6 +44,8 @@ class TrackState:
             raise ValueError("corridor_half_width must be positive")
         if not -0.5 <= corridor_center <= 0.5:
             raise ValueError("corridor_center must be between -0.5 and 0.5")
+        if entry_lateral_threshold < 0:
+            raise ValueError("entry_lateral_threshold must be non-negative")
         if prediction_frames <= 0:
             raise ValueError("prediction_frames must be positive")
         if fps <= 0 or reference_fps <= 0:
@@ -54,6 +57,7 @@ class TrackState:
         self.looming_threshold = float(looming_threshold)
         self.corridor_half_width = float(corridor_half_width)
         self.corridor_center = float(corridor_center)
+        self.entry_lateral_threshold = float(entry_lateral_threshold)
         self.prediction_frames = int(prediction_frames)
         self.fps = float(fps)
         self.reference_fps = float(reference_fps)
@@ -127,6 +131,12 @@ class TrackState:
             not (corridor_min <= previous_x <= corridor_max)
             for previous_x in previous_xs
         )
+        predicted_entry = (
+            not current_inside
+            and corridor_min <= future_x <= corridor_max
+            and abs(lateral) >= self.entry_lateral_threshold
+        )
+        dynamic_path_conflict = current_inside or predicted_entry
         path_conflict = (
             corridor_min <= current_x <= corridor_max
             or min(current_x, future_x) <= corridor_max
@@ -141,7 +151,7 @@ class TrackState:
         reason = ""
         if (
             looming > self.looming_threshold
-            and path_conflict
+            and dynamic_path_conflict
             and a_new_n >= self.min_approach_area
             and close_high
         ):
@@ -149,12 +159,16 @@ class TrackState:
             reason = "快速接近且近距离"
         elif (
             looming > self.looming_threshold
-            and path_conflict
+            and dynamic_path_conflict
             and a_new_n >= self.min_approach_area
         ):
             lvl = LVL_MID
             reason = "快速接近"
-        elif abs(lateral) > 0.02 and close_low and path_conflict:
+        elif (
+            abs(lateral) >= self.entry_lateral_threshold
+            and close_low
+            and dynamic_path_conflict
+        ):
             lvl = LVL_MID
             reason = "横向穿过"
         elif close_high:
@@ -174,9 +188,12 @@ class TrackState:
             "lateral": round(lateral, 4),
             "direction": direction,
             "path_conflict": path_conflict,
+            "dynamic_path_conflict": dynamic_path_conflict,
+            "predicted_entry": predicted_entry,
             "route_entry": route_entry,
             "corridor_center": self.corridor_center,
             "corridor_half_width": self.corridor_half_width,
+            "entry_lateral_threshold": self.entry_lateral_threshold,
             "area_n": round(a_new_n, 4),
             "min_approach_area": self.min_approach_area,
             "close": close_high,

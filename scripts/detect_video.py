@@ -67,6 +67,12 @@ def parse_args(argv=None):
         default=0.18,
         help="行走路线半宽，归一化坐标，默认 0.18",
     )
+    parser.add_argument(
+        "--entry-lateral-threshold",
+        type=float,
+        default=0.04,
+        help="路线外目标预测切入所需的横向速度阈值，默认 0.04",
+    )
     return parser.parse_args(argv)
 
 
@@ -79,6 +85,7 @@ def process_video(
     min_approach_area=0.01,
     corridor_center=0.0,
     corridor_half_width=0.18,
+    entry_lateral_threshold=0.04,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -152,6 +159,7 @@ def process_video(
         min_approach_area=min_approach_area,
         corridor_center=corridor_center,
         corridor_half_width=corridor_half_width,
+        entry_lateral_threshold=entry_lateral_threshold,
     )
     return {
         "video": str(video_path),
@@ -166,6 +174,7 @@ def process_video(
         "min_approach_area": min_approach_area,
         "corridor_center": corridor_center,
         "corridor_half_width": corridor_half_width,
+        "entry_lateral_threshold": entry_lateral_threshold,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -183,6 +192,7 @@ def main(argv=None):
         min_approach_area=args.min_approach_area,
         corridor_center=args.corridor_center,
         corridor_half_width=args.corridor_half_width,
+        entry_lateral_threshold=args.entry_lateral_threshold,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "

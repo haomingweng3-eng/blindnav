@@ -157,6 +157,40 @@ class RiskEngineTests(unittest.TestCase):
         self.assertTrue(info["route_entry"])
         self.assertTrue(info["path_conflict"])
 
+    def test_slow_drift_toward_corridor_is_not_a_dynamic_entry(self):
+        state = TrackState(
+            "parked-bike-drift",
+            "motorcycle",
+            corridor_half_width=0.10,
+            entry_lateral_threshold=0.04,
+            looming_threshold=0.02,
+        )
+        centers = [420, 410, 400, 390]
+        for frame_idx, cx in enumerate(centers, start=1):
+            state.update(centered_box(140 + frame_idx * 5, cx=cx), frame_idx=frame_idx)
+
+        level, info = state.assess(frame_idx=len(centers))
+
+        self.assertLess(level, LVL_MID)
+        self.assertFalse(info["dynamic_path_conflict"])
+
+    def test_fast_drift_toward_corridor_is_dynamic_entry(self):
+        state = TrackState(
+            "crossing-bike",
+            "motorcycle",
+            corridor_half_width=0.10,
+            entry_lateral_threshold=0.04,
+            looming_threshold=0.02,
+        )
+        centers = [450, 410, 370, 330]
+        for frame_idx, cx in enumerate(centers, start=1):
+            state.update(centered_box(140 + frame_idx * 5, cx=cx), frame_idx=frame_idx)
+
+        _, info = state.assess(frame_idx=len(centers))
+
+        self.assertTrue(info["dynamic_path_conflict"])
+        self.assertTrue(info["route_entry"])
+
     def test_target_direction_is_classified_left_front_right(self):
         expected = [(180, "left"), (320, "front"), (500, "right")]
         for cx, direction in expected:

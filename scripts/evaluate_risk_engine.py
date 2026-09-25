@@ -138,6 +138,7 @@ def evaluate_detection_records(
     min_approach_area=0.01,
     corridor_center=0.0,
     corridor_half_width=0.18,
+    entry_lateral_threshold=0.04,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -177,6 +178,7 @@ def evaluate_detection_records(
                 min_approach_area=min_approach_area,
                 corridor_center=corridor_center,
                 corridor_half_width=corridor_half_width,
+                entry_lateral_threshold=entry_lateral_threshold,
             ),
         )
         box = [float(value) * scale for value in record["box"]]
@@ -208,6 +210,7 @@ def evaluate_detection_records(
         "alerts": alerts,
         "corridor_center": float(corridor_center),
         "corridor_half_width": float(corridor_half_width),
+        "entry_lateral_threshold": float(entry_lateral_threshold),
     }
 
 

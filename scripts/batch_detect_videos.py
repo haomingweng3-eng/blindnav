@@ -37,6 +37,7 @@ def process_batch(
     min_approach_area=0.01,
     corridor_center=0.0,
     corridor_half_width=0.18,
+    entry_lateral_threshold=0.04,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -55,6 +56,7 @@ def process_batch(
                 min_approach_area=min_approach_area,
                 corridor_center=corridor_center,
                 corridor_half_width=corridor_half_width,
+                entry_lateral_threshold=entry_lateral_threshold,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -80,6 +82,7 @@ def process_batch(
         "min_approach_area": min_approach_area,
         "corridor_center": corridor_center,
         "corridor_half_width": corridor_half_width,
+        "entry_lateral_threshold": entry_lateral_threshold,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -103,6 +106,7 @@ def main():
     parser.add_argument("--min-approach-area", type=float, default=0.01)
     parser.add_argument("--corridor-center", type=float, default=0.0)
     parser.add_argument("--corridor-half-width", type=float, default=0.18)
+    parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -112,6 +116,7 @@ def main():
         min_approach_area=args.min_approach_area,
         corridor_center=args.corridor_center,
         corridor_half_width=args.corridor_half_width,
+        entry_lateral_threshold=args.entry_lateral_threshold,
         device=args.device,
         conf=args.conf,
     )

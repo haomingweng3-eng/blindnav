@@ -38,6 +38,7 @@ def _metrics_for_threshold(
     min_approach_area,
     corridor_center,
     corridor_half_width,
+    entry_lateral_threshold,
 ):
     per_video = []
     for row in labels:
@@ -61,6 +62,7 @@ def _metrics_for_threshold(
             min_approach_area=min_approach_area,
             corridor_center=corridor_center,
             corridor_half_width=corridor_half_width,
+            entry_lateral_threshold=entry_lateral_threshold,
         )
         alerts = report.get("alerts", [])
         first_frame = alerts[0]["frame"] if alerts else None
@@ -133,6 +135,7 @@ def evaluate_labeled_videos(
     min_approach_area=0.01,
     corridor_center=0.0,
     corridor_half_width=0.18,
+    entry_lateral_threshold=0.04,
 ):
     """对已有检测报告做视频级代理评估，不重新运行模型。"""
     if not labels:
@@ -148,6 +151,7 @@ def evaluate_labeled_videos(
             min_approach_area,
             corridor_center,
             corridor_half_width,
+            entry_lateral_threshold,
         )
         for threshold in normalized_thresholds
     ]
@@ -158,6 +162,7 @@ def evaluate_labeled_videos(
         "min_approach_area": min_approach_area,
         "corridor_center": corridor_center,
         "corridor_half_width": corridor_half_width,
+        "entry_lateral_threshold": entry_lateral_threshold,
         "results": results,
         "interpretation": (
             "指标以整段视频是否出现告警为单位，不能替代逐帧目标框精度；"
@@ -194,6 +199,7 @@ def main():
     parser.add_argument("--min-approach-area", type=float, default=0.01)
     parser.add_argument("--corridor-center", type=float, default=0.0)
     parser.add_argument("--corridor-half-width", type=float, default=0.18)
+    parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("-o", "--output")
     args = parser.parse_args()
     result = evaluate_labeled_videos(
@@ -203,6 +209,7 @@ def main():
         min_approach_area=args.min_approach_area,
         corridor_center=args.corridor_center,
         corridor_half_width=args.corridor_half_width,
+        entry_lateral_threshold=args.entry_lateral_threshold,
     )
     text = json.dumps(result, ensure_ascii=False, indent=2)
     print(text)
