@@ -155,6 +155,38 @@ class DetectionEvaluationTests(unittest.TestCase):
         self.assertFalse(diagnostics["side_0"]["route_entry_seen"])
         self.assertEqual(diagnostics["side_0"]["final_route_relation"], "outside")
 
+    def test_prediction_horizon_controls_predicted_route_entry(self):
+        records = [
+            {
+                "frame": frame,
+                "track_id": "approaching-route",
+                "cls": "motorcycle",
+                "conf": 0.9,
+                "box": centered_box(120, cx=cx),
+            }
+            for frame, cx in enumerate([520, 500, 480, 460], start=1)
+        ]
+
+        short = evaluate_detection_records(
+            records,
+            width=640,
+            height=640,
+            corridor_half_width=0.10,
+            entry_lateral_threshold=0.02,
+            prediction_frames=3,
+        )
+        long = evaluate_detection_records(
+            records,
+            width=640,
+            height=640,
+            corridor_half_width=0.10,
+            entry_lateral_threshold=0.02,
+            prediction_frames=5,
+        )
+
+        self.assertFalse(short["track_diagnostics"][0]["predicted_entry_seen"])
+        self.assertTrue(long["track_diagnostics"][0]["predicted_entry_seen"])
+
     def test_operational_alerts_are_arbited_after_risk_engine_alerts(self):
         records = [
             {

@@ -40,6 +40,7 @@ def _metrics_for_threshold(
     corridor_half_width,
     entry_lateral_threshold,
     entry_confirm_frames,
+    prediction_frames,
 ):
     per_video = []
     for row in labels:
@@ -65,6 +66,7 @@ def _metrics_for_threshold(
             corridor_half_width=corridor_half_width,
             entry_lateral_threshold=entry_lateral_threshold,
             entry_confirm_frames=entry_confirm_frames,
+            prediction_frames=prediction_frames,
         )
         alerts = report.get("alerts", [])
         track_diagnostics = report.get("track_diagnostics", [])
@@ -155,6 +157,7 @@ def evaluate_labeled_videos(
     corridor_half_width=0.18,
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
+    prediction_frames=5,
 ):
     """对已有检测报告做视频级代理评估，不重新运行模型。"""
     if not labels:
@@ -172,6 +175,7 @@ def evaluate_labeled_videos(
             corridor_half_width,
             entry_lateral_threshold,
             entry_confirm_frames,
+            prediction_frames,
         )
         for threshold in normalized_thresholds
     ]
@@ -184,6 +188,7 @@ def evaluate_labeled_videos(
         "corridor_half_width": corridor_half_width,
         "entry_lateral_threshold": entry_lateral_threshold,
         "entry_confirm_frames": entry_confirm_frames,
+        "prediction_frames": prediction_frames,
         "results": results,
         "interpretation": (
             "指标以整段视频是否出现告警为单位，不能替代逐帧目标框精度；"
@@ -222,6 +227,7 @@ def main():
     parser.add_argument("--corridor-half-width", type=float, default=0.18)
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
+    parser.add_argument("--prediction-frames", type=int, default=5)
     parser.add_argument("-o", "--output")
     args = parser.parse_args()
     result = evaluate_labeled_videos(
@@ -233,6 +239,7 @@ def main():
         corridor_half_width=args.corridor_half_width,
         entry_lateral_threshold=args.entry_lateral_threshold,
         entry_confirm_frames=args.entry_confirm_frames,
+        prediction_frames=args.prediction_frames,
     )
     text = json.dumps(result, ensure_ascii=False, indent=2)
     print(text)
