@@ -12,6 +12,7 @@ weights/
 # Raw/private media and generated datasets
 data/raw/
 data/processed/
+data/incoming_phone/
 *.mp4
 *.mov
 *.m4v
