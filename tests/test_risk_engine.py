@@ -173,6 +173,24 @@ class RiskEngineTests(unittest.TestCase):
         self.assertFalse(info["route_entry"])
         self.assertNotEqual(info["route_relation"], "entered")
 
+    def test_new_side_target_is_not_approach_conflict_before_route_confirmation(self):
+        state = TrackState(
+            "new-side-target",
+            "person",
+            corridor_half_width=0.10,
+            entry_confirm_frames=3,
+        )
+        centers = [500, 450, 400, 350, 340]
+        sides = [70, 80, 100, 130, 180]
+        for frame_idx, (cx, side) in enumerate(zip(centers, sides), start=1):
+            state.update(centered_box(side, cx=cx), frame_idx=frame_idx)
+
+        level, info = state.assess(frame_idx=len(centers))
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertFalse(info["dynamic_path_conflict"])
+        self.assertEqual(info["route_relation"], "inside_unconfirmed")
+
     def test_slow_drift_toward_corridor_is_not_a_dynamic_entry(self):
         state = TrackState(
             "parked-bike-drift",

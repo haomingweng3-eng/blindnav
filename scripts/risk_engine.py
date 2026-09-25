@@ -138,10 +138,15 @@ class TrackState:
                 inside_streak += 1
             else:
                 break
-        route_entry = current_inside and any(
+        entered_from_outside = any(
             not (corridor_min <= previous_x <= corridor_max)
             for previous_x in previous_xs
-        ) and inside_streak >= self.entry_confirm_frames
+        )
+        route_entry = (
+            current_inside
+            and entered_from_outside
+            and inside_streak >= self.entry_confirm_frames
+        )
         predicted_entry = (
             not current_inside
             and corridor_min <= future_x <= corridor_max
@@ -150,17 +155,23 @@ class TrackState:
         # 横向告警只针对“进入路线”的运动。目标已经在路线内但正在
         # 向外离开，或只是沿路线边缘平行经过，不应仅凭横向速度报警。
         entry_motion = route_entry or predicted_entry
+        inside_confirmed = current_inside and (
+            not entered_from_outside
+            or inside_streak >= self.entry_confirm_frames
+        )
         if route_entry:
             route_relation = "entered"
         elif predicted_entry:
             route_relation = "predicted_entry"
+        elif current_inside and entered_from_outside and not inside_confirmed:
+            route_relation = "inside_unconfirmed"
         elif current_inside and not (corridor_min <= future_x <= corridor_max):
             route_relation = "exiting"
         elif current_inside:
             route_relation = "inside"
         else:
             route_relation = "outside"
-        dynamic_path_conflict = current_inside or predicted_entry
+        dynamic_path_conflict = inside_confirmed or predicted_entry
         path_conflict = (
             corridor_min <= current_x <= corridor_max
             or min(current_x, future_x) <= corridor_max
@@ -195,7 +206,7 @@ class TrackState:
         ):
             lvl = LVL_MID
             reason = "横向穿过"
-        elif close_high:
+        elif close_high and inside_confirmed:
             lvl = LVL_LOW
             reason = "近距离静态"
 
@@ -213,6 +224,7 @@ class TrackState:
             "direction": direction,
             "path_conflict": path_conflict,
             "dynamic_path_conflict": dynamic_path_conflict,
+            "inside_confirmed": inside_confirmed,
             "predicted_entry": predicted_entry,
             "route_entry": route_entry,
             "entry_motion": entry_motion,
