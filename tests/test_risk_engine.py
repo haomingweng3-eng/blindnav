@@ -199,14 +199,36 @@ class RiskEngineTests(unittest.TestCase):
             min_approach_area=0.06,
             prediction_frames=5,
         )
-        for frame_idx, side in enumerate([90, 100, 111, 123, 136], start=1):
-            state.update(centered_box(side), frame_idx=frame_idx)
+        centers = [500, 400, 350, 340, 330]
+        sides = [90, 100, 111, 123, 136]
+        for frame_idx, (cx, side) in enumerate(zip(centers, sides), start=1):
+            state.update(centered_box(side, cx=cx), frame_idx=frame_idx)
 
         level, info = state.assess(frame_idx=5)
 
         self.assertEqual(level, LVL_MID)
         self.assertTrue(info["predicted_approach"])
         self.assertLess(info["area_n"], info["min_approach_area"])
+
+    def test_exiting_target_does_not_get_predictive_approach_warning(self):
+        state = TrackState(
+            "leaving-bike",
+            "motorcycle",
+            looming_threshold=0.06,
+            min_approach_area=0.06,
+            prediction_frames=5,
+            corridor_half_width=0.05,
+        )
+        centers = [300, 305, 310, 315, 320, 345]
+        sides = [90, 100, 111, 123, 136, 150]
+        for frame_idx, (cx, side) in enumerate(zip(centers, sides), start=1):
+            state.update(centered_box(side, cx=cx), frame_idx=frame_idx)
+
+        # 目标最后向路线右侧离开，虽然框变大，也不应提前报警。
+        level, info = state.assess(frame_idx=len(centers))
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertFalse(info["predicted_approach"])
 
     def test_slow_drift_toward_corridor_is_not_a_dynamic_entry(self):
         state = TrackState(

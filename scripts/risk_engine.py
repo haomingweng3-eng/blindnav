@@ -189,6 +189,8 @@ class TrackState:
             and predicted_area_n >= self.min_approach_area
             and looming > self.looming_threshold
             and dynamic_path_conflict
+            and (route_entry or predicted_entry)
+            and route_relation not in {"exiting", "outside", "inside_unconfirmed"}
         )
 
         lvl = LVL_NONE
