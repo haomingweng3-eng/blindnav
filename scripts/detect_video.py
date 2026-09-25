@@ -73,6 +73,12 @@ def parse_args(argv=None):
         default=0.04,
         help="路线外目标预测切入所需的横向速度阈值，默认 0.04",
     )
+    parser.add_argument(
+        "--entry-confirm-frames",
+        type=int,
+        default=3,
+        help="目标连续处于路线内多少帧后确认进入，默认 3",
+    )
     return parser.parse_args(argv)
 
 
@@ -86,6 +92,7 @@ def process_video(
     corridor_center=0.0,
     corridor_half_width=0.18,
     entry_lateral_threshold=0.04,
+    entry_confirm_frames=3,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -160,6 +167,7 @@ def process_video(
         corridor_center=corridor_center,
         corridor_half_width=corridor_half_width,
         entry_lateral_threshold=entry_lateral_threshold,
+        entry_confirm_frames=entry_confirm_frames,
     )
     return {
         "video": str(video_path),
@@ -175,6 +183,7 @@ def process_video(
         "corridor_center": corridor_center,
         "corridor_half_width": corridor_half_width,
         "entry_lateral_threshold": entry_lateral_threshold,
+        "entry_confirm_frames": entry_confirm_frames,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -193,6 +202,7 @@ def main(argv=None):
         corridor_center=args.corridor_center,
         corridor_half_width=args.corridor_half_width,
         entry_lateral_threshold=args.entry_lateral_threshold,
+        entry_confirm_frames=args.entry_confirm_frames,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "

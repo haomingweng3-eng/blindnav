@@ -38,6 +38,7 @@ def process_batch(
     corridor_center=0.0,
     corridor_half_width=0.18,
     entry_lateral_threshold=0.04,
+    entry_confirm_frames=3,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -57,6 +58,7 @@ def process_batch(
                 corridor_center=corridor_center,
                 corridor_half_width=corridor_half_width,
                 entry_lateral_threshold=entry_lateral_threshold,
+                entry_confirm_frames=entry_confirm_frames,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -83,6 +85,7 @@ def process_batch(
         "corridor_center": corridor_center,
         "corridor_half_width": corridor_half_width,
         "entry_lateral_threshold": entry_lateral_threshold,
+        "entry_confirm_frames": entry_confirm_frames,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -107,6 +110,7 @@ def main():
     parser.add_argument("--corridor-center", type=float, default=0.0)
     parser.add_argument("--corridor-half-width", type=float, default=0.18)
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
+    parser.add_argument("--entry-confirm-frames", type=int, default=3)
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -117,6 +121,7 @@ def main():
         corridor_center=args.corridor_center,
         corridor_half_width=args.corridor_half_width,
         entry_lateral_threshold=args.entry_lateral_threshold,
+        entry_confirm_frames=args.entry_confirm_frames,
         device=args.device,
         conf=args.conf,
     )
