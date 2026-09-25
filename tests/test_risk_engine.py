@@ -191,6 +191,26 @@ class RiskEngineTests(unittest.TestCase):
         self.assertTrue(info["dynamic_path_conflict"])
         self.assertTrue(info["route_entry"])
 
+    def test_target_inside_corridor_but_moving_out_is_not_crossing_warning(self):
+        state = TrackState(
+            "passing-bike",
+            "motorcycle",
+            corridor_center=0.0,
+            corridor_half_width=0.18,
+            entry_lateral_threshold=0.04,
+        )
+        # 目标从路线内侧向右离开：它不是“进入”行走路线。
+        centers = [330, 360, 390, 420]
+        for frame_idx, cx in enumerate(centers, start=1):
+            state.update(centered_box(110, cx=cx), frame_idx=frame_idx)
+
+        level, info = state.assess(frame_idx=len(centers))
+
+        self.assertEqual(level, LVL_NONE)
+        self.assertTrue(info["dynamic_path_conflict"])
+        self.assertFalse(info["route_entry"])
+        self.assertFalse(info["entry_motion"])
+
     def test_target_direction_is_classified_left_front_right(self):
         expected = [(180, "left"), (320, "front"), (500, "right")]
         for cx, direction in expected:
