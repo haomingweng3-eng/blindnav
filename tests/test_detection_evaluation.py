@@ -116,6 +116,45 @@ class DetectionEvaluationTests(unittest.TestCase):
         self.assertEqual(report["corridor_center"], 0.15)
         self.assertEqual(report["corridor_half_width"], 0.10)
 
+    def test_route_diagnostics_explain_entry_and_outside_tracks(self):
+        records = []
+        for frame, cx in enumerate([520, 480, 440, 400, 360], start=1):
+            records.append(
+                {
+                    "frame": frame,
+                    "track_id": "crossing_0",
+                    "cls": "motorcycle",
+                    "conf": 0.9,
+                    "box": centered_box(120, cx=cx),
+                }
+            )
+        for frame, cx in enumerate([500, 505, 510, 515, 520], start=1):
+            records.append(
+                {
+                    "frame": frame,
+                    "track_id": "side_0",
+                    "cls": "motorcycle",
+                    "conf": 0.9,
+                    "box": centered_box(120, cx=cx),
+                }
+            )
+
+        report = evaluate_detection_records(
+            records,
+            width=640,
+            height=640,
+            corridor_center=0.0,
+            corridor_half_width=0.10,
+        )
+        diagnostics = {
+            item["track_id"]: item for item in report["track_diagnostics"]
+        }
+
+        self.assertTrue(diagnostics["crossing_0"]["route_entry_seen"])
+        self.assertIn("entered", diagnostics["crossing_0"]["route_relations_seen"])
+        self.assertFalse(diagnostics["side_0"]["route_entry_seen"])
+        self.assertEqual(diagnostics["side_0"]["final_route_relation"], "outside")
+
     def test_operational_alerts_are_arbited_after_risk_engine_alerts(self):
         records = [
             {

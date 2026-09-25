@@ -65,6 +65,13 @@ def _metrics_for_threshold(
             entry_lateral_threshold=entry_lateral_threshold,
         )
         alerts = report.get("alerts", [])
+        track_diagnostics = report.get("track_diagnostics", [])
+        route_relation_counts = {}
+        for diagnostic in track_diagnostics:
+            for relation in diagnostic.get("route_relations_seen", []):
+                route_relation_counts[relation] = (
+                    route_relation_counts.get(relation, 0) + 1
+                )
         first_frame = alerts[0]["frame"] if alerts else None
         fps = float(payload.get("fps", 1.0))
         first_alert_s = first_frame / fps if first_frame is not None else None
@@ -88,6 +95,15 @@ def _metrics_for_threshold(
                     if approx_s is not None and first_alert_s is not None
                     else None
                 ),
+                "route_entry_track_count": sum(
+                    bool(item.get("route_entry_seen"))
+                    for item in track_diagnostics
+                ),
+                "predicted_entry_track_count": sum(
+                    bool(item.get("predicted_entry_seen"))
+                    for item in track_diagnostics
+                ),
+                "route_relation_counts": dict(sorted(route_relation_counts.items())),
             }
         )
 

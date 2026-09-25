@@ -156,6 +156,7 @@ def evaluate_detection_records(
     scale = 640.0 / max(width, height)
     states = {}
     detection_stats = {}
+    route_diagnostics = {}
     alerts = []
     frame_count = 0
 
@@ -184,6 +185,46 @@ def evaluate_detection_records(
         box = [float(value) * scale for value in record["box"]]
         state.update(box, frame_idx=frame_idx)
         level, info = state.assess(frame_idx)
+        if info:
+            diagnostic = route_diagnostics.setdefault(
+                track_key[0],
+                {
+                    "track_id": track_key[0],
+                    "cls": cls,
+                    "record_count": 0,
+                    "route_relations_seen": set(),
+                    "route_entry_seen": False,
+                    "predicted_entry_seen": False,
+                    "first_entry_frame": None,
+                    "max_area_n": 0.0,
+                    "max_looming": float("-inf"),
+                    "max_abs_lateral": 0.0,
+                    "final_route_relation": None,
+                },
+            )
+            relation = info.get("route_relation")
+            diagnostic["record_count"] += 1
+            if relation:
+                diagnostic["route_relations_seen"].add(relation)
+                diagnostic["final_route_relation"] = relation
+            diagnostic["route_entry_seen"] |= bool(info.get("route_entry"))
+            diagnostic["predicted_entry_seen"] |= bool(
+                info.get("predicted_entry")
+            )
+            if diagnostic["first_entry_frame"] is None and (
+                info.get("route_entry") or info.get("predicted_entry")
+            ):
+                diagnostic["first_entry_frame"] = frame_idx
+            diagnostic["max_area_n"] = max(
+                diagnostic["max_area_n"], float(info.get("area_n", 0.0))
+            )
+            diagnostic["max_looming"] = max(
+                diagnostic["max_looming"], float(info.get("looming", 0.0))
+            )
+            diagnostic["max_abs_lateral"] = max(
+                diagnostic["max_abs_lateral"],
+                abs(float(info.get("lateral", 0.0))),
+            )
         if level >= LVL_MID:
             alerts.append(
                 {
@@ -200,6 +241,15 @@ def evaluate_detection_records(
 
     raw_alert_count = len(alerts)
     alerts = AlertArbiter(cooldown_frames=alert_cooldown_frames).filter(alerts)
+    serialized_diagnostics = []
+    for diagnostic in route_diagnostics.values():
+        item = dict(diagnostic)
+        item["route_relations_seen"] = sorted(item["route_relations_seen"])
+        item["max_area_n"] = round(item["max_area_n"], 4)
+        item["max_looming"] = round(item["max_looming"], 4)
+        item["max_abs_lateral"] = round(item["max_abs_lateral"], 4)
+        serialized_diagnostics.append(item)
+    serialized_diagnostics.sort(key=lambda item: item["track_id"])
     return {
         "frame_count": frame_count,
         "track_count": len(states),
@@ -208,6 +258,7 @@ def evaluate_detection_records(
         "suppressed_alert_count": raw_alert_count - len(alerts),
         "alert_count": len(alerts),
         "alerts": alerts,
+        "track_diagnostics": serialized_diagnostics,
         "corridor_center": float(corridor_center),
         "corridor_half_width": float(corridor_half_width),
         "entry_lateral_threshold": float(entry_lateral_threshold),

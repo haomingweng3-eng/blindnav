@@ -38,6 +38,9 @@ class EvaluateLabeledVideosTests(unittest.TestCase):
         self.assertEqual(metrics["false_positive_video_count"], 0)
         self.assertEqual(metrics["recall"], 1.0)
         self.assertEqual(metrics["false_positive_rate"], 0.0)
+        near_row = next(row for row in metrics["per_video"] if row["video_file"] == "near.mp4")
+        self.assertIn("route_entry_track_count", near_row)
+        self.assertIn("route_relation_counts", near_row)
 
     def test_missing_report_is_reported_not_silently_ignored(self):
         labels = [{"video_file": "missing.mp4", "status": "safe"}]
