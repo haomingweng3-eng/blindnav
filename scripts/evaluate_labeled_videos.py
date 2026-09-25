@@ -14,6 +14,8 @@ except ImportError:  # 支持直接执行脚本
 
 
 POSITIVE_STATUSES = {"near_miss", "near miss", "conflict", "dangerous"}
+CONFLICT_STATUSES = {"conflict", "dangerous"}
+NEAR_MISS_STATUSES = {"near_miss", "near miss"}
 SAFE_STATUS = "safe"
 
 
@@ -81,12 +83,21 @@ def _metrics_for_threshold(
         first_alert_s = first_frame / fps if first_frame is not None else None
         approx_s = _approx_time(row)
         positive = status in POSITIVE_STATUSES
+        is_conflict = status in CONFLICT_STATUSES
+        is_near_miss = status in NEAR_MISS_STATUSES
         detected = bool(alerts)
         per_video.append(
             {
                 "video_file": video_file,
                 "status": status,
                 "positive": positive,
+                "label_group": (
+                    "conflict"
+                    if is_conflict
+                    else "near_miss"
+                    if is_near_miss
+                    else "safe"
+                ),
                 "detected": detected,
                 "alert_count": len(alerts),
                 "warning_count": sum(a.get("level") == LVL_MID for a in alerts),
@@ -113,6 +124,8 @@ def _metrics_for_threshold(
 
     positive_rows = [item for item in per_video if item["positive"]]
     safe_rows = [item for item in per_video if not item["positive"]]
+    conflict_rows = [item for item in per_video if item["label_group"] == "conflict"]
+    near_miss_rows = [item for item in per_video if item["label_group"] == "near_miss"]
     detected_positive = sum(item["detected"] for item in positive_rows)
     false_positive = sum(item["detected"] for item in safe_rows)
     total = len(per_video)
@@ -126,6 +139,14 @@ def _metrics_for_threshold(
         2 * precision * recall / (precision + recall)
         if precision + recall
         else 0.0
+    )
+    detected_conflicts = sum(item["detected"] for item in conflict_rows)
+    detected_near_misses = sum(item["detected"] for item in near_miss_rows)
+    conflict_recall = (
+        detected_conflicts / len(conflict_rows) if conflict_rows else 0.0
+    )
+    near_miss_detection_rate = (
+        detected_near_misses / len(near_miss_rows) if near_miss_rows else 0.0
     )
     lead_times = [
         item["lead_time_s"]
@@ -143,6 +164,12 @@ def _metrics_for_threshold(
         "false_positive_rate": round(false_positive_rate, 6),
         "precision": round(precision, 6),
         "f1": round(f1, 6),
+        "conflict_video_count": len(conflict_rows),
+        "detected_conflict_count": detected_conflicts,
+        "conflict_recall": round(conflict_recall, 6),
+        "near_miss_video_count": len(near_miss_rows),
+        "detected_near_miss_count": detected_near_misses,
+        "near_miss_detection_rate": round(near_miss_detection_rate, 6),
         "lead_time_s": lead_times,
         "per_video": per_video,
     }

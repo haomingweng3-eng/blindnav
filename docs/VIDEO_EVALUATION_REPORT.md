@@ -41,6 +41,8 @@
 
 对 4 段人工标为正向的片段抽查关键画面后发现：`170345`、`170405`、`170500` 的目标虽然距离近，但分别位于左侧或右侧路线外通过；`170525` 才是正面进入行走路线的冲突样本。因此后续评估要把“近距离擦身而过”和“真正进入路线”分开，不能为了提高召回而对所有近距离目标报警。风险引擎现在额外输出 `route_relation`：`outside`、`predicted_entry`、`entered`、`inside`、`exiting`，用于回放和调参解释。
 
+评估脚本现已同时输出两套口径：历史的“所有正向标签召回”（near_miss + conflict）保留用于对照；新增严格的 `conflict_recall` 和 `near_miss_detection_rate`。按当前路线冲突定义，默认候选在 1 段 conflict 上识别 1/1，即 `conflict_recall=100%`；3 段 near_miss 均未报警，即 `near_miss_detection_rate=0%`，与“近但路线外安全通过”的人工复核一致。汇报时应优先使用严格冲突指标，不能把 near_miss 混作碰撞冲突。
+
 ## 训练现状
 
 公开数据训练集 `scooterdet` 共 2013 张图片，按组划分为 train 1611、val 201、test 201；类别包含 electric_bicycle、person、bicycle、motorcycle。该模型已经训练并能加载，但在本地手机视角上出现明显域偏移，不能只看公开数据集指标决定采用。
