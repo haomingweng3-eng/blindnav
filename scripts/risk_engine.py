@@ -33,6 +33,7 @@ class TrackState:
         corridor_half_width=0.18,
         corridor_center=0.0,
         entry_lateral_threshold=0.04,
+        entry_confirm_frames=3,
         prediction_frames=5,
         fps=1.0,
         reference_fps=1.0,
@@ -46,6 +47,8 @@ class TrackState:
             raise ValueError("corridor_center must be between -0.5 and 0.5")
         if entry_lateral_threshold < 0:
             raise ValueError("entry_lateral_threshold must be non-negative")
+        if not isinstance(entry_confirm_frames, int) or entry_confirm_frames <= 0:
+            raise ValueError("entry_confirm_frames must be a positive integer")
         if prediction_frames <= 0:
             raise ValueError("prediction_frames must be positive")
         if fps <= 0 or reference_fps <= 0:
@@ -58,6 +61,7 @@ class TrackState:
         self.corridor_half_width = float(corridor_half_width)
         self.corridor_center = float(corridor_center)
         self.entry_lateral_threshold = float(entry_lateral_threshold)
+        self.entry_confirm_frames = entry_confirm_frames
         self.prediction_frames = int(prediction_frames)
         self.fps = float(fps)
         self.reference_fps = float(reference_fps)
@@ -127,10 +131,17 @@ class TrackState:
             box_center(box)[0] / 640.0 - 0.5 for box in self.boxes[window_start:-1]
         ]
         current_inside = corridor_min <= current_x <= corridor_max
+        inside_streak = 0
+        for box in reversed(self.boxes[window_start:]):
+            x = box_center(box)[0] / 640.0 - 0.5
+            if corridor_min <= x <= corridor_max:
+                inside_streak += 1
+            else:
+                break
         route_entry = current_inside and any(
             not (corridor_min <= previous_x <= corridor_max)
             for previous_x in previous_xs
-        )
+        ) and inside_streak >= self.entry_confirm_frames
         predicted_entry = (
             not current_inside
             and corridor_min <= future_x <= corridor_max
@@ -209,6 +220,8 @@ class TrackState:
             "corridor_center": self.corridor_center,
             "corridor_half_width": self.corridor_half_width,
             "entry_lateral_threshold": self.entry_lateral_threshold,
+            "entry_confirm_frames": self.entry_confirm_frames,
+            "inside_streak": inside_streak,
             "area_n": round(a_new_n, 4),
             "min_approach_area": self.min_approach_area,
             "close": close_high,

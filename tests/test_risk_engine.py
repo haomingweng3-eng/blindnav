@@ -148,7 +148,7 @@ class RiskEngineTests(unittest.TestCase):
             "person",
             corridor_half_width=0.12,
         )
-        centers = [520, 500, 470, 440, 410, 380, 350]
+        centers = [520, 500, 470, 440, 410, 380, 350, 330]
         for frame_idx, cx in enumerate(centers, start=1):
             state.update(centered_box(100, cx=cx), frame_idx=frame_idx)
 
@@ -156,6 +156,22 @@ class RiskEngineTests(unittest.TestCase):
 
         self.assertTrue(info["route_entry"])
         self.assertTrue(info["path_conflict"])
+
+    def test_transient_two_frame_route_touch_is_not_confirmed_entry(self):
+        state = TrackState(
+            "edge-pass",
+            "motorcycle",
+            corridor_half_width=0.10,
+            entry_confirm_frames=3,
+        )
+        centers = [520, 480, 440, 400, 350, 340]
+        for frame_idx, cx in enumerate(centers, start=1):
+            state.update(centered_box(120, cx=cx), frame_idx=frame_idx)
+
+        _, info = state.assess(frame_idx=len(centers))
+
+        self.assertFalse(info["route_entry"])
+        self.assertNotEqual(info["route_relation"], "entered")
 
     def test_slow_drift_toward_corridor_is_not_a_dynamic_entry(self):
         state = TrackState(
@@ -182,7 +198,7 @@ class RiskEngineTests(unittest.TestCase):
             entry_lateral_threshold=0.04,
             looming_threshold=0.02,
         )
-        centers = [450, 410, 370, 330]
+        centers = [450, 410, 370, 330, 310]
         for frame_idx, cx in enumerate(centers, start=1):
             state.update(centered_box(140 + frame_idx * 5, cx=cx), frame_idx=frame_idx)
 

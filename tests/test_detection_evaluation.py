@@ -118,7 +118,7 @@ class DetectionEvaluationTests(unittest.TestCase):
 
     def test_route_diagnostics_explain_entry_and_outside_tracks(self):
         records = []
-        for frame, cx in enumerate([520, 480, 440, 400, 360], start=1):
+        for frame, cx in enumerate([520, 480, 440, 400, 360, 340, 330], start=1):
             records.append(
                 {
                     "frame": frame,
