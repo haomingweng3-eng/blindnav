@@ -181,13 +181,22 @@ class TrackState:
         # 近距离阈值分两档
         close_high = a_new_n > 0.06  # ≈157px 框，直冲危险距离
         close_low = a_new_n > 0.015  # ≈78px 框，横向值得提示
+        predicted_area_n = a_new_n * math.exp(
+            max(looming, 0.0) * self.prediction_frames
+        )
+        predicted_approach = (
+            a_new_n < self.min_approach_area
+            and predicted_area_n >= self.min_approach_area
+            and looming > self.looming_threshold
+            and dynamic_path_conflict
+        )
 
         lvl = LVL_NONE
         reason = ""
         if (
             looming > self.looming_threshold
             and dynamic_path_conflict
-            and a_new_n >= self.min_approach_area
+            and (a_new_n >= self.min_approach_area or predicted_approach)
             and close_high
         ):
             lvl = LVL_HIGH
@@ -195,10 +204,10 @@ class TrackState:
         elif (
             looming > self.looming_threshold
             and dynamic_path_conflict
-            and a_new_n >= self.min_approach_area
+            and (a_new_n >= self.min_approach_area or predicted_approach)
         ):
             lvl = LVL_MID
-            reason = "快速接近"
+            reason = "预计快速接近" if predicted_approach else "快速接近"
         elif (
             abs(lateral) >= self.entry_lateral_threshold
             and close_low
@@ -235,6 +244,8 @@ class TrackState:
             "entry_confirm_frames": self.entry_confirm_frames,
             "inside_streak": inside_streak,
             "area_n": round(a_new_n, 4),
+            "predicted_area_n": round(predicted_area_n, 4),
+            "predicted_approach": predicted_approach,
             "min_approach_area": self.min_approach_area,
             "close": close_high,
             "reason": reason,

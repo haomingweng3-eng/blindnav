@@ -236,6 +236,23 @@ yolo detect train \
   name=electric_bicycle_yolov8n_v1
 ```
 
+仓库也提供统一入口，方便在 4060 上复现实验并固定参数：
+
+```bash
+python scripts/train_detector.py \
+  --model models/yolov8n.pt \
+  --data /path/to/local-reviewed-yolo/data.yaml \
+  --device cuda:0 \
+  --epochs 80 \
+  --imgsz 640 \
+  --batch -1 \
+  --project runs \
+  --name local_phone_view_v1 \
+  --seed 20260926
+```
+
+这个入口只接受已经人工画好目标框的 YOLO 数据集；视频级 `safe`、`near_miss`、`conflict` 标签不能直接当检测训练标签。推荐顺序是：先用 `models/yolov8n.pt` 做基线，再用公开 ScooterDet 权重或公开数据训练结果初始化，最后加入本地手机视角人工框做微调。每次训练都要保留 `data.yaml`、视频级划分、训练参数、`results.csv`、`best.pt` 的 SHA-256，并在同一批本地测试视频上重新跑风险评估。
+
 若显存、内存或训练时间不足，先把 `epochs` 改为 30 做流程验证，不要把流程验证结果当最终效果。
 
 队友必须交付：

@@ -191,6 +191,23 @@ class RiskEngineTests(unittest.TestCase):
         self.assertFalse(info["dynamic_path_conflict"])
         self.assertEqual(info["route_relation"], "inside_unconfirmed")
 
+    def test_predicts_approach_before_minimum_area_is_reached(self):
+        state = TrackState(
+            "early-warning-bike",
+            "motorcycle",
+            looming_threshold=0.06,
+            min_approach_area=0.06,
+            prediction_frames=5,
+        )
+        for frame_idx, side in enumerate([90, 100, 111, 123, 136], start=1):
+            state.update(centered_box(side), frame_idx=frame_idx)
+
+        level, info = state.assess(frame_idx=5)
+
+        self.assertEqual(level, LVL_MID)
+        self.assertTrue(info["predicted_approach"])
+        self.assertLess(info["area_n"], info["min_approach_area"])
+
     def test_slow_drift_toward_corridor_is_not_a_dynamic_entry(self):
         state = TrackState(
             "parked-bike-drift",
