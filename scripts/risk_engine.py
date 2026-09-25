@@ -139,6 +139,16 @@ class TrackState:
         # 横向告警只针对“进入路线”的运动。目标已经在路线内但正在
         # 向外离开，或只是沿路线边缘平行经过，不应仅凭横向速度报警。
         entry_motion = route_entry or predicted_entry
+        if route_entry:
+            route_relation = "entered"
+        elif predicted_entry:
+            route_relation = "predicted_entry"
+        elif current_inside and not (corridor_min <= future_x <= corridor_max):
+            route_relation = "exiting"
+        elif current_inside:
+            route_relation = "inside"
+        else:
+            route_relation = "outside"
         dynamic_path_conflict = current_inside or predicted_entry
         path_conflict = (
             corridor_min <= current_x <= corridor_max
@@ -195,6 +205,7 @@ class TrackState:
             "predicted_entry": predicted_entry,
             "route_entry": route_entry,
             "entry_motion": entry_motion,
+            "route_relation": route_relation,
             "corridor_center": self.corridor_center,
             "corridor_half_width": self.corridor_half_width,
             "entry_lateral_threshold": self.entry_lateral_threshold,
