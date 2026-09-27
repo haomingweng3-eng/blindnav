@@ -20,6 +20,29 @@ except ImportError:
 CLASS_IDS = {"electric_bicycle": 0, "person": 1, "bicycle": 2, "motorcycle": 3, "car": 4}
 
 
+def summarize_annotations(annotations):
+    """Return dataset counts, including reviewed empty/background images."""
+    class_counts = defaultdict(int)
+    empty_image_count = 0
+    box_count = 0
+    event_counts = defaultdict(int)
+    for annotation in annotations:
+        boxes = annotation.get("boxes", [])
+        event_counts[str(annotation.get("event_type", ""))] += 1
+        if not boxes:
+            empty_image_count += 1
+        box_count += len(boxes)
+        for box in boxes:
+            class_counts[str(box["class"])] += 1
+    return {
+        "images": len(annotations),
+        "empty_image_count": empty_image_count,
+        "box_count": box_count,
+        "class_counts": dict(sorted(class_counts.items())),
+        "event_counts": dict(sorted(event_counts.items())),
+    }
+
+
 def annotation_to_rows(annotation, width, height):
     rows = []
     for item in annotation.get("boxes", []):
@@ -71,7 +94,12 @@ def convert_review(review_path, output_dir):
     with (output / "manifest.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(manifest[0]))
         writer.writeheader(); writer.writerows(manifest)
-    summary = {"images": len(manifest), "videos": len(splits), "annotation_source": str(review_path), "status": "manual_reviewed"}
+    summary = {
+        **summarize_annotations(annotations),
+        "videos": len(splits),
+        "annotation_source": str(review_path),
+        "status": "manual_reviewed",
+    }
     (output / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return summary
 

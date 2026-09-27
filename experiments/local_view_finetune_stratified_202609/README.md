@@ -8,6 +8,8 @@
 
 - 来源：`runs/annotations_202609.json`
 - 图片：84 张，来自 22 段视频
+- 明确无目标框的安全负样本：35 张
+- 总目标框：68 个
 - 类别：`electric_bicycle`、`person`、`bicycle`、`motorcycle`、`car`
 - 电动车框：18 个
 - 按视频划分，电动车至少出现在 train/val/test 三个 split；实际为 train 9、val 1、test 8 个框
