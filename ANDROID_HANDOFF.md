@@ -62,7 +62,7 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 ## 尚未完成，不能对外宣称
 
 - 尚未在真实 Android 手机上完成 CameraX 权限、持续运行和功耗验证。
-- 当前页面已显示检测数量和 Android MVP 告警计数；该基线不是 Python ByteTrack 的等价移植，阈值和轨迹关联仍需真实视频标定。
+- 当前页面已显示检测数量、累计 FPS、推理 P95、丢帧数和 Android MVP 告警计数；该基线不是 Python ByteTrack 的等价移植，阈值和轨迹关联仍需真实视频标定。
 - 尚未实现外接摄像头的 USB/Wi-Fi 协议和断连恢复。
 - Android 已实现反馈 JSON 解析、震动/提示音/TTS 执行层和 `TemporalRiskEngine` MVP；尚未完成 ByteTrack、风险仲裁的正式移植和真机验证。
 - 当前模型仍是 YOLOv8n COCO 模型，不能宣称已经解决国内电动车类别识别问题。
@@ -72,7 +72,7 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 
 已在仓库环境对 `models/yolov8n.onnx` 完成模型级基准：预热 2 帧、测量 8 帧，平均推理耗时 38.85 ms，中位数 38.77 ms，P95 39.40 ms，模型级稳态约 25.74 FPS。该结果只包含 ONNX 预处理/推理/解码基准，不包含 CameraX、RGB 转换、风险引擎、反馈执行和手机发热，因此不能当作 Android 端到端帧率。
 
-仓库静态 Android 契约检查已通过。本机已安装 OpenJDK 17，并完成 `test assembleDebug`：Gradle 构建成功，Debug APK 约 85 MB，SHA-256 为 `7096412a2266c0cee533548b66f4494663a9a5a2cf373c0ef8d0397967aac20a`。一台 Android 15 真机已通过 ADB 连接，但首次安装被系统拒绝（`INSTALL_FAILED_USER_RESTRICTED`），需要在手机上允许“USB 安装/通过 USB 安装”。安装获准后，优先记录真实手机型号、端到端 FPS、P95 延迟、丢帧和温度。
+仓库静态 Android 契约检查已通过。本机已安装 OpenJDK 17，并完成 `test assembleDebug`：Gradle 构建成功，Debug APK 约 85 MB，SHA-256 为 `efb9cf8af5d9073ec301c2c9df5d510d18f0c721ef2e1609e9c8814401e29ada`。一台 Android 15 真机已通过 ADB 连接，但首次安装被系统拒绝（`INSTALL_FAILED_USER_RESTRICTED`），需要在手机上允许“USB 安装/通过 USB 安装”。安装获准后，优先记录真实手机型号、端到端 FPS、P95 延迟、丢帧和温度。
 
 ## 交接给队友的最小任务
 

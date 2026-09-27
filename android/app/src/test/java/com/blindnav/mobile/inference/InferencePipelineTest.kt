@@ -22,7 +22,21 @@ class InferencePipelineTest {
         assertEquals(1234L, results[0].captureTsMs)
         assertEquals(1, results[0].frameWidth)
         assertEquals(1, results[0].frameHeight)
+        assertEquals(0, results[0].droppedSinceLast)
         assertEquals(true, results[0].processingMs >= 0L)
         assertEquals(1, results[0].detections.size)
+    }
+
+    @Test
+    fun forwardsDroppedFrameCountToResult() {
+        val frame = RgbFrame(1, 1, byteArrayOf(1, 2, 3))
+        val results = mutableListOf<FrameDetections>()
+        val pipeline = InferencePipeline(Detector { emptyList() }, results::add)
+
+        pipeline.onFrame(
+            FramePacket(SourceKind.PHONE_CAMERA, 8, 2000, 1, 1, "camera2", 3, frame)
+        )
+
+        assertEquals(3, results.single().droppedSinceLast)
     }
 }

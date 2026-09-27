@@ -12,6 +12,7 @@ data class FrameDetections(
     val frameWidth: Int,
     val frameHeight: Int,
     val processingMs: Long = 0L,
+    val droppedSinceLast: Int = 0,
     val detections: List<Detection>,
 )
 
@@ -33,6 +34,7 @@ class InferencePipeline(
                     frameWidth = frame.width,
                     frameHeight = frame.height,
                     processingMs = ((System.nanoTime() - startedAtNs) / 1_000_000L).coerceAtLeast(0L),
+                    droppedSinceLast = packet.droppedSinceLast,
                     detections = detections,
                 ),
             )

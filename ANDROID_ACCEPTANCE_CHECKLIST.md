@@ -8,7 +8,7 @@
 - 手机开启开发者选项中的 USB 调试；
 - 小米/Redmi 设备另外开启“USB 安装/通过 USB 安装”；
 - APK：`android/app/build/outputs/apk/debug/app-debug.apk`；
-- 当前 APK SHA-256：`7096412a2266c0cee533548b66f4494663a9a5a2cf373c0ef8d0397967aac20a`。
+- 当前 APK SHA-256：`efb9cf8af5d9073ec301c2c9df5d510d18f0c721ef2e1609e9c8814401e29ada`。
 
 ## 2. 构建与安装
 

@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.camera.view.PreviewView
 import com.blindnav.mobile.inference.InferencePipeline
 import com.blindnav.mobile.inference.OnnxYoloDetector
+import com.blindnav.mobile.inference.RuntimeMetrics
 import com.blindnav.mobile.feedback.FeedbackAction
 import com.blindnav.mobile.feedback.FeedbackDispatcher
 import com.blindnav.mobile.risk.TemporalRiskEngine
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
     private var detector: OnnxYoloDetector? = null
     private var feedbackDispatcher: FeedbackDispatcher? = null
     private val riskEngine = TemporalRiskEngine()
+    private val runtimeMetrics = RuntimeMetrics()
     private var statusText: TextView? = null
     private var previewView: PreviewView? = null
 
@@ -55,18 +57,27 @@ class MainActivity : ComponentActivity() {
 
     private fun startInference() {
         try {
+            runtimeMetrics.reset()
             val model = OnnxYoloDetector(this)
             val source = PhoneCameraFrameSource(this, this, previewView)
             val pipeline = InferencePipeline(
                 detector = model,
                 onResult = { result ->
+                    runtimeMetrics.record(result.processingMs, result.droppedSinceLast)
+                    val metrics = runtimeMetrics.snapshot()
                     val alerts = riskEngine.update(result)
                     alerts.forEach { alert ->
                         feedbackDispatcher?.dispatch(alert.trackId, alert.feedback)
                     }
                     runOnUiThread {
                         val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
-                        showStatus("运行中\n帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标 · 推理 ${result.processingMs}ms$alertText")
+                        showStatus(
+                            "运行中\n" +
+                                "帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标$alertText\n" +
+                                "FPS ${"%.1f".format(metrics.fps)} · " +
+                                "推理 ${result.processingMs}ms · P95 ${metrics.p95ProcessingMs}ms\n" +
+                                "丢帧 ${metrics.droppedFrames}",
+                        )
                     }
                 },
                 onError = { error ->
@@ -103,6 +114,7 @@ class MainActivity : ComponentActivity() {
         detector?.close()
         feedbackDispatcher?.close()
         riskEngine.reset()
+        runtimeMetrics.reset()
         cameraSource = null
         detector = null
         feedbackDispatcher = null
