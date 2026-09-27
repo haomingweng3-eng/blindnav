@@ -30,6 +30,17 @@ def run(command: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, check=False, text=True, capture_output=True)
 
 
+def classify_install_failure(stderr: str) -> dict[str, str]:
+    """Turn common Android install failures into an actionable handoff message."""
+    message = str(stderr or "")
+    if "INSTALL_FAILED_USER_RESTRICTED" in message:
+        return {
+            "reason": "usb_install_not_allowed",
+            "action": "请在手机开发者选项中开启 USB 安装/通过 USB 安装，并确认手机上的安装提示。",
+        }
+    return {"reason": "install_failed", "action": "请查看 install_stderr 并检查 APK 与设备兼容性。"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", type=Path, default=DEFAULT_APK)
@@ -53,7 +64,8 @@ def main() -> int:
     if not args.skip_install:
         install = run(["adb", "-s", serial, "install", "-r", str(args.apk)])
         if install.returncode != 0:
-            print(json.dumps({"passed": False, "reason": "install_failed", "stderr": install.stderr[-1000:]}, ensure_ascii=False))
+            diagnosis = classify_install_failure(install.stderr)
+            print(json.dumps({"passed": False, **diagnosis, "stderr": install.stderr[-1000:]}, ensure_ascii=False))
             return 1
     launch = run(["adb", "-s", serial, "shell", "am", "start", "-n", "com.blindnav.mobile/.MainActivity"])
     result = {
