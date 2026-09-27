@@ -83,3 +83,5 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 ```
 
 如果这一步稳定，优先用标注视频校准 `TemporalRiskEngine` 的阈值和关联策略，再决定是否替换为 ByteTrack；不要先做地图、双摄、SLAM 或云端多模态功能。
+
+逐项记录模板见 `ANDROID_ACCEPTANCE_CHECKLIST.md`。
