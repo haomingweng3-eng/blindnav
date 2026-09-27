@@ -13,6 +13,13 @@ class BuildPseudoLabelsTest(unittest.TestCase):
         self.assertEqual(len(set(splits.values())), 3)
         self.assertEqual(len(set(splits.values()) & {"train"}), 1)
 
+    def test_video_split_can_stratify_target_videos(self):
+        splits = assign_video_splits(
+            ["v1", "v2", "v3", "v4", "v5", "v6"],
+            target_video_ids=["v1", "v2", "v3"],
+        )
+        self.assertEqual({splits[video] for video in ["v1", "v2", "v3"]}, {"train", "val", "test"})
+
     def test_select_candidates_accepts_public_scan_field(self):
         scan = {
             "detections": [

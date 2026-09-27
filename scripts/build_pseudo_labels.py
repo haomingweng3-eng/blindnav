@@ -21,7 +21,7 @@ def box_to_yolo(box, width: int, height: int) -> str:
     return f"0 {cx:g} {cy:g} {bw:g} {bh:g}"
 
 
-def assign_video_splits(video_ids: list[str]) -> dict[str, str]:
+def assign_video_splits(video_ids: list[str], target_video_ids: list[str] | None = None) -> dict[str, str]:
     ordered = sorted(set(video_ids))
     if len(ordered) < 3:
         raise ValueError("at least three videos are required for train/val/test")
@@ -30,10 +30,26 @@ def assign_video_splits(video_ids: list[str]) -> dict[str, str]:
     if n_train + n_val >= len(ordered):
         n_train = len(ordered) - 2
         n_val = 1
-    return {
-        video_id: ("train" if index < n_train else "val" if index < n_train + n_val else "test")
-        for index, video_id in enumerate(ordered)
-    }
+    capacities = {"train": n_train, "val": n_val, "test": len(ordered) - n_train - n_val}
+    result: dict[str, str] = {}
+    if target_video_ids:
+        targets = [video_id for video_id in sorted(set(target_video_ids)) if video_id in ordered]
+        for split in ("train", "val", "test"):
+            if not targets or capacities[split] <= 0:
+                break
+            result[targets.pop(0)] = split
+            capacities[split] -= 1
+        for video_id in targets:
+            split = max(capacities, key=capacities.get)
+            result[video_id] = split
+            capacities[split] -= 1
+    for video_id in ordered:
+        if video_id in result:
+            continue
+        split = max(capacities, key=capacities.get)
+        result[video_id] = split
+        capacities[split] -= 1
+    return result
 
 
 def select_candidates(scan: dict, source_term: str, min_conf: float) -> list[dict]:

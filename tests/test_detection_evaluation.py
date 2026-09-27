@@ -29,6 +29,24 @@ class DetectionEvaluationTests(unittest.TestCase):
         self.assertEqual(report["alerts"][0]["track_id"], "bike_0")
         self.assertEqual(report["alerts"][0]["feedback"]["tone"], "warning")
 
+    def test_class_change_does_not_reset_same_track_history(self):
+        classes = ["person", "motorcycle", "person", "electric_bicycle", "motorcycle", "person", "electric_bicycle"]
+        records = [
+            {
+                "frame": frame,
+                "track_id": "object_0",
+                "cls": cls,
+                "conf": 0.9,
+                "box": centered_box(side),
+            }
+            for frame, (cls, side) in enumerate(zip(classes, [60, 66, 73, 82, 93, 106, 121]), start=1)
+        ]
+
+        report = evaluate_detection_records(records, width=640, height=640)
+
+        self.assertEqual(report["track_count"], 1)
+        self.assertGreaterEqual(report["alert_count"], 1)
+
     def test_different_track_ids_do_not_share_area_history(self):
         records = []
         for frame, side in enumerate([60, 66, 73, 82], start=1):

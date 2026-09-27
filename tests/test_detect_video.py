@@ -1,9 +1,12 @@
 import unittest
 
-from scripts.detect_video import parse_args
+from scripts.detect_video import canonical_track_id, parse_args
 
 
 class DetectVideoArgumentTests(unittest.TestCase):
+    def test_canonical_track_id_does_not_include_detector_class(self):
+        self.assertEqual(canonical_track_id(7), "track_7")
+
     def test_custom_model_and_device_are_configurable(self):
         args = parse_args(
             [

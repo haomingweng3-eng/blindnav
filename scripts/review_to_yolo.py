@@ -15,7 +15,9 @@ except ImportError:
     from build_pseudo_labels import assign_video_splits, box_to_yolo
 
 
-CLASS_IDS = {"electric_bicycle": 0, "person": 1, "bicycle": 2, "motorcycle": 3}
+# Preserve the original four IDs so existing annotations remain compatible;
+# append car as a new class for the next fine-tuning dataset.
+CLASS_IDS = {"electric_bicycle": 0, "person": 1, "bicycle": 2, "motorcycle": 3, "car": 4}
 
 
 def annotation_to_rows(annotation, width, height):
@@ -36,7 +38,13 @@ def convert_review(review_path, output_dir):
     if not annotations:
         raise ValueError("review JSON contains no annotations")
     video_by_image = {item["image"]: item.get("video_id", Path(item["image"]).parent.name) for item in annotations}
-    splits = assign_video_splits(list(video_by_image.values()))
+    target_video_ids = [
+        video_id
+        for annotation in annotations
+        for video_id in [video_by_image[str(annotation["image"])] ]
+        if any(box.get("class") == "electric_bicycle" for box in annotation.get("boxes", []))
+    ]
+    splits = assign_video_splits(list(video_by_image.values()), target_video_ids=target_video_ids)
     output = Path(output_dir)
     manifest = []
     for annotation in annotations:
@@ -57,7 +65,7 @@ def convert_review(review_path, output_dir):
         manifest.append({"image": str(image_target), "video_id": video_id, "split": split, "event_type": annotation.get("event_type")})
     (output / "data.yaml").write_text(
         f"path: {output.resolve()}\ntrain: images/train\nval: images/val\ntest: images/test\nnames:\n"
-        "  0: electric_bicycle\n  1: person\n  2: bicycle\n  3: motorcycle\n",
+        "  0: electric_bicycle\n  1: person\n  2: bicycle\n  3: motorcycle\n  4: car\n",
         encoding="utf-8",
     )
     with (output / "manifest.csv").open("w", newline="", encoding="utf-8") as handle:

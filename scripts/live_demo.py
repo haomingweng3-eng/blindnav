@@ -71,6 +71,7 @@ def run_demo(
 
     sys.path.insert(0, "scripts")
     from risk_engine import LVL_NAME, TrackState
+    from detect_video import canonical_track_id
 
     if width <= 0 or height <= 0:
         raise ValueError("width and height must be positive")
@@ -152,7 +153,7 @@ def run_demo(
                     if name not in alert_classes:
                         continue
                     x1, y1, x2, y2 = [int(v) for v in box]
-                    track_key = f"{name}_{int(tracked_id)}"
+                    track_key = canonical_track_id(tracked_id)
                     if track_key not in tracks:
                         tracks[track_key] = TrackState(
                             track_key,

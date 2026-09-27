@@ -170,11 +170,16 @@ def evaluate_detection_records(
         frame_idx = int(record["frame"])
         frame_count = max(frame_count, frame_idx)
         detection_stats[cls] = detection_stats.get(cls, 0) + 1
-        track_key = (str(record["track_id"]), cls)
+        # ByteTrack IDs are object identities; the detector class may flicker
+        # between person/motorcycle/electric_bicycle for the same object.
+        # Keep one temporal state per ID so class flicker does not erase
+        # looming and route-entry history.
+        track_key = str(record["track_id"])
         state = states.setdefault(
             track_key,
             TrackState(
-                *track_key,
+                track_key,
+                cls,
                 looming_threshold=looming_threshold,
                 fps=fps,
                 reference_fps=reference_fps,
@@ -191,9 +196,9 @@ def evaluate_detection_records(
         level, info = state.assess(frame_idx)
         if info:
             diagnostic = route_diagnostics.setdefault(
-                track_key[0],
+                track_key,
                 {
-                    "track_id": track_key[0],
+                    "track_id": track_key,
                     "cls": cls,
                     "record_count": 0,
                     "route_relations_seen": set(),
@@ -233,7 +238,7 @@ def evaluate_detection_records(
             alerts.append(
                 {
                     "frame": frame_idx,
-                    "track_id": track_key[0],
+                    "track_id": track_key,
                     "cls": cls,
                     "conf": round(float(record.get("conf", 0.0)), 4),
                     "level": level,

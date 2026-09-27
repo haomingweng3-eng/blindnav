@@ -20,6 +20,11 @@ ALERT_CLASSES = {
 }
 
 
+def canonical_track_id(tracked_id):
+    """Use the tracker identity without the detector's flickering class name."""
+    return f"track_{int(tracked_id)}"
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="对视频运行 YOLO + ByteTrack + 风险引擎"
@@ -154,7 +159,7 @@ def process_video(
             detection_records.append(
                 {
                     "frame": frame_idx,
-                    "track_id": f"{name}_{int(tracked_id)}",
+                    "track_id": canonical_track_id(tracked_id),
                     "cls": name,
                     "conf": float(box_conf),
                     "box": [x1, y1, x2, y2],

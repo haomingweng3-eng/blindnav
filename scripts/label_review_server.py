@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-CLASSES = {"electric_bicycle", "person", "bicycle", "motorcycle"}
+CLASSES = {"electric_bicycle", "person", "bicycle", "motorcycle", "car"}
 EVENT_TYPES = {"safe_pass", "near_miss", "conflict"}
 
 
@@ -53,18 +53,19 @@ def build_items(manifest_path, candidates_path=None, only_candidates=False):
     if candidates_path:
         payload = json.loads(Path(candidates_path).read_text(encoding="utf-8"))
         for detection in payload.get("detections", []):
-            candidates.setdefault(detection["image"], []).append(detection)
+            candidates.setdefault(str(Path(detection["image"]).resolve()), []).append(detection)
     items = []
     for row in rows:
         image = row["image"]
-        if only_candidates and image not in candidates:
+        image_key = str(Path(image).resolve())
+        if only_candidates and image_key not in candidates:
             continue
         items.append({
             "image": image,
             "video_id": row.get("video_id", ""),
             "frame": int(row.get("frame", 0)),
             "timestamp_s": float(row.get("timestamp_s", 0)),
-            "candidates": candidates.get(image, []),
+            "candidates": candidates.get(image_key, []),
         })
     return items
 
@@ -82,12 +83,12 @@ button, select { font-size:16px; padding:6px 10px; }
 </style>
 <div id="bar"><button onclick="move(-1)">上一帧</button><button onclick="move(1)">下一帧</button>
 <button onclick="save()">保存标注</button>
-<label>类别 <select id="cls"><option>electric_bicycle</option><option>person</option><option>bicycle</option><option>motorcycle</option></select></label>
+<label>类别 <select id="cls"><option>electric_bicycle</option><option>car</option><option>person</option><option>bicycle</option><option>motorcycle</option></select></label>
 <label>事件 <select id="event"><option>safe_pass</option><option>near_miss</option><option>conflict</option></select></label><span id="counter"></span></div>
 <div class="hint">黄色框=模型候选，红色框=人工框。拖动鼠标画框；右键清空当前人工框。</div>
 <div id="stage"><img id="img"><canvas id="canvas"></canvas></div><div id="info"></div>
 <script>
-let items=[], index=0, manual=[], drawing=null;
+let items=[], index=0, manual=[], drawing=null, saveTimer=null, dirty=false;
 const img=document.getElementById('img'), canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d');
 async function init(){items=await(await fetch('/api/items')).json();if(items.length)show();}
 function point(e){const r=canvas.getBoundingClientRect();return[(e.clientX-r.left)*img.naturalWidth/canvas.width,(e.clientY-r.top)*img.naturalHeight/canvas.height];}
@@ -96,12 +97,16 @@ const box=(b,c,l)=>{ctx.strokeStyle=c;ctx.lineWidth=3;ctx.strokeRect(b[0]*sx,b[1
 (items[index].candidates||[]).forEach(d=>box(d.box,'#ffd400',d.source_class+' '+d.confidence));manual.forEach(d=>box(d.box,'#ff3b30',d.class));if(drawing)box(drawing,'#00e676','new');}
 function fit(){draw();}
 function show(){const it=items[index];manual=(it.saved&&it.saved.boxes)||[];document.getElementById('event').value=(it.saved&&it.saved.event_type)||'safe_pass';img.onload=fit;img.src='/api/image?name='+encodeURIComponent(it.image);document.getElementById('counter').textContent=`${index+1}/${items.length}`;document.getElementById('info').textContent=`${it.video_id} frame=${it.frame} t=${it.timestamp_s}s candidates=${it.candidates.length}`;}
-function move(d){if(!items.length)return;index=Math.max(0,Math.min(items.length-1,index+d));show();}
+function markDirty(){dirty=true;document.getElementById('info').textContent+='\n未保存，正在自动保存…';scheduleSave();}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(),350);}
+async function move(d){if(!items.length)return;if(dirty)await save();index=Math.max(0,Math.min(items.length-1,index+d));show();}
 canvas.addEventListener('mousedown',e=>{if(e.button===0){drawing=[...point(e),...point(e)];draw();}});
 canvas.addEventListener('mousemove',e=>{if(drawing){const p=point(e);drawing[2]=p[0];drawing[3]=p[1];draw();}});
-canvas.addEventListener('mouseup',e=>{if(!drawing)return;const b=drawing;drawing=null;const x1=Math.min(b[0],b[2]),y1=Math.min(b[1],b[3]),x2=Math.max(b[0],b[2]),y2=Math.max(b[1],b[3]);if(x2-x1>4&&y2-y1>4)manual.push({class:document.getElementById('cls').value,box:[x1,y1,x2,y2]});draw();});
-canvas.addEventListener('contextmenu',e=>{e.preventDefault();manual=[];draw();});
-async function save(){const it=items[index],payload={image:it.image,event_type:document.getElementById('event').value,boxes:manual};const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)alert(j.errors.join('\n'));else{it.saved=payload;alert('已保存');}}
+canvas.addEventListener('mouseup',e=>{if(!drawing)return;const b=drawing;drawing=null;const x1=Math.min(b[0],b[2]),y1=Math.min(b[1],b[3]),x2=Math.max(b[0],b[2]),y2=Math.max(b[1],b[3]);if(x2-x1>4&&y2-y1>4){manual.push({class:document.getElementById('cls').value,box:[x1,y1,x2,y2]});markDirty();}draw();});
+canvas.addEventListener('contextmenu',e=>{e.preventDefault();manual=[];draw();markDirty();});
+document.getElementById('cls').addEventListener('change',markDirty);
+document.getElementById('event').addEventListener('change',markDirty);
+async function save(){if(!items.length)return;const it=items[index],payload={image:it.image,event_type:document.getElementById('event').value,boxes:manual};const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)alert(j.errors.join('\n'));else{it.saved=payload;dirty=false;document.getElementById('info').textContent=`${it.video_id} frame=${it.frame} t=${it.timestamp_s}s candidates=${it.candidates.length}\n已自动保存`;}}
 window.addEventListener('resize',fit);init();
 </script>"""
 
