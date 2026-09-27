@@ -72,7 +72,7 @@ APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
 
 已在仓库环境对 `models/yolov8n.onnx` 完成模型级基准：预热 2 帧、测量 8 帧，平均推理耗时 38.85 ms，中位数 38.77 ms，P95 39.40 ms，模型级稳态约 25.74 FPS。该结果只包含 ONNX 预处理/推理/解码基准，不包含 CameraX、RGB 转换、风险引擎、反馈执行和手机发热，因此不能当作 Android 端到端帧率。
 
-仓库静态 Android 契约检查已通过；当前电脑缺少 Java Runtime，尚未完成 Gradle APK 构建和真机 30 秒持续运行测试。拿到装有 JDK 17 的环境后，优先补这两项，并记录真实手机型号、端到端 FPS、P95 延迟、丢帧和温度。
+仓库静态 Android 契约检查已通过。本机已安装 OpenJDK 17，并完成 `test assembleDebug`：Gradle 构建成功，Debug APK 约 85 MB，SHA-256 为 `7096412a2266c0cee533548b66f4494663a9a5a2cf373c0ef8d0397967aac20a`。一台 Android 15 真机已通过 ADB 连接，但首次安装被系统拒绝（`INSTALL_FAILED_USER_RESTRICTED`），需要在手机上允许“USB 安装/通过 USB 安装”。安装获准后，优先记录真实手机型号、端到端 FPS、P95 延迟、丢帧和温度。
 
 ## 交接给队友的最小任务
 
