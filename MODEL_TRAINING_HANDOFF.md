@@ -329,3 +329,20 @@ python scripts/train_detector.py \
 3. 每次训练都用同一批本地视频回放，分别报告电动车检测框指标、严格 conflict 召回、安全视频误报和首个告警时间。
 
 当前不要做：不要把汽车全部删除、不要把安全距离外的目标标成危险、不要把 near_miss 直接当成 conflict、不要把 20 epoch 实验权重放进手机演示。
+
+### 10.1 现有视频优先复核清单
+
+现有抽帧中还有一批候选帧没有人工确认，不必先重新拍摄。可用下面命令生成按正向事件视频、候选数量和置信度排序的清单：
+
+```bash
+python scripts/build_annotation_backlog.py \
+  runs/label_frames_202609/candidates.json \
+  runs/annotations_202609.json \
+  runs/annotation_backlog_202609.csv \
+  --target-video VID_20260922_170345 \
+  --target-video VID_20260922_170405 \
+  --target-video VID_20260922_170500 \
+  --target-video VID_20260922_170525
+```
+
+当前清单为 176 张未复核候选帧，约 350 个电动车/摩托车候选框。候选框只能作为画框起点，必须人工确认类别和边界；汽车、行人和伞不能因为模型候选出现就自动当作电动车。
