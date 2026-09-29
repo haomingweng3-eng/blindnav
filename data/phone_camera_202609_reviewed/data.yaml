@@ -1,0 +1,10 @@
+path: .
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: electric_bicycle
+  1: person
+  2: bicycle
+  3: motorcycle
+  4: car

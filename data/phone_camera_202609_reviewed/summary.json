@@ -1,0 +1,18 @@
+{
+  "images": 104,
+  "empty_image_count": 2,
+  "box_count": 365,
+  "class_counts": {
+    "car": 10,
+    "electric_bicycle": 347,
+    "person": 8
+  },
+  "event_counts": {
+    "conflict": 1,
+    "near_miss": 1,
+    "safe_pass": 102
+  },
+  "videos": 22,
+  "annotation_source": "annotations_backlog_202609.json",
+  "status": "manual_reviewed"
+}

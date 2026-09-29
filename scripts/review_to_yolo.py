@@ -85,9 +85,14 @@ def convert_review(review_path, output_dir):
         label_target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, image_target)
         label_target.write_text("\n".join(annotation_to_rows(annotation, width, height)) + ("\n" if annotation.get("boxes") else ""), encoding="utf-8")
-        manifest.append({"image": str(image_target), "video_id": video_id, "split": split, "event_type": annotation.get("event_type")})
+        manifest.append({
+            "image": str(image_target.relative_to(output)),
+            "video_id": video_id,
+            "split": split,
+            "event_type": annotation.get("event_type"),
+        })
     (output / "data.yaml").write_text(
-        f"path: {output.resolve()}\ntrain: images/train\nval: images/val\ntest: images/test\nnames:\n"
+        "path: .\ntrain: images/train\nval: images/val\ntest: images/test\nnames:\n"
         "  0: electric_bicycle\n  1: person\n  2: bicycle\n  3: motorcycle\n  4: car\n",
         encoding="utf-8",
     )
@@ -97,7 +102,7 @@ def convert_review(review_path, output_dir):
     summary = {
         **summarize_annotations(annotations),
         "videos": len(splits),
-        "annotation_source": str(review_path),
+        "annotation_source": review_path.name,
         "status": "manual_reviewed",
     }
     (output / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
