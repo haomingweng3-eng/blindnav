@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                         guidance.feedback?.let { feedback ->
                             feedbackDispatcher?.dispatch("guidance", feedback)
                         }
-                        trajectoryOverlay?.submit(result, tracks)
+                        trajectoryOverlay?.submit(result, tracks, guidance.state)
                         val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
                         val motionText = if (result.backgroundMotion?.reliable == true) "背景平移补偿" else "背景补偿不可用"
                         val guidanceText = guidanceLabel(guidance.state)

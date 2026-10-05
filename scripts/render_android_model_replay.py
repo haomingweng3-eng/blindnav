@@ -158,9 +158,12 @@ def render(args):
             if track["risk_level"] == 0 and not route_relevant:
                 continue
             x1, y1, x2, y2 = [round(value * scale) for value in track["box"]]
-            color = [(30, 220, 70), (0, 180, 255), (30, 30, 255)][track["risk_level"]]
+            uncertain_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "UNKNOWN_SLOW_DOWN"
+            display_level = 1 if uncertain_route_track else track["risk_level"]
+            color = [(30, 220, 70), (0, 180, 255), (30, 30, 255)][display_level]
             cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
-            cv2.putText(vis, track["track_id"], (x1, max(26, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, .65, color, 2)
+            label = track["track_id"] + (" SLOW DOWN" if uncertain_route_track else "")
+            cv2.putText(vis, label, (x1, max(26, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, .65, color, 2)
             points = track["history"]
             for old, new in zip(points, points[1:]):
                 cv2.line(vis, (round(old["x"] * scale), round(old["y"] * scale)),

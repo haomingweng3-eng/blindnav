@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.View
+import com.blindnav.mobile.guidance.GuidanceState
 import com.blindnav.mobile.inference.FrameDetections
 import com.blindnav.mobile.risk.RiskTrackSnapshot
 import kotlin.math.max
@@ -25,6 +26,7 @@ class TrajectoryOverlayView @JvmOverloads constructor(
     private var imageWidth = 1
     private var imageHeight = 1
     private var latestFrame = -1L
+    private var guidanceState: GuidanceState? = null
     private val density = resources.displayMetrics.density
     private val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val trailPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -39,17 +41,23 @@ class TrajectoryOverlayView @JvmOverloads constructor(
         typeface = android.graphics.Typeface.DEFAULT_BOLD
     }
 
-    fun submit(frame: FrameDetections, observations: List<RiskTrackSnapshot>) {
+    fun submit(
+        frame: FrameDetections,
+        observations: List<RiskTrackSnapshot>,
+        guidanceState: GuidanceState? = null,
+    ) {
             imageWidth = frame.frameWidth.coerceAtLeast(1)
             imageHeight = frame.frameHeight.coerceAtLeast(1)
             latestFrame = frame.sourceFrame
             tracks = observations
+            this.guidanceState = guidanceState
             invalidate()
     }
 
     fun clearOverlay() {
         post {
             tracks = emptyList()
+            guidanceState = null
             latestFrame = -1L
             invalidate()
         }
@@ -84,14 +92,17 @@ class TrajectoryOverlayView @JvmOverloads constructor(
             val closeCentralTrack = track.riskLevel == 0 && routeRelevant &&
                 contactY >= imageHeight * CLOSE_CONTACT_Y &&
                 track.roadHistory.size >= 2
+            val uncertainRouteTrack = track.riskLevel == 0 && routeRelevant &&
+                guidanceState == GuidanceState.UNKNOWN_SLOW_DOWN
             boxPaint.color = when {
                 track.riskLevel >= 2 -> Color.RED
-                track.riskLevel == 1 || closeCentralTrack -> Color.rgb(255, 165, 0)
+                track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack -> Color.rgb(255, 165, 0)
                 else -> Color.GREEN
             }
             val displayRisk = when {
                 track.riskLevel >= 2 -> " DANGER"
                 track.riskLevel == 1 || closeCentralTrack -> " NOTICE"
+                uncertainRouteTrack -> " SLOW DOWN"
                 else -> " TRACK"
             }
             val box = track.box
