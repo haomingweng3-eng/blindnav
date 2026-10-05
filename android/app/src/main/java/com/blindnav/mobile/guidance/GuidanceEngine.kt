@@ -55,7 +55,7 @@ class GuidanceEngine(
             tracks.any { it.riskLevel >= 1 }
         val decision = when {
             urgent ->
-                GuidanceDecision(GuidanceState.STOP, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
+                GuidanceDecision(GuidanceState.DANGER, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
             warning || (blocking && blockingStreak >= 2) ->
                 GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f, action("注意，前方可能有障碍", FeedbackPriority.WARNING))
             region.confidence < MIN_REGION_CONFIDENCE ->
