@@ -57,6 +57,26 @@ class WalkableRegionTests(unittest.TestCase):
         self.assertEqual(region.source, "geometry_fallback")
         self.assertLess(region.confidence, 0.35)
 
+    def test_unknown_hole_is_not_filled_by_region_outline(self):
+        labels = np.full((100, 160), 6, dtype=np.int64)
+        labels[70:75, 25:60] = 0
+        region = SegformerWalkableRegionEstimator.mask_to_region(labels, np.ones_like(labels, dtype=np.float32), {6})
+        self.assertLess(region.left_support, .90)
+        self.assertGreater(region.right_support, .90)
+
+    def test_detected_box_excluded_from_direction_evidence(self):
+        labels = np.full((100, 160), 6, dtype=np.int64)
+        region = SegformerWalkableRegionEstimator.mask_to_region(labels, np.ones_like(labels, dtype=np.float32), {6},
+            detections=[{"box": [20, 60, 65, 85]}])
+        self.assertLess(region.left_support, .90)
+
+    def test_low_probability_ground_does_not_authorize_direction(self):
+        labels = np.full((100, 160), 6, dtype=np.int64)
+        region = SegformerWalkableRegionEstimator.mask_to_region(labels, np.full(labels.shape, .4, dtype=np.float32), {6})
+        self.assertEqual(region.forward_support, 0)
+        self.assertEqual(region.left_support, 0)
+        self.assertEqual(region.right_support, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

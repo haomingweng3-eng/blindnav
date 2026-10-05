@@ -29,6 +29,9 @@ class GuidanceEngine(
 ) {
     private var lastFrame: Long? = null
     private var blockingStreak = 0
+    private var lastCaptureMs: Long? = null
+    private var supportedDirection = GuidanceState.UNKNOWN_SLOW_DOWN
+    private var directionStreak = 0
     private var lastState: GuidanceState? = null
     private var lastEmitMs = Long.MIN_VALUE
     private var lastWarningEmitMs = Long.MIN_VALUE
@@ -40,36 +43,37 @@ class GuidanceEngine(
         tracks: List<RiskTrackSnapshot>,
         alerts: List<AndroidRiskAlert>,
     ): GuidanceDecision {
-        val consecutive = lastFrame == null || frame.sourceFrame == lastFrame!! + 1
+        require(frame.frameWidth > 0 && frame.frameHeight > 0)
+        val consecutive = lastFrame == null || (frame.sourceFrame == lastFrame!! + 1 &&
+            lastCaptureMs?.let { frame.captureTsMs - it in 1L..500L } == true)
         val blocking = frame.detections.any { detection ->
             val box = detection.box
-            box.size == 4 && box[2] > box[0] && box[3] > box[1] &&
+            box.size == 4 && box.all { it.isFinite() } && box[2] > box[0] && box[3] > box[1] &&
                 detection.confidence >= MIN_CONFIDENCE &&
                 region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
                     box[3] / frame.frameHeight)
         }
         blockingStreak = if (blocking && consecutive) blockingStreak + 1 else if (blocking) 1 else 0
         lastFrame = frame.sourceFrame
+        lastCaptureMs = frame.captureTsMs
 
         val urgent = alerts.any { it.feedback.priority == FeedbackPriority.URGENT } ||
             tracks.any { it.riskLevel >= 2 }
         val warning = alerts.any { it.feedback.priority == FeedbackPriority.WARNING } ||
             tracks.any { it.riskLevel >= 1 }
-        val closeBlocking = frame.detections.any { detection ->
-            val box = detection.box
-            box.size == 4 &&
-                detection.confidence >= MIN_CONFIDENCE &&
-                region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
-                    box[3] / frame.frameHeight) &&
-                ((box[2] - box[0]) * (box[3] - box[1])) /
-                    (frame.frameWidth.toFloat() * frame.frameHeight.toFloat()) >= CLOSE_ROUTE_AREA
-        }
         // A missing or failed camera-motion estimate leaves route motion
         // ambiguous. Keep the user in the conservative state until a fresh
         // reliable estimate arrives; never announce a clear route solely
         // because the detector saw no urgent track.
-        val motionUncertain = frame.backgroundMotion != null &&
-            frame.backgroundMotion.reliable.not()
+        val motionUncertain = frame.backgroundMotion?.let {
+            !it.reliable || it.toTimestampMs != frame.captureTsMs
+        } ?: true
+        val currentDirection = if (motionUncertain) GuidanceState.UNKNOWN_SLOW_DOWN
+            else region.supportedDirection()
+        directionStreak = if (currentDirection != GuidanceState.UNKNOWN_SLOW_DOWN) {
+            if (consecutive && currentDirection == supportedDirection) directionStreak + 1 else 1
+        } else 0
+        supportedDirection = currentDirection
         val decision = when {
             urgent ->
                 GuidanceDecision(GuidanceState.DANGER, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
@@ -86,7 +90,7 @@ class GuidanceEngine(
             blocking ->
                 GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25f,
                     action("前方情况不明，请减速", FeedbackPriority.WARNING))
-            motionUncertain || region.confidence < MIN_REGION_CONFIDENCE ->
+            motionUncertain || !region.hasSurfaceEvidence || directionStreak < 3 ->
                 GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence,
                     action("前方情况不明，请减速", FeedbackPriority.WARNING))
             else -> guidanceDirection(region)
@@ -103,24 +107,31 @@ class GuidanceEngine(
     fun reset() {
         lastFrame = null
         blockingStreak = 0
+        lastCaptureMs = null
+        supportedDirection = GuidanceState.UNKNOWN_SLOW_DOWN
+        directionStreak = 0
         lastState = null
         lastEmitMs = Long.MIN_VALUE
         lastWarningEmitMs = Long.MIN_VALUE
         lastWarningRank = 0
     }
 
-    private fun guidanceDirection(region: WalkableRegion): GuidanceDecision = when (region.suggestedDirection) {
+    private fun guidanceDirection(region: WalkableRegion): GuidanceDecision = when (supportedDirection) {
         GuidanceState.MOVE_LEFT -> GuidanceDecision(GuidanceState.MOVE_LEFT, "右侧空间更受阻", region.confidence,
             action("向左绕行", FeedbackPriority.LOW))
         GuidanceState.MOVE_RIGHT -> GuidanceDecision(GuidanceState.MOVE_RIGHT, "左侧空间更受阻", region.confidence,
             action("向右绕行", FeedbackPriority.LOW))
         GuidanceState.STOP -> GuidanceDecision(GuidanceState.STOP, "左右均不明确", region.confidence,
             action("停止，前方路线不明确", FeedbackPriority.URGENT))
-        else -> GuidanceDecision(GuidanceState.KEEP_STRAIGHT, "中央路线可通行", region.confidence,
+        GuidanceState.KEEP_STRAIGHT -> GuidanceDecision(GuidanceState.KEEP_STRAIGHT, "中央路面连续可见", region.confidence,
             action("保持直行", FeedbackPriority.LOW))
+        else -> GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence,
+            action("前方情况不明，请减速", FeedbackPriority.WARNING))
     }
 
-    private fun detourDecision(region: WalkableRegion): GuidanceDecision? = when (region.suggestedDirection) {
+    private fun detourDecision(region: WalkableRegion): GuidanceDecision? {
+        if (directionStreak < 3 || !region.hasSurfaceEvidence) return null
+        return when (supportedDirection) {
         GuidanceState.MOVE_LEFT -> GuidanceDecision(GuidanceState.MOVE_LEFT, "中央路线受阻，左侧更空", region.confidence,
             action("注意，向左绕行", FeedbackPriority.WARNING))
         GuidanceState.MOVE_RIGHT -> GuidanceDecision(GuidanceState.MOVE_RIGHT, "中央路线受阻，右侧更空", region.confidence,
@@ -130,6 +141,7 @@ class GuidanceEngine(
         // urgent risk branch or the normal direction decision above.
         GuidanceState.STOP -> null
         else -> null
+        }
     }
 
     private fun shouldEmit(state: GuidanceState, nowMs: Long): Boolean {
@@ -154,6 +166,7 @@ class GuidanceEngine(
     private fun warningRank(state: GuidanceState): Int = when (state) {
         GuidanceState.UNKNOWN_SLOW_DOWN -> 1
         GuidanceState.CAUTION -> 2
+        GuidanceState.MOVE_LEFT, GuidanceState.MOVE_RIGHT -> 2
         GuidanceState.DANGER, GuidanceState.STOP -> 3
         else -> 0
     }
@@ -184,7 +197,5 @@ class GuidanceEngine(
 
     private companion object {
         const val MIN_CONFIDENCE = 0.25f
-        const val MIN_REGION_CONFIDENCE = 0.35f
-        const val CLOSE_ROUTE_AREA = 0.04f
     }
 }

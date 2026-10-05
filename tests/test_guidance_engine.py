@@ -6,6 +6,9 @@ from scripts.guidance_engine import (
     STOP,
     UNKNOWN_SLOW_DOWN,
     GuidanceEngine,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    WalkableRegion,
     evaluate_guidance_records,
 )
 
@@ -23,13 +26,37 @@ def record(frame, box, track_id="two-wheeler-1", conf=0.9):
 
 
 class GuidanceEngineTests(unittest.TestCase):
-    def test_empty_frames_keep_straight(self):
+    def test_empty_frames_do_not_prove_free_space(self):
         result = evaluate_guidance_records([], width=640, height=360)
         self.assertEqual(result["trace"], [])
 
         engine = GuidanceEngine()
         decision = engine.update(1, [])
-        self.assertEqual(decision.state, KEEP_STRAIGHT)
+        self.assertEqual(decision.state, UNKNOWN_SLOW_DOWN)
+
+    def test_surface_and_motion_evidence_required_for_direction(self):
+        engine = GuidanceEngine()
+        region = WalkableRegion(confidence=.9, source="segformer_ade20k", surface="road", forward_support=.96)
+        self.assertEqual(engine.update(1, [], region=region).state, UNKNOWN_SLOW_DOWN)
+        self.assertEqual(engine.update(2, [], region=region, motion_reliable=True).state, UNKNOWN_SLOW_DOWN)
+        self.assertEqual(engine.update(3, [], region=region, motion_reliable=True).state, UNKNOWN_SLOW_DOWN)
+        self.assertEqual(engine.update(4, [], region=region, motion_reliable=True).state, KEEP_STRAIGHT)
+        self.assertEqual(engine.update(5, [], region=region).state, UNKNOWN_SLOW_DOWN)
+
+    def test_confirmed_side_ground_support_enables_detour(self):
+        for expected, left, right in ((MOVE_LEFT, .96, .30), (MOVE_RIGHT, .30, .96)):
+            engine = GuidanceEngine()
+            region = WalkableRegion(confidence=.9, source="segformer_ade20k", surface="road",
+                                    left_support=left, right_support=right)
+            for frame in (1, 2, 3):
+                decision = engine.update(frame, [record(frame, [288, 108, 448, 342])],
+                                         region=region, motion_reliable=True)
+            self.assertEqual(decision.state, expected)
+
+    def test_asymmetric_detection_with_no_ground_evidence_remains_caution(self):
+        engine = GuidanceEngine()
+        engine.update(1, [record(1, [288, 108, 448, 342])])
+        self.assertEqual(engine.update(2, [record(2, [288, 108, 448, 342])]).state, CAUTION)
 
     def test_central_approaching_blocker_stops_after_confirmed_close_motion(self):
         engine = GuidanceEngine()

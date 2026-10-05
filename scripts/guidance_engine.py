@@ -23,9 +23,12 @@ class WalkableRegion:
     left: float = 0.36
     right: float = 0.64
     floor_y: float = 0.48
-    confidence: float = 0.55
+    confidence: float = 0.25
     source: str = "geometry_fallback"
     surface: str = "unknown"
+    forward_support: float = 0.0
+    left_support: float = 0.0
+    right_support: float = 0.0
 
     def contains(self, x: float, y: float) -> bool:
         return self.left <= x <= self.right and y >= self.floor_y
@@ -47,13 +50,15 @@ class GuidanceEngine:
         self.min_confidence = float(min_confidence)
         self.last_frame = None
         self.blocking_streak = 0
+        self.direction_streak = 0
+        self.supported_direction = UNKNOWN_SLOW_DOWN
         self.last_state = None
         self.last_emit_frame = -10**9
         self.last_warning_emit_frame = -10**9
         self.last_warning_rank = 0
         self.history = {}
 
-    def update(self, frame, records, region=None, uncertain=False):
+    def update(self, frame, records, region=None, uncertain=False, motion_reliable=False):
         region = region or WalkableRegion()
         consecutive = self.last_frame is None or frame == self.last_frame + 1
         blockers = []
@@ -76,18 +81,22 @@ class GuidanceEngine:
             self.blocking_streak + 1 if blockers and consecutive else 1 if blockers else 0
         )
         self.last_frame = frame
+        direction = self._supported_direction(region) if motion_reliable and not uncertain else UNKNOWN_SLOW_DOWN
+        self.direction_streak = (
+            self.direction_streak + 1 if consecutive and direction == self.supported_direction
+            else 1
+        ) if direction != UNKNOWN_SLOW_DOWN else 0
+        self.supported_direction = direction
         approaching = any(self._approaching(record) for record, _, _, _ in blockers)
         close_blocker = any(area >= CLOSE_ROUTE_AREA for _, _, _, area in blockers)
-        if uncertain:
-            decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", 0.25, "前方情况不明，请减速")
         # A large box alone is not evidence of an incoming collision: a
         # parked vehicle can remain large for the whole clip.  STOP requires
         # temporal approach evidence (or the Android risk engine's urgent
         # alert, which is handled by the phone-side GuidanceEngine).
-        elif blockers and self.blocking_streak >= 2 and approaching and close_blocker:
+        if blockers and self.blocking_streak >= 2 and approaching and close_blocker and not uncertain:
             decision = GuidanceDecision(STOP, "路线内持续接近", 0.9, "停止，前方有危险")
         elif blockers and self.blocking_streak >= 2:
-            detour = self._open_direction(blockers, region)
+            detour = direction if self.direction_streak >= 3 else UNKNOWN_SLOW_DOWN
             if detour == MOVE_LEFT:
                 decision = GuidanceDecision(MOVE_LEFT, "中央路线受阻，左侧更空", region.confidence, "注意，向左绕行")
             elif detour == MOVE_RIGHT:
@@ -98,10 +107,16 @@ class GuidanceEngine:
             decision = GuidanceDecision(
                 UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25, "前方情况不明，请减速"
             )
-        elif region.confidence < 0.35:
+        elif uncertain or not motion_reliable or self.direction_streak < 3:
             decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence, "前方情况不明，请减速")
+        elif direction == KEEP_STRAIGHT:
+            decision = GuidanceDecision(KEEP_STRAIGHT, "中央路面连续可见", region.confidence, "保持直行")
+        elif direction == MOVE_LEFT:
+            decision = GuidanceDecision(MOVE_LEFT, "左侧路面连续可见", region.confidence, "向左绕行")
+        elif direction == MOVE_RIGHT:
+            decision = GuidanceDecision(MOVE_RIGHT, "右侧路面连续可见", region.confidence, "向右绕行")
         else:
-            decision = GuidanceDecision(KEEP_STRAIGHT, "中央路线可通行", region.confidence, "保持直行")
+            decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence, "前方情况不明，请减速")
         return decision
 
     def should_emit(self, decision, frame):
@@ -124,6 +139,8 @@ class GuidanceEngine:
         return {
             UNKNOWN_SLOW_DOWN: 1,
             CAUTION: 2,
+            MOVE_LEFT: 2,
+            MOVE_RIGHT: 2,
             DANGER: 3,
             STOP: 3,
         }.get(state, 0)
@@ -138,22 +155,20 @@ class GuidanceEngine:
         return min(growth) >= 0.04 and sum(growth) / len(growth) >= 0.08
 
     @staticmethod
-    def _open_direction(blockers, region):
-        left_cost = 0.0
-        right_cost = 0.0
-        for record, x, _, _ in blockers:
-            conf = float(record.get("conf", 0.0))
-            x1, x2 = x - 0.12, x + 0.12
-            left_cost += max(0.0, min(x2, 0.40) - max(x1, 0.12)) * conf
-            right_cost += max(0.0, min(x2, 0.88) - max(x1, 0.60)) * conf
-        if left_cost + 0.04 < right_cost:
+    def _supported_direction(region):
+        if (region.source == "geometry_fallback" or region.surface == "unknown" or
+                region.confidence < 0.65):
+            return UNKNOWN_SLOW_DOWN
+        if getattr(region, "forward_support", 0.0) >= 0.90:
+            return KEEP_STRAIGHT
+        if getattr(region, "left_support", 0.0) >= 0.90 and getattr(region, "right_support", 0.0) <= 0.65:
             return MOVE_LEFT
-        if right_cost + 0.04 < left_cost:
+        if getattr(region, "right_support", 0.0) >= 0.90 and getattr(region, "left_support", 0.0) <= 0.65:
             return MOVE_RIGHT
-        return STOP
+        return UNKNOWN_SLOW_DOWN
 
 
-def evaluate_guidance_records(records, width, height, uncertain=False, regions=None):
+def evaluate_guidance_records(records, width, height, uncertain=False, regions=None, motions=None):
     """Evaluate frame records and return a serializable guidance trace."""
     engine = GuidanceEngine()
     by_frame = {}
@@ -166,7 +181,8 @@ def evaluate_guidance_records(records, width, height, uncertain=False, regions=N
     counts = {}
     for frame in sorted(set(by_frame) | set(regions or {})):
         region = (regions or {}).get(frame)
-        decision = engine.update(frame, by_frame.get(frame, []), region=region, uncertain=uncertain)
+        decision = engine.update(frame, by_frame.get(frame, []), region=region, uncertain=uncertain,
+                                 motion_reliable=bool((motions or {}).get(frame, False)))
         emitted = engine.should_emit(decision, frame)
         counts[decision.state] = counts.get(decision.state, 0) + 1
         trace.append({

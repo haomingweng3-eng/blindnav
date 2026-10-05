@@ -21,6 +21,9 @@ class WalkableRegionEstimate:
     row_bounds: tuple = ()
     route_left: float = 0.36
     route_right: float = 0.64
+    forward_support: float = 0.0
+    left_support: float = 0.0
+    right_support: float = 0.0
 
     def contains(self, x: float, y: float) -> bool:
         if not self.route_left <= x <= self.route_right or y < self.floor_y:
@@ -118,6 +121,27 @@ class SegformerWalkableRegionEstimator:
         return ids
 
     @classmethod
+    def corridor_support(cls, component, probabilities, top_left, top_right):
+        """Minimum row support of a corridor connected to the user's feet.
+
+        Keep holes and unknown pixels. A min/max outline of a mask would fill
+        obstacle holes and is only useful for drawing, never for steering.
+        This image-space evidence does not establish a metric clearance.
+        """
+        import numpy as np
+        height, width = component.shape
+        support = []
+        for row in range(int(height * 0.60), max(int(height * 0.60) + 1, int(height * 0.98))):
+            y = row / height
+            progress = (y - 0.60) / 0.38
+            left = top_left + (0.40 - top_left) * progress
+            right = top_right + (0.60 - top_right) * progress
+            x1, x2 = int(left * width), max(int(left * width) + 1, int(right * width))
+            band = component[row, x1:x2] & (probabilities[row, x1:x2] >= 0.65)
+            support.append(float(np.mean(band)) if band.size else 0.0)
+        return min(support, default=0.0)
+
+    @classmethod
     def mask_to_region(cls, labels, probabilities, walkable_ids, detections=()):
         """Convert a semantic mask into a conservative normalized corridor.
 
@@ -137,7 +161,9 @@ class SegformerWalkableRegionEstimator:
             return cls.FALLBACK
         for detection in detections or ():
             box = detection.get("box") if isinstance(detection, dict) else None
-            if not box or len(box) != 4:
+            if box is None or len(box) != 4 or not np.all(np.isfinite(box)):
+                continue
+            if box[2] <= box[0] or box[3] <= box[1]:
                 continue
             x1, y1, x2, y2 = [int(max(0, value)) for value in box]
             mask[min(height, y1):min(height, y2 + 1), min(width, x1):min(width, x2 + 1)] = False
@@ -187,5 +213,8 @@ class SegformerWalkableRegionEstimator:
                 rows.append((float(fraction), float(np.percentile(band_x, 2) / width),
                              float(np.percentile(band_x, 98) / width)))
         return WalkableRegionEstimate(
-            left, right, floor_y, confidence, "segformer_ade20k", surface, tuple(rows)
+            left, right, floor_y, confidence, "segformer_ade20k", surface, tuple(rows),
+            forward_support=cls.corridor_support(component, probabilities, 0.36, 0.64),
+            left_support=cls.corridor_support(component, probabilities, 0.15, 0.35),
+            right_support=cls.corridor_support(component, probabilities, 0.65, 0.85),
         )
