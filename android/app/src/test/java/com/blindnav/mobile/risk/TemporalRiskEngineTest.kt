@@ -164,6 +164,24 @@ class TemporalRiskEngineTest {
     }
 
     @Test
+    fun confirmedDangerDoesNotFlickerBackToSafeOnOneFlatFrame() {
+        val engine = TemporalRiskEngine(
+            loomingThresholdPerSecond = 0.1f,
+            urgentThresholdPerSecond = 0.2f,
+            minObservations = 2,
+            earlyUrgentTimeToCloseSeconds = 1f,
+        )
+
+        engine.update(frame(0, 0, 40f, 40f, 50f, 50f))
+        val firstDanger = engine.update(frame(100, 1, 35f, 35f, 55f, 55f))
+        assertTrue(firstDanger.isNotEmpty())
+        assertEquals(2, engine.currentTracks.single().riskLevel)
+
+        engine.update(frame(200, 2, 35f, 35f, 55f, 55f))
+        assertEquals(2, engine.currentTracks.single().riskLevel)
+    }
+
+    @Test
     fun unreliableBackgroundDoesNotInventLateralEntry() {
         val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
         val unavailable = com.blindnav.mobile.inference.BackgroundMotion(0, 100, reason = "insufficient_matches")

@@ -270,6 +270,21 @@ class TemporalRiskEngine(
                 currentInside
             }
             if (!approachPathConflict) continue
+            // Keep a confirmed danger state stable while the same continuous
+            // target remains close in the route. Detector jitter or one frame
+            // without reliable motion must not make a near collision look
+            // safe again. The state is released when the target leaves the
+            // corridor, the track is lost, or it shrinks below this hold
+            // floor.
+            val dangerHold = previous?.riskLevel == 2 &&
+                currentInside &&
+                insideConfirmed &&
+                areaFraction >= DANGER_HOLD_AREA_FRACTION
+            if (dangerHold) {
+                classStates.remove(next)
+                classStates += next.copy(riskLevel = 2)
+                continue
+            }
             // A bottom edge moving down is the useful near-camera cue. A
             // positive center velocity alone is too easy to trigger from a
             // parked target's jitter when its box is shrinking.
@@ -443,6 +458,7 @@ class TemporalRiskEngine(
         const val LATERAL_EXIT_THRESHOLD_PER_SECOND = 0.2f
         const val URGENT_AREA_FRACTION = 0.06f
         const val EARLY_URGENT_AREA_FRACTION = URGENT_AREA_FRACTION * 0.70f
+        const val DANGER_HOLD_AREA_FRACTION = URGENT_AREA_FRACTION * 0.45f
         const val CLOSE_ROUTE_AREA_FRACTION = 0.04f
         const val MAX_SHRINK_RATE_FOR_APPROACH = 0.15f
         val CLASS_NAMES = mapOf(0 to "行人", 1 to "自行车", 2 to "汽车", 3 to "摩托车", 5 to "公交车", 7 to "卡车")
