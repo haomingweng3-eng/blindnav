@@ -25,7 +25,7 @@ class GuidanceEngineTest {
         val detections = listOf(Detection(1, 0.9f, floatArrayOf(35f, 30f, 65f, 95f)))
         val first = frame(0, detections)
         val region = GeometryWalkableRegionEstimator().estimate(first)
-        engine.update(first, region, emptyList(), emptyList())
+        assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, engine.update(first, region, emptyList(), emptyList()).state)
         val second = frame(1, detections)
         val decision = engine.update(second, region, emptyList(), emptyList())
         assertEquals(GuidanceState.CAUTION, decision.state)
@@ -62,6 +62,20 @@ class GuidanceEngineTest {
         val region = GeometryWalkableRegionEstimator().estimate(frame)
         val decision = engine.update(frame, region, emptyList(), emptyList())
         assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, decision.state)
+    }
+
+    @Test
+    fun warningFeedbackHasCooldownAcrossStateFlap() {
+        val engine = GuidanceEngine(repeatMs = 2_500L)
+        val detections = listOf(Detection(1, 0.9f, floatArrayOf(35f, 30f, 65f, 95f)))
+        val first = frame(0, detections)
+        val region = GeometryWalkableRegionEstimator().estimate(first)
+        engine.update(first, region, emptyList(), emptyList())
+        val second = frame(1, detections)
+        val decision = engine.update(second, region, emptyList(), emptyList())
+        assertNotNull(decision.feedback)
+        val repeated = engine.update(second, region, emptyList(), emptyList())
+        assertEquals(null, repeated.feedback)
     }
 
     private fun frame(sourceFrame: Long, detections: List<Detection>) = FrameDetections(

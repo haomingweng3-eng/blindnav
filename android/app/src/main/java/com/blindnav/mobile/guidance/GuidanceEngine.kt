@@ -31,6 +31,8 @@ class GuidanceEngine(
     private var blockingStreak = 0
     private var lastState: GuidanceState? = null
     private var lastEmitMs = Long.MIN_VALUE
+    private var lastWarningEmitMs = Long.MIN_VALUE
+    private var lastWarningRank = 0
 
     fun update(
         frame: FrameDetections,
@@ -53,6 +55,15 @@ class GuidanceEngine(
             tracks.any { it.riskLevel >= 2 }
         val warning = alerts.any { it.feedback.priority == FeedbackPriority.WARNING } ||
             tracks.any { it.riskLevel >= 1 }
+        val closeBlocking = frame.detections.any { detection ->
+            val box = detection.box
+            box.size == 4 &&
+                detection.confidence >= MIN_CONFIDENCE &&
+                region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
+                    box[3] / frame.frameHeight) &&
+                ((box[2] - box[0]) * (box[3] - box[1])) /
+                    (frame.frameWidth.toFloat() * frame.frameHeight.toFloat()) >= CLOSE_ROUTE_AREA
+        }
         // A missing or failed camera-motion estimate leaves route motion
         // ambiguous. Keep the user in the conservative state until a fresh
         // reliable estimate arrives; never announce a clear route solely
@@ -62,8 +73,11 @@ class GuidanceEngine(
         val decision = when {
             urgent ->
                 GuidanceDecision(GuidanceState.DANGER, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
-            warning || (blocking && blockingStreak >= 2) ->
+            warning || (blocking && blockingStreak >= 2 && closeBlocking) ->
                 GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f, action("注意，前方可能有障碍", FeedbackPriority.WARNING))
+            blocking ->
+                GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25f,
+                    action("前方情况不明，请减速", FeedbackPriority.WARNING))
             motionUncertain || region.confidence < MIN_REGION_CONFIDENCE ->
                 GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence,
                     action("前方情况不明，请减速", FeedbackPriority.WARNING))
@@ -83,6 +97,8 @@ class GuidanceEngine(
         blockingStreak = 0
         lastState = null
         lastEmitMs = Long.MIN_VALUE
+        lastWarningEmitMs = Long.MIN_VALUE
+        lastWarningRank = 0
     }
 
     private fun guidanceDirection(region: WalkableRegion): GuidanceDecision = when (region.suggestedDirection) {
@@ -96,8 +112,31 @@ class GuidanceEngine(
             action("保持直行", FeedbackPriority.LOW))
     }
 
-    private fun shouldEmit(state: GuidanceState, nowMs: Long): Boolean =
-        state != lastState || nowMs - lastEmitMs >= repeatMs
+    private fun shouldEmit(state: GuidanceState, nowMs: Long): Boolean {
+        val warningRank = warningRank(state)
+        if (warningRank > 0 && lastWarningEmitMs != Long.MIN_VALUE &&
+            nowMs - lastWarningEmitMs < repeatMs && warningRank <= lastWarningRank) {
+            lastState = state
+            return false
+        }
+        val emit = state != lastState || nowMs - lastEmitMs >= repeatMs
+        if (emit) {
+            lastState = state
+            lastEmitMs = nowMs
+            if (warningRank > 0) {
+                lastWarningEmitMs = nowMs
+                lastWarningRank = warningRank
+            }
+        }
+        return emit
+    }
+
+    private fun warningRank(state: GuidanceState): Int = when (state) {
+        GuidanceState.UNKNOWN_SLOW_DOWN -> 1
+        GuidanceState.CAUTION -> 2
+        GuidanceState.DANGER, GuidanceState.STOP -> 3
+        else -> 0
+    }
 
     private fun action(text: String, priority: FeedbackPriority): FeedbackAction {
         val vibration = when (priority) {
@@ -126,5 +165,6 @@ class GuidanceEngine(
     private companion object {
         const val MIN_CONFIDENCE = 0.25f
         const val MIN_REGION_CONFIDENCE = 0.35f
+        const val CLOSE_ROUTE_AREA = 0.04f
     }
 }

@@ -34,8 +34,8 @@ fun interface WalkableRegionEstimator {
  * distance or sidewalk semantics.
  */
 class GeometryWalkableRegionEstimator(
-    private val baseLeft: Float = 0.32f,
-    private val baseRight: Float = 0.68f,
+    private val baseLeft: Float = 0.36f,
+    private val baseRight: Float = 0.64f,
     private val floorY: Float = 0.48f,
 ) : WalkableRegionEstimator {
     override fun estimate(frame: FrameDetections): WalkableRegion {

@@ -15,12 +15,13 @@ STOP = "STOP"
 CAUTION = "CAUTION"
 DANGER = "DANGER"
 UNKNOWN_SLOW_DOWN = "UNKNOWN_SLOW_DOWN"
+CLOSE_ROUTE_AREA = 0.04
 
 
 @dataclass(frozen=True)
 class WalkableRegion:
-    left: float = 0.32
-    right: float = 0.68
+    left: float = 0.36
+    right: float = 0.64
     floor_y: float = 0.48
     confidence: float = 0.55
     source: str = "geometry_fallback"
@@ -48,6 +49,8 @@ class GuidanceEngine:
         self.blocking_streak = 0
         self.last_state = None
         self.last_emit_frame = -10**9
+        self.last_warning_emit_frame = -10**9
+        self.last_warning_rank = 0
         self.history = {}
 
     def update(self, frame, records, region=None, uncertain=False):
@@ -74,24 +77,23 @@ class GuidanceEngine:
         )
         self.last_frame = frame
         approaching = any(self._approaching(record) for record, _, _, _ in blockers)
+        close_blocker = any(area >= CLOSE_ROUTE_AREA for _, _, _, area in blockers)
         if uncertain:
             decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", 0.25, "前方情况不明，请减速")
         # A large box alone is not evidence of an incoming collision: a
         # parked vehicle can remain large for the whole clip.  STOP requires
         # temporal approach evidence (or the Android risk engine's urgent
         # alert, which is handled by the phone-side GuidanceEngine).
-        elif blockers and self.blocking_streak >= 2 and approaching:
+        elif blockers and self.blocking_streak >= 2 and approaching and close_blocker:
             decision = GuidanceDecision(STOP, "路线内持续接近", 0.9, "停止，前方有危险")
-        elif blockers and self.blocking_streak >= 2:
+        elif blockers and self.blocking_streak >= 2 and (approaching or close_blocker):
             decision = GuidanceDecision(CAUTION, "目标可能进入行走路线", 0.75, "注意，前方可能有障碍")
+        elif blockers and self.blocking_streak >= 2:
+            decision = GuidanceDecision(KEEP_STRAIGHT, "目标尚未形成路线风险", region.confidence, "保持直行")
         elif blockers:
-            direction = self._open_direction(blockers, region)
-            if direction == MOVE_LEFT:
-                decision = GuidanceDecision(MOVE_LEFT, "右侧空间更受阻", region.confidence, "向左绕行")
-            elif direction == MOVE_RIGHT:
-                decision = GuidanceDecision(MOVE_RIGHT, "左侧空间更受阻", region.confidence, "向右绕行")
-            else:
-                decision = GuidanceDecision(CAUTION, "前方目标进入路线", 0.65, "注意，前方目标")
+            decision = GuidanceDecision(
+                UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25, "前方情况不明，请减速"
+            )
         elif region.confidence < 0.35:
             decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence, "前方情况不明，请减速")
         else:
@@ -99,17 +101,37 @@ class GuidanceEngine:
         return decision
 
     def should_emit(self, decision, frame):
+        rank = self._warning_rank(decision.state)
+        if (rank and frame - self.last_warning_emit_frame < self.repeat_frames and
+                rank <= self.last_warning_rank):
+            self.last_state = decision.state
+            return False
         if decision.state != self.last_state or frame - self.last_emit_frame >= self.repeat_frames:
             self.last_state = decision.state
             self.last_emit_frame = frame
+            if rank:
+                self.last_warning_emit_frame = frame
+                self.last_warning_rank = rank
             return True
         return False
 
+    @staticmethod
+    def _warning_rank(state):
+        return {
+            UNKNOWN_SLOW_DOWN: 1,
+            CAUTION: 2,
+            DANGER: 3,
+            STOP: 3,
+        }.get(state, 0)
+
     def _approaching(self, record):
         history = self.history.get(str(record.get("track_id", "unknown")), [])
-        if len(history) < 2:
+        if len(history) < 3:
             return False
-        return history[-1][1] >= history[-2][1] * 1.04
+        recent = history[-3:]
+        growth = [recent[index][1] / max(recent[index - 1][1], 1e-6) - 1.0
+                  for index in range(1, len(recent))]
+        return min(growth) >= 0.04 and sum(growth) / len(growth) >= 0.08
 
     @staticmethod
     def _open_direction(blockers, region):
@@ -151,8 +173,8 @@ def evaluate_guidance_records(records, width, height, uncertain=False, regions=N
             "speech": decision.speech if emitted else None,
             "region_source": getattr(region, "source", None),
             "region_surface": getattr(region, "surface", "unknown"),
-            "region_left": round(float(getattr(region, "left", 0.32)), 4) if region else None,
-            "region_right": round(float(getattr(region, "right", 0.68)), 4) if region else None,
+            "region_left": round(float(getattr(region, "left", 0.36)), 4) if region else None,
+            "region_right": round(float(getattr(region, "right", 0.64)), 4) if region else None,
             "region_floor_y": round(float(getattr(region, "floor_y", 0.48)), 4) if region else None,
             "region_confidence": round(float(getattr(region, "confidence", 0.0)), 4) if region else None,
         })

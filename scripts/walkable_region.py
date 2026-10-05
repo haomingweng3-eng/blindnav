@@ -19,8 +19,8 @@ class WalkableRegionEstimate:
     surface: str = "unknown"
     # Road extent and the intended central route are different quantities.
     row_bounds: tuple = ()
-    route_left: float = 0.32
-    route_right: float = 0.68
+    route_left: float = 0.36
+    route_right: float = 0.64
 
     def contains(self, x: float, y: float) -> bool:
         if not self.route_left <= x <= self.route_right or y < self.floor_y:
@@ -46,7 +46,7 @@ class SegformerWalkableRegionEstimator:
 
     DEFAULT_MODEL = "nvidia/segformer-b0-finetuned-ade-512-512"
     FALLBACK = WalkableRegionEstimate(
-        0.32, 0.68, 0.48, 0.25, "geometry_fallback", "unknown"
+        0.36, 0.64, 0.48, 0.25, "geometry_fallback", "unknown"
     )
 
     def __init__(self, model_name: str = DEFAULT_MODEL, device: Optional[str] = None,
