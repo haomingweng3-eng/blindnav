@@ -1,0 +1,2 @@
+# Optional 4060-side learned walkable-region validation.
+transformers>=5.18.0

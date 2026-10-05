@@ -126,7 +126,7 @@ class GuidanceEngine:
         return STOP
 
 
-def evaluate_guidance_records(records, width, height, uncertain=False):
+def evaluate_guidance_records(records, width, height, uncertain=False, regions=None):
     """Evaluate frame records and return a serializable guidance trace."""
     engine = GuidanceEngine()
     by_frame = {}
@@ -138,7 +138,8 @@ def evaluate_guidance_records(records, width, height, uncertain=False):
     trace = []
     counts = {}
     for frame in sorted(by_frame):
-        decision = engine.update(frame, by_frame[frame], uncertain=uncertain)
+        region = (regions or {}).get(frame)
+        decision = engine.update(frame, by_frame[frame], region=region, uncertain=uncertain)
         emitted = engine.should_emit(decision, frame)
         counts[decision.state] = counts.get(decision.state, 0) + 1
         trace.append({
@@ -147,5 +148,6 @@ def evaluate_guidance_records(records, width, height, uncertain=False):
             "reason": decision.reason,
             "confidence": round(decision.confidence, 3),
             "speech": decision.speech if emitted else None,
+            "region_source": getattr(region, "source", None),
         })
     return {"trace": trace, "state_counts": counts}

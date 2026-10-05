@@ -41,6 +41,8 @@ def process_batch(
     entry_confirm_frames=3,
     prediction_frames=5,
     approach_vertical_threshold=0.001,
+    walkable_model=None,
+    walkable_interval=4,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -65,6 +67,8 @@ def process_batch(
                 entry_confirm_frames=entry_confirm_frames,
                 prediction_frames=prediction_frames,
                 approach_vertical_threshold=approach_vertical_threshold,
+                walkable_model=walkable_model,
+                walkable_interval=walkable_interval,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -109,6 +113,8 @@ def process_batch(
         "entry_confirm_frames": entry_confirm_frames,
         "prediction_frames": prediction_frames,
         "approach_vertical_threshold": approach_vertical_threshold,
+        "walkable_model": walkable_model,
+        "walkable_interval": walkable_interval,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -138,6 +144,8 @@ def main():
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)
     parser.add_argument("--approach-vertical-threshold", type=float, default=0.001)
+    parser.add_argument("--walkable-model", default=None)
+    parser.add_argument("--walkable-interval", type=int, default=4)
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -151,6 +159,8 @@ def main():
         entry_confirm_frames=args.entry_confirm_frames,
         prediction_frames=args.prediction_frames,
         approach_vertical_threshold=args.approach_vertical_threshold,
+        walkable_model=args.walkable_model,
+        walkable_interval=args.walkable_interval,
         device=args.device,
         conf=args.conf,
     )

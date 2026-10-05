@@ -156,6 +156,7 @@ def evaluate_detection_records(
     prediction_frames=5,
     approach_vertical_threshold=0.0,
     guidance_uncertain=False,
+    guidance_regions=None,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -300,7 +301,11 @@ def evaluate_detection_records(
         "prediction_frames": int(prediction_frames),
         "approach_vertical_threshold": float(approach_vertical_threshold),
         "guidance": evaluate_guidance_records(
-            records, width=width, height=height, uncertain=guidance_uncertain
+            records,
+            width=width,
+            height=height,
+            uncertain=guidance_uncertain,
+            regions=guidance_regions,
         ),
     }
 

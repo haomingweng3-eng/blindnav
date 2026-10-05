@@ -98,6 +98,17 @@ def parse_args(argv=None):
         default=0.001,
         help="正向底边/中心垂直速度阈值，用于抑制停放目标抖动，默认 0.001",
     )
+    parser.add_argument(
+        "--walkable-model",
+        default=None,
+        help="可选 SegFormer 模型名/路径；未提供时使用几何保守回退",
+    )
+    parser.add_argument(
+        "--walkable-interval",
+        type=int,
+        default=4,
+        help="可行走区域模型每隔多少帧运行一次，默认 4；中间帧复用上一结果",
+    )
     return parser.parse_args(argv)
 
 
@@ -114,6 +125,8 @@ def process_video(
     entry_confirm_frames=3,
     prediction_frames=5,
     approach_vertical_threshold=0.001,
+    walkable_model=None,
+    walkable_interval=4,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -125,6 +138,15 @@ def process_video(
         from evaluate_risk_engine import evaluate_detection_records
 
     model = YOLO(model_path)
+    region_estimator = None
+    guidance_regions = {}
+    last_region = None
+    if walkable_model:
+        try:
+            from .walkable_region import SegformerWalkableRegionEstimator
+        except ImportError:
+            from walkable_region import SegformerWalkableRegionEstimator
+        region_estimator = SegformerWalkableRegionEstimator(walkable_model, device=device)
     cap = cv2.VideoCapture(str(video_path))
     fps = cap.get(cv2.CAP_PROP_FPS)
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -152,6 +174,12 @@ def process_video(
         frame_idx += 1
         results = model.track(frame, **track_kwargs)
         tracked = results[0]
+        if region_estimator is not None:
+            if walkable_interval < 1:
+                raise ValueError("walkable_interval must be positive")
+            if last_region is None or (frame_idx - 1) % walkable_interval == 0:
+                last_region = region_estimator.estimate(frame)
+            guidance_regions[frame_idx] = last_region
         if tracked.boxes.id is None:
             continue
 
@@ -191,6 +219,7 @@ def process_video(
         entry_confirm_frames=entry_confirm_frames,
         prediction_frames=prediction_frames,
         approach_vertical_threshold=approach_vertical_threshold,
+        guidance_regions=guidance_regions or None,
     )
     return {
         "video": str(video_path),
@@ -208,6 +237,8 @@ def process_video(
         "entry_lateral_threshold": entry_lateral_threshold,
         "entry_confirm_frames": entry_confirm_frames,
         "prediction_frames": prediction_frames,
+        "walkable_model": walkable_model,
+        "walkable_interval": walkable_interval,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -229,6 +260,8 @@ def main(argv=None):
         entry_confirm_frames=args.entry_confirm_frames,
         prediction_frames=args.prediction_frames,
         approach_vertical_threshold=args.approach_vertical_threshold,
+        walkable_model=args.walkable_model,
+        walkable_interval=args.walkable_interval,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "
