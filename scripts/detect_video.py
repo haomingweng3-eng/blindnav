@@ -6,6 +6,8 @@ from pathlib import Path
 
 
 ALERT_CLASSES = {
+    "2-wheeler",
+    "two_wheeler_candidate",
     "person",
     "bicycle",
     "motorcycle",

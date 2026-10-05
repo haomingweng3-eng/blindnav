@@ -1,0 +1,124 @@
+package com.blindnav.mobile.guidance
+
+import com.blindnav.mobile.feedback.FeedbackAction
+import com.blindnav.mobile.feedback.FeedbackPriority
+import com.blindnav.mobile.inference.FrameDetections
+import com.blindnav.mobile.risk.AndroidRiskAlert
+import com.blindnav.mobile.risk.RiskTrackSnapshot
+
+enum class GuidanceState {
+    KEEP_STRAIGHT,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    STOP,
+    CAUTION,
+    DANGER,
+    UNKNOWN_SLOW_DOWN,
+}
+
+data class GuidanceDecision(
+    val state: GuidanceState,
+    val reason: String,
+    val confidence: Float,
+    val feedback: FeedbackAction?,
+)
+
+/** Combines local free-space, detections and temporal risk into one feedback state. */
+class GuidanceEngine(
+    private val repeatMs: Long = 2_500L,
+) {
+    private var lastFrame: Long? = null
+    private var blockingStreak = 0
+    private var lastState: GuidanceState? = null
+    private var lastEmitMs = Long.MIN_VALUE
+
+    fun update(
+        frame: FrameDetections,
+        region: WalkableRegion,
+        tracks: List<RiskTrackSnapshot>,
+        alerts: List<AndroidRiskAlert>,
+    ): GuidanceDecision {
+        val consecutive = lastFrame == null || frame.sourceFrame == lastFrame!! + 1
+        val blocking = frame.detections.any { detection ->
+            val box = detection.box
+            box.size == 4 && box[2] > box[0] && box[3] > box[1] &&
+                detection.confidence >= MIN_CONFIDENCE &&
+                region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
+                    box[3] / frame.frameHeight)
+        }
+        blockingStreak = if (blocking && consecutive) blockingStreak + 1 else if (blocking) 1 else 0
+        lastFrame = frame.sourceFrame
+
+        val urgent = alerts.any { it.feedback.priority == FeedbackPriority.URGENT } ||
+            tracks.any { it.riskLevel >= 2 }
+        val warning = alerts.any { it.feedback.priority == FeedbackPriority.WARNING } ||
+            tracks.any { it.riskLevel >= 1 }
+        val decision = when {
+            urgent ->
+                GuidanceDecision(GuidanceState.STOP, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
+            warning || (blocking && blockingStreak >= 2) ->
+                GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f, action("注意，前方可能有障碍", FeedbackPriority.WARNING))
+            region.confidence < MIN_REGION_CONFIDENCE ->
+                GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence,
+                    action("前方情况不明，请减速", FeedbackPriority.WARNING))
+            else -> guidanceDirection(region)
+        }
+        return if (shouldEmit(decision.state, frame.captureTsMs)) {
+            lastState = decision.state
+            lastEmitMs = frame.captureTsMs
+            decision
+        } else {
+            decision.copy(feedback = null)
+        }
+    }
+
+    fun reset() {
+        lastFrame = null
+        blockingStreak = 0
+        lastState = null
+        lastEmitMs = Long.MIN_VALUE
+    }
+
+    private fun guidanceDirection(region: WalkableRegion): GuidanceDecision = when (region.suggestedDirection) {
+        GuidanceState.MOVE_LEFT -> GuidanceDecision(GuidanceState.MOVE_LEFT, "右侧空间更受阻", region.confidence,
+            action("向左绕行", FeedbackPriority.LOW))
+        GuidanceState.MOVE_RIGHT -> GuidanceDecision(GuidanceState.MOVE_RIGHT, "左侧空间更受阻", region.confidence,
+            action("向右绕行", FeedbackPriority.LOW))
+        GuidanceState.STOP -> GuidanceDecision(GuidanceState.STOP, "左右均不明确", region.confidence,
+            action("停止，前方路线不明确", FeedbackPriority.URGENT))
+        else -> GuidanceDecision(GuidanceState.KEEP_STRAIGHT, "中央路线可通行", region.confidence,
+            action("保持直行", FeedbackPriority.LOW))
+    }
+
+    private fun shouldEmit(state: GuidanceState, nowMs: Long): Boolean =
+        state != lastState || nowMs - lastEmitMs >= repeatMs
+
+    private fun action(text: String, priority: FeedbackPriority): FeedbackAction {
+        val vibration = when (priority) {
+            FeedbackPriority.LOW -> listOf(70)
+            FeedbackPriority.WARNING -> listOf(120, 70, 120)
+            FeedbackPriority.URGENT -> listOf(260, 80, 260)
+        }
+        val tone = when (priority) {
+            FeedbackPriority.LOW -> null
+            FeedbackPriority.WARNING -> "warning"
+            FeedbackPriority.URGENT -> "danger"
+        }
+        return FeedbackAction.fromContract(
+            priority = when (priority) {
+                FeedbackPriority.LOW -> "low"
+                FeedbackPriority.WARNING -> "warning"
+                FeedbackPriority.URGENT -> "urgent"
+            },
+            vibrationMs = vibration,
+            tone = tone,
+            speech = text,
+            speechDelayMs = 0,
+        ) ?: error("internal guidance feedback contract rejected")
+    }
+
+    private companion object {
+        const val MIN_CONFIDENCE = 0.25f
+        const val MIN_REGION_CONFIDENCE = 0.35f
+    }
+}

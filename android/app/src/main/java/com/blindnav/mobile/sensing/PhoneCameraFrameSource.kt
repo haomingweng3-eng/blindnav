@@ -1,6 +1,7 @@
 package com.blindnav.mobile.sensing
 
 import android.content.Context
+import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -46,6 +47,9 @@ class PhoneCameraFrameSource(
             if (generation != runGeneration || this.listener == null) return@addListener
             val provider = providerFuture.get()
             val useCase = ImageAnalysis.Builder()
+                // Keep camera-to-RGB work bounded. The model consumes 320x320;
+                // analyzing a full 1080p stream only burns CPU before inference.
+                .setTargetResolution(Size(640, 360))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
             useCase.setAnalyzer(executor) { image -> onImage(image) }

@@ -43,6 +43,11 @@ class AlertArbiter:
         previous = self._last_accepted.get(key)
         if previous is not None:
             previous_frame, previous_level = previous
+            # Once a target has escalated to urgent, do not replace the visual
+            # or haptic state with a later lower-level repeat from the same
+            # track. A new track ID starts a fresh risk episode.
+            if previous_level >= 3 and level < previous_level:
+                return False
             upgraded = level > previous_level
             within_cooldown = frame - previous_frame < self.cooldown_frames
             if within_cooldown and not upgraded:

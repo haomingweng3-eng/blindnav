@@ -22,7 +22,7 @@ def parse_args(argv=None):
     parser.add_argument("--width", type=int, default=DEFAULT_WIDTH)
     parser.add_argument("--height", type=int, default=DEFAULT_HEIGHT)
     parser.add_argument("--model", default="models/yolov8n.pt")
-    parser.add_argument("--device", choices=["mps", "cpu"], default="mps")
+    parser.add_argument("--device", default="mps")
     parser.add_argument("--input-fps", type=float, default=30.0)
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--max-frames", type=int, default=None)
@@ -83,6 +83,8 @@ def run_demo(
     stream = stream or sys.stdin
     model = YOLO(model_path)
     alert_classes = {
+        "2-wheeler",
+        "two_wheeler_candidate",
         "person",
         "bicycle",
         "motorcycle",

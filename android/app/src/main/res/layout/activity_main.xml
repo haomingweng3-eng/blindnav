@@ -11,6 +11,13 @@
         android:layout_height="match_parent"
         app:scaleType="fillCenter" />
 
+    <com.blindnav.mobile.overlay.TrajectoryOverlayView
+        android:id="@+id/trajectory_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false" />
+
     <TextView
         android:id="@+id/status_text"
         android:layout_width="wrap_content"

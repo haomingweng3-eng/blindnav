@@ -13,7 +13,7 @@ class LetterboxPreprocessor(
         require(paddingValue in 0f..1f) { "paddingValue must be in [0, 1]" }
     }
 
-    fun convert(rgb: ByteArray, width: Int, height: Int): LetterboxResult {
+    fun convert(rgb: ByteArray, width: Int, height: Int, output: FloatArray = FloatArray(targetSize * targetSize * 3)): LetterboxResult {
         require(width > 0 && height > 0) { "source dimensions must be positive" }
         require(rgb.size == width * height * 3) {
             "RGB buffer must contain exactly width*height*3 bytes"
@@ -24,7 +24,8 @@ class LetterboxPreprocessor(
         val scaledHeight = (height * scale).roundToInt().coerceAtLeast(1)
         val padLeft = (targetSize - scaledWidth) / 2
         val padTop = (targetSize - scaledHeight) / 2
-        val output = FloatArray(targetSize * targetSize * 3) { paddingValue }
+        require(output.size == targetSize * targetSize * 3)
+        output.fill(paddingValue)
 
         for (y in 0 until scaledHeight) {
             val sourceY = ((y / scale).toInt()).coerceIn(0, height - 1)

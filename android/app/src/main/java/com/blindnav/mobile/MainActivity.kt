@@ -14,18 +14,29 @@ import com.blindnav.mobile.inference.OnnxYoloDetector
 import com.blindnav.mobile.inference.RuntimeMetrics
 import com.blindnav.mobile.feedback.FeedbackAction
 import com.blindnav.mobile.feedback.FeedbackDispatcher
+import com.blindnav.mobile.feedback.FeedbackPriority
+import com.blindnav.mobile.guidance.GeometryWalkableRegionEstimator
+import com.blindnav.mobile.guidance.GuidanceEngine
+import com.blindnav.mobile.guidance.GuidanceState
+import com.blindnav.mobile.overlay.TrajectoryOverlayView
 import com.blindnav.mobile.risk.TemporalRiskEngine
 import com.blindnav.mobile.sensing.PhoneCameraFrameSource
 
 /** Minimal shell; camera binding is intentionally kept behind FrameSource. */
 class MainActivity : ComponentActivity() {
     private var cameraSource: PhoneCameraFrameSource? = null
-    private var detector: OnnxYoloDetector? = null
+    private var detector: AutoCloseable? = null
     private var feedbackDispatcher: FeedbackDispatcher? = null
-    private val riskEngine = TemporalRiskEngine()
+    // The phone path deliberately uses one broad two-wheeler model.  Static
+    // targets are filtered by the temporal risk engine; a second person model
+    // made the first phone build too slow for live use.
+    private val riskEngine = TwoWheelerRuntimeConfig.createRiskEngine()
+    private val walkableRegionEstimator = GeometryWalkableRegionEstimator()
+    private val guidanceEngine = GuidanceEngine()
     private val runtimeMetrics = RuntimeMetrics()
     private var statusText: TextView? = null
     private var previewView: PreviewView? = null
+    private var trajectoryOverlay: TrajectoryOverlayView? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -38,6 +49,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         statusText = findViewById(R.id.status_text)
         previewView = findViewById(R.id.preview_view)
+        trajectoryOverlay = findViewById(R.id.trajectory_overlay)
         feedbackDispatcher = FeedbackDispatcher(this)
         findViewById<Button>(R.id.feedback_test_button).setOnClickListener {
             runFeedbackSelfTest()
@@ -58,7 +70,13 @@ class MainActivity : ComponentActivity() {
     private fun startInference() {
         try {
             runtimeMetrics.reset()
-            val model = OnnxYoloDetector(this)
+            val model = OnnxYoloDetector(
+                context = this,
+                modelAsset = TwoWheelerRuntimeConfig.MODEL_ASSET,
+                confidenceThreshold = TwoWheelerRuntimeConfig.CONFIDENCE,
+                iouThreshold = TwoWheelerRuntimeConfig.NMS_IOU,
+                inputSize = TwoWheelerRuntimeConfig.INPUT_SIZE,
+            )
             val source = PhoneCameraFrameSource(this, this, previewView)
             val pipeline = InferencePipeline(
                 detector = model,
@@ -66,17 +84,27 @@ class MainActivity : ComponentActivity() {
                     runtimeMetrics.record(result.processingMs, result.droppedSinceLast)
                     val metrics = runtimeMetrics.snapshot()
                     val alerts = riskEngine.update(result)
-                    alerts.forEach { alert ->
-                        feedbackDispatcher?.dispatch(alert.trackId, alert.feedback)
-                    }
+                    val tracks = riskEngine.currentTracks
+                    val region = walkableRegionEstimator.estimate(result)
+                    val guidance = guidanceEngine.update(result, region, tracks, alerts)
                     runOnUiThread {
+                        alerts.sortedBy { it.feedback.priority.ordinal }.forEach { alert ->
+                            feedbackDispatcher?.dispatch(alert.trackId, alert.feedback)
+                        }
+                        guidance.feedback?.let { feedback ->
+                            feedbackDispatcher?.dispatch("guidance", feedback)
+                        }
+                        trajectoryOverlay?.submit(result, tracks)
                         val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
+                        val motionText = if (result.backgroundMotion?.reliable == true) "背景平移补偿" else "背景补偿不可用"
+                        val guidanceText = guidanceLabel(guidance.state)
                         showStatus(
-                            "运行中\n" +
+                                "运行中 · ${model.backendName}\n" +
                                 "帧 ${result.sourceFrame} · 检测 ${result.detections.size} 个目标$alertText\n" +
+                                "引路：$guidanceText · ${guidance.reason}\n" +
                                 "FPS ${"%.1f".format(metrics.fps)} · " +
                                 "推理 ${result.processingMs}ms · P95 ${metrics.p95ProcessingMs}ms\n" +
-                                "丢帧 ${metrics.droppedFrames}",
+                                "丢帧 ${metrics.droppedFrames} · $motionText",
                         )
                     }
                 },
@@ -114,12 +142,25 @@ class MainActivity : ComponentActivity() {
         detector?.close()
         feedbackDispatcher?.close()
         riskEngine.reset()
+        guidanceEngine.reset()
         runtimeMetrics.reset()
+        trajectoryOverlay?.clearOverlay()
         cameraSource = null
         detector = null
         feedbackDispatcher = null
         previewView = null
+        trajectoryOverlay = null
         super.onDestroy()
+    }
+
+    private fun guidanceLabel(state: GuidanceState): String = when (state) {
+        GuidanceState.KEEP_STRAIGHT -> "保持直行"
+        GuidanceState.MOVE_LEFT -> "向左绕行"
+        GuidanceState.MOVE_RIGHT -> "向右绕行"
+        GuidanceState.STOP -> "停止"
+        GuidanceState.CAUTION -> "注意"
+        GuidanceState.DANGER -> "危险"
+        GuidanceState.UNKNOWN_SLOW_DOWN -> "前方不明，请减速"
     }
 
     companion object {

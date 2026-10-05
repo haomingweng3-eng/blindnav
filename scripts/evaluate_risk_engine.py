@@ -4,16 +4,20 @@ import json
 from dataclasses import dataclass
 
 try:
-    from .risk_engine import LVL_MID, LVL_NAME, TrackState
+    from .risk_engine import LVL_HIGH, LVL_LOW, LVL_MID, LVL_NONE, LVL_NAME, TrackState
     from .feedback_policy import feedback_for
     from .alert_arbiter import AlertArbiter
+    from .guidance_engine import evaluate_guidance_records
 except ImportError:  # 支持直接用 PYTHONPATH=scripts 执行本文件
-    from risk_engine import LVL_MID, LVL_NAME, TrackState
+    from risk_engine import LVL_HIGH, LVL_LOW, LVL_MID, LVL_NONE, LVL_NAME, TrackState
     from feedback_policy import feedback_for
     from alert_arbiter import AlertArbiter
+    from guidance_engine import evaluate_guidance_records
 
 
 ALERT_CLASSES = {
+    "2-wheeler",
+    "two_wheeler_candidate",
     "person",
     "bicycle",
     "motorcycle",
@@ -26,6 +30,15 @@ ALERT_CLASSES = {
     "bus",
     "truck",
 }
+
+
+def _risk_band(level):
+    """Stable three-band wording for the first warning prototype."""
+    if level >= LVL_HIGH:
+        return "clear_approach", "明显接近"
+    if level >= LVL_MID:
+        return "possible_route_impact", "可能影响路线"
+    return "safe_passing", "安全经过"
 
 
 @dataclass(frozen=True)
@@ -141,6 +154,8 @@ def evaluate_detection_records(
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
+    approach_vertical_threshold=0.0,
+    guidance_uncertain=False,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -189,6 +204,9 @@ def evaluate_detection_records(
                 entry_lateral_threshold=entry_lateral_threshold,
                 entry_confirm_frames=entry_confirm_frames,
                 prediction_frames=prediction_frames,
+                approach_vertical_threshold=approach_vertical_threshold,
+                coordinate_width=width * scale,
+                coordinate_height=height * scale,
             ),
         )
         box = [float(value) * scale for value in record["box"]]
@@ -208,6 +226,7 @@ def evaluate_detection_records(
                     "max_area_n": 0.0,
                     "max_looming": float("-inf"),
                     "max_abs_lateral": 0.0,
+                    "max_level": LVL_NONE,
                     "final_route_relation": None,
                 },
             )
@@ -234,7 +253,9 @@ def evaluate_detection_records(
                 diagnostic["max_abs_lateral"],
                 abs(float(info.get("lateral", 0.0))),
             )
+            diagnostic["max_level"] = max(diagnostic["max_level"], level)
         if level >= LVL_MID:
+            risk_band, risk_band_name = _risk_band(level)
             alerts.append(
                 {
                     "frame": frame_idx,
@@ -243,6 +264,8 @@ def evaluate_detection_records(
                     "conf": round(float(record.get("conf", 0.0)), 4),
                     "level": level,
                     "level_name": LVL_NAME[level],
+                    "risk_band": risk_band,
+                    "risk_band_name": risk_band_name,
                     "info": info,
                     "feedback": feedback_for(level, cls, info),
                 }
@@ -257,6 +280,8 @@ def evaluate_detection_records(
         item["max_area_n"] = round(item["max_area_n"], 4)
         item["max_looming"] = round(item["max_looming"], 4)
         item["max_abs_lateral"] = round(item["max_abs_lateral"], 4)
+        item["risk_band"], item["risk_band_name"] = _risk_band(item["max_level"])
+        item.pop("max_level", None)
         serialized_diagnostics.append(item)
     serialized_diagnostics.sort(key=lambda item: item["track_id"])
     return {
@@ -273,6 +298,10 @@ def evaluate_detection_records(
         "entry_lateral_threshold": float(entry_lateral_threshold),
         "entry_confirm_frames": int(entry_confirm_frames),
         "prediction_frames": int(prediction_frames),
+        "approach_vertical_threshold": float(approach_vertical_threshold),
+        "guidance": evaluate_guidance_records(
+            records, width=width, height=height, uncertain=guidance_uncertain
+        ),
     }
 
 

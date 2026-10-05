@@ -7,6 +7,8 @@ except ImportError:  # 支持直接用 PYTHONPATH=scripts 执行
 
 
 CLASS_NAMES = {
+    "2-wheeler": "两轮车",
+    "two_wheeler_candidate": "两轮车",
     "person": "行人",
     "bicycle": "自行车",
     "scooter": "电动滑板车",

@@ -6,6 +6,7 @@ import android.media.ToneGenerator
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.speech.tts.TextToSpeech
@@ -21,7 +22,7 @@ import java.util.Locale
  */
 class FeedbackDispatcher(
     context: Context,
-    private val nowMs: () -> Long = { System.currentTimeMillis() },
+    private val nowMs: () -> Long = { SystemClock.elapsedRealtime() },
 ) : TextToSpeech.OnInitListener, AutoCloseable {
     private val appContext = context.applicationContext
     private val vibrator = appContext.getSystemService(Vibrator::class.java)
@@ -31,7 +32,7 @@ class FeedbackDispatcher(
     private var speechReady = false
     private var pendingSpeech: Runnable? = null
     private var pendingPriority: FeedbackPriority? = null
-    private val lastSpeechByTrack = mutableMapOf<String, Long>()
+    private val admission = FeedbackAdmission(SPEECH_DEDUPE_WINDOW_MS)
 
     override fun onInit(status: Int) {
         speechReady = status == TextToSpeech.SUCCESS
@@ -39,14 +40,12 @@ class FeedbackDispatcher(
     }
 
     fun dispatch(trackId: String, action: FeedbackAction) {
+        if (!admission.accept(trackId, action.priority, nowMs())) return
+        cancelPendingSpeech()
         playVibration(action.vibrationMs)
         playTone(action.tone)
 
         val speech = action.speech ?: return
-        val last = lastSpeechByTrack[trackId]
-        if (last != null && nowMs() - last < SPEECH_DEDUPE_WINDOW_MS) return
-        if (action.priority == FeedbackPriority.URGENT) cancelPendingSpeech()
-        lastSpeechByTrack[trackId] = nowMs()
 
         lateinit var runnable: Runnable
         runnable = Runnable {
@@ -105,7 +104,7 @@ class FeedbackDispatcher(
         textToSpeech?.stop()
         textToSpeech?.shutdown()
         textToSpeech = null
-        lastSpeechByTrack.clear()
+        admission.reset()
     }
 
     private companion object {
