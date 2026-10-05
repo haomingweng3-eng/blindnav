@@ -32,7 +32,10 @@ data class WalkableRegion(
 
     fun supportedDirection(): GuidanceState = when {
         !hasSurfaceEvidence -> GuidanceState.UNKNOWN_SLOW_DOWN
-        forwardSupport >= 0.90f -> GuidanceState.KEEP_STRAIGHT
+        // The central corridor may lose a few samples to detector boxes or
+        // pavement seams. A high but not perfect support is acceptable only
+        // after GuidanceEngine's temporal and motion checks.
+        forwardSupport >= 0.80f -> GuidanceState.KEEP_STRAIGHT
         leftSupport >= 0.90f && rightSupport <= 0.65f -> GuidanceState.MOVE_LEFT
         rightSupport >= 0.90f && leftSupport <= 0.65f -> GuidanceState.MOVE_RIGHT
         else -> GuidanceState.UNKNOWN_SLOW_DOWN
