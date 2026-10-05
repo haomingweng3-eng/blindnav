@@ -138,9 +138,9 @@ def evaluate_guidance_records(records, width, height, uncertain=False, regions=N
         by_frame.setdefault(int(record["frame"]), []).append(item)
     trace = []
     counts = {}
-    for frame in sorted(by_frame):
+    for frame in sorted(set(by_frame) | set(regions or {})):
         region = (regions or {}).get(frame)
-        decision = engine.update(frame, by_frame[frame], region=region, uncertain=uncertain)
+        decision = engine.update(frame, by_frame.get(frame, []), region=region, uncertain=uncertain)
         emitted = engine.should_emit(decision, frame)
         counts[decision.state] = counts.get(decision.state, 0) + 1
         trace.append({
