@@ -43,6 +43,7 @@ def _metrics_for_threshold(
     entry_lateral_threshold,
     entry_confirm_frames,
     prediction_frames,
+    approach_vertical_threshold,
 ):
     per_video = []
     for row in labels:
@@ -69,6 +70,7 @@ def _metrics_for_threshold(
             entry_lateral_threshold=entry_lateral_threshold,
             entry_confirm_frames=entry_confirm_frames,
             prediction_frames=prediction_frames,
+            approach_vertical_threshold=approach_vertical_threshold,
         )
         alerts = report.get("alerts", [])
         track_diagnostics = report.get("track_diagnostics", [])
@@ -185,6 +187,7 @@ def evaluate_labeled_videos(
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
+    approach_vertical_threshold=0.001,
 ):
     """对已有检测报告做视频级代理评估，不重新运行模型。"""
     if not labels:
@@ -203,6 +206,7 @@ def evaluate_labeled_videos(
             entry_lateral_threshold,
             entry_confirm_frames,
             prediction_frames,
+            approach_vertical_threshold,
         )
         for threshold in normalized_thresholds
     ]
@@ -216,6 +220,7 @@ def evaluate_labeled_videos(
         "entry_lateral_threshold": entry_lateral_threshold,
         "entry_confirm_frames": entry_confirm_frames,
         "prediction_frames": prediction_frames,
+        "approach_vertical_threshold": approach_vertical_threshold,
         "results": results,
         "interpretation": (
             "指标以整段视频是否出现告警为单位，不能替代逐帧目标框精度；"
@@ -255,6 +260,12 @@ def main():
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)
+    parser.add_argument(
+        "--approach-vertical-threshold",
+        type=float,
+        default=0.001,
+        help="正向底边/中心垂直速度阈值；用于抑制停放目标的相机抖动告警",
+    )
     parser.add_argument("-o", "--output")
     args = parser.parse_args()
     result = evaluate_labeled_videos(
@@ -267,6 +278,7 @@ def main():
         entry_lateral_threshold=args.entry_lateral_threshold,
         entry_confirm_frames=args.entry_confirm_frames,
         prediction_frames=args.prediction_frames,
+        approach_vertical_threshold=args.approach_vertical_threshold,
     )
     text = json.dumps(result, ensure_ascii=False, indent=2)
     print(text)

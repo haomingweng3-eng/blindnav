@@ -92,6 +92,12 @@ def parse_args(argv=None):
         default=5,
         help="横向轨迹向前预测的帧数，默认 5",
     )
+    parser.add_argument(
+        "--approach-vertical-threshold",
+        type=float,
+        default=0.001,
+        help="正向底边/中心垂直速度阈值，用于抑制停放目标抖动，默认 0.001",
+    )
     return parser.parse_args(argv)
 
 
@@ -107,6 +113,7 @@ def process_video(
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
+    approach_vertical_threshold=0.001,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -183,6 +190,7 @@ def process_video(
         entry_lateral_threshold=entry_lateral_threshold,
         entry_confirm_frames=entry_confirm_frames,
         prediction_frames=prediction_frames,
+        approach_vertical_threshold=approach_vertical_threshold,
     )
     return {
         "video": str(video_path),
@@ -220,6 +228,7 @@ def main(argv=None):
         entry_lateral_threshold=args.entry_lateral_threshold,
         entry_confirm_frames=args.entry_confirm_frames,
         prediction_frames=args.prediction_frames,
+        approach_vertical_threshold=args.approach_vertical_threshold,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "
@@ -227,6 +236,7 @@ def main(argv=None):
     )
     print(f"模型: {args.model}  conf={args.conf}")
     print(f"looming阈值: {args.looming_threshold}")
+    print(f"接近垂直速度阈值: {args.approach_vertical_threshold}")
     print("\n检出目标统计:", report["detection_stats"] or "无")
     print(f"追踪目标 {report['track_count']} 个")
     print(f"告警 {report['alert_count']} 次（警告+危险）")

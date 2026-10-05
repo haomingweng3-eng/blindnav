@@ -40,6 +40,7 @@ def process_batch(
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
+    approach_vertical_threshold=0.001,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -63,6 +64,7 @@ def process_batch(
                 entry_lateral_threshold=entry_lateral_threshold,
                 entry_confirm_frames=entry_confirm_frames,
                 prediction_frames=prediction_frames,
+                approach_vertical_threshold=approach_vertical_threshold,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -106,6 +108,7 @@ def process_batch(
         "entry_lateral_threshold": entry_lateral_threshold,
         "entry_confirm_frames": entry_confirm_frames,
         "prediction_frames": prediction_frames,
+        "approach_vertical_threshold": approach_vertical_threshold,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -134,6 +137,7 @@ def main():
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)
+    parser.add_argument("--approach-vertical-threshold", type=float, default=0.001)
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -146,6 +150,7 @@ def main():
         entry_lateral_threshold=args.entry_lateral_threshold,
         entry_confirm_frames=args.entry_confirm_frames,
         prediction_frames=args.prediction_frames,
+        approach_vertical_threshold=args.approach_vertical_threshold,
         device=args.device,
         conf=args.conf,
     )
