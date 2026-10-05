@@ -77,21 +77,29 @@ class TrajectoryOverlayView @JvmOverloads constructor(
             // parking rows from the user-facing overlay; risk tracks remain
             // visible even while entering from outside the corridor.
             if (track.riskLevel == 0 && !routeRelevant) continue
-            boxPaint.color = when (track.riskLevel) {
-                2 -> Color.RED
-                1 -> Color.rgb(255, 165, 0)
+            // Keep the display conservative even before the temporal risk
+            // engine promotes a track: a close central target with a short
+            // observed trail is shown as NOTICE, never as an apparently safe
+            // green track. This is display-only and does not emit feedback.
+            val closeCentralTrack = track.riskLevel == 0 && routeRelevant &&
+                contactY >= imageHeight * CLOSE_CONTACT_Y &&
+                track.roadHistory.size >= 2
+            boxPaint.color = when {
+                track.riskLevel >= 2 -> Color.RED
+                track.riskLevel == 1 || closeCentralTrack -> Color.rgb(255, 165, 0)
                 else -> Color.GREEN
+            }
+            val displayRisk = when {
+                track.riskLevel >= 2 -> " DANGER"
+                track.riskLevel == 1 || closeCentralTrack -> " NOTICE"
+                else -> " TRACK"
             }
             val box = track.box
             if (!validBox(box)) continue
             val leftTop = map(transform, box[0], box[1])
             val rightBottom = map(transform, box[2], box[3])
             canvas.drawRect(leftTop.x, leftTop.y, rightBottom.x, rightBottom.y, boxPaint)
-            val label = track.className + " " + track.trackId + when (track.riskLevel) {
-                2 -> " DANGER"
-                1 -> " NOTICE"
-                else -> " TRACK"
-            }
+            val label = track.className + " " + track.trackId + displayRisk
             canvas.drawText(label, leftTop.x, max(textSize + 4f, leftTop.y - 6f), boxPaint.asTextPaint())
 
             val points = track.roadHistory
@@ -135,5 +143,6 @@ class TrajectoryOverlayView @JvmOverloads constructor(
         const val MIN_ROAD_CONTACT_Y = 0.38f
         const val ROUTE_LEFT = 0.36f
         const val ROUTE_RIGHT = 0.64f
+        const val CLOSE_CONTACT_Y = 0.72f
     }
 }
