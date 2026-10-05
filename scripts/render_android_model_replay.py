@@ -161,10 +161,12 @@ def render(args):
             uncertain_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "UNKNOWN_SLOW_DOWN"
             caution_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "CAUTION"
             stopped_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "STOP"
-            display_level = 2 if stopped_route_track else 1 if uncertain_route_track or caution_route_track else track["risk_level"]
+            detour_left_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "MOVE_LEFT"
+            detour_right_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "MOVE_RIGHT"
+            display_level = 2 if stopped_route_track else 1 if uncertain_route_track or caution_route_track or detour_left_route_track or detour_right_route_track else track["risk_level"]
             color = [(30, 220, 70), (0, 180, 255), (30, 30, 255)][display_level]
             cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
-            label = track["track_id"] + (" SLOW DOWN" if uncertain_route_track else " NOTICE" if caution_route_track else " DANGER" if stopped_route_track else "")
+            label = track["track_id"] + (" MOVE LEFT" if detour_left_route_track else " MOVE RIGHT" if detour_right_route_track else " SLOW DOWN" if uncertain_route_track else " NOTICE" if caution_route_track else " DANGER" if stopped_route_track else "")
             cv2.putText(vis, label, (x1, max(26, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, .65, color, 2)
             points = track["history"]
             for old, new in zip(points, points[1:]):
