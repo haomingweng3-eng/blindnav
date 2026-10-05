@@ -143,10 +143,11 @@ def process_video(
     last_region = None
     if walkable_model:
         try:
-            from .walkable_region import SegformerWalkableRegionEstimator
+            from .walkable_region import SegformerWalkableRegionEstimator, TemporalWalkableRegionFilter
         except ImportError:
-            from walkable_region import SegformerWalkableRegionEstimator
+            from walkable_region import SegformerWalkableRegionEstimator, TemporalWalkableRegionFilter
         region_estimator = SegformerWalkableRegionEstimator(walkable_model, device=device)
+        region_filter = TemporalWalkableRegionFilter()
     cap = cv2.VideoCapture(str(video_path))
     fps = cap.get(cv2.CAP_PROP_FPS)
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -178,7 +179,7 @@ def process_video(
             if walkable_interval < 1:
                 raise ValueError("walkable_interval must be positive")
             if last_region is None or (frame_idx - 1) % walkable_interval == 0:
-                last_region = region_estimator.estimate(frame)
+                last_region = region_filter.update(region_estimator.estimate(frame))
             guidance_regions[frame_idx] = last_region
         if tracked.boxes.id is None:
             continue

@@ -221,3 +221,38 @@ class SegformerWalkableRegionEstimator:
             left_support=cls.corridor_support(component, probabilities, 0.15, 0.35, 0.15, 0.35),
             right_support=cls.corridor_support(component, probabilities, 0.65, 0.85, 0.65, 0.85),
         )
+
+
+class TemporalWalkableRegionFilter:
+    """Reject abrupt learned-mask jumps instead of authorizing a new route.
+
+    Segmentation is sampled sparsely on the 4060. A single mask can jump from
+    road to sky or parking-row pixels when the camera moves or a target
+    occludes the bottom seed. The safe response is a geometry fallback, which
+    keeps obstacle checks conservative and prevents direction guidance from
+    using the unstable mask as positive evidence.
+    """
+
+    def __init__(self, max_floor_delta=0.12, max_boundary_delta=0.22):
+        if max_floor_delta <= 0 or max_boundary_delta <= 0:
+            raise ValueError("temporal region thresholds must be positive")
+        self.max_floor_delta = float(max_floor_delta)
+        self.max_boundary_delta = float(max_boundary_delta)
+        self.previous = None
+
+    def update(self, region):
+        if region.source == "geometry_fallback":
+            self.previous = None
+            return region
+        previous = self.previous
+        self.previous = region
+        if previous is None or previous.source == "geometry_fallback":
+            return region
+        if (abs(region.floor_y - previous.floor_y) > self.max_floor_delta or
+                abs(region.left - previous.left) > self.max_boundary_delta or
+                abs(region.right - previous.right) > self.max_boundary_delta):
+            return WalkableRegionEstimate(
+                0.36, 0.64, 0.48, 0.25, "geometry_fallback", "unknown",
+                route_left=region.route_left, route_right=region.route_right,
+            )
+        return region

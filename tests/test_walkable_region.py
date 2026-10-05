@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from scripts.walkable_region import SegformerWalkableRegionEstimator
+from scripts.walkable_region import SegformerWalkableRegionEstimator, TemporalWalkableRegionFilter, WalkableRegionEstimate
 
 
 class WalkableRegionTests(unittest.TestCase):
@@ -76,6 +76,30 @@ class WalkableRegionTests(unittest.TestCase):
         self.assertEqual(region.forward_support, 0)
         self.assertEqual(region.left_support, 0)
         self.assertEqual(region.right_support, 0)
+
+    def test_temporal_mask_jump_falls_back_to_unknown(self):
+        filter_ = TemporalWalkableRegionFilter()
+        stable = WalkableRegionEstimate(
+            0.10, 0.90, 0.42, 0.9, "segformer_ade20k", "road"
+        )
+        jump = WalkableRegionEstimate(
+            0.10, 0.90, 0.20, 0.9, "segformer_ade20k", "road"
+        )
+        self.assertEqual(filter_.update(stable).source, "segformer_ade20k")
+        fallback = filter_.update(jump)
+        self.assertEqual(fallback.source, "geometry_fallback")
+        self.assertEqual(fallback.surface, "unknown")
+
+    def test_temporal_mask_small_change_remains_available(self):
+        filter_ = TemporalWalkableRegionFilter()
+        first = WalkableRegionEstimate(
+            0.10, 0.90, 0.42, 0.9, "segformer_ade20k", "road"
+        )
+        second = WalkableRegionEstimate(
+            0.12, 0.88, 0.48, 0.9, "segformer_ade20k", "road"
+        )
+        filter_.update(first)
+        self.assertEqual(filter_.update(second).source, "segformer_ade20k")
 
 
 if __name__ == "__main__":
