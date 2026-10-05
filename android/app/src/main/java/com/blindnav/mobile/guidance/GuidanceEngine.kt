@@ -48,10 +48,14 @@ class GuidanceEngine(
             lastCaptureMs?.let { frame.captureTsMs - it in 1L..500L } == true)
         val blockingDetection = frame.detections.any { detection ->
             val box = detection.box
+            val area = if (box.size == 4 && box[2] > box[0] && box[3] > box[1])
+                (box[2] - box[0]) * (box[3] - box[1]) / (frame.frameWidth * frame.frameHeight).toFloat()
+            else 0f
             box.size == 4 && box.all { it.isFinite() } && box[2] > box[0] && box[3] > box[1] &&
                 detection.confidence >= MIN_CONFIDENCE &&
                 region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
-                    box[3] / frame.frameHeight)
+                    box[3] / frame.frameHeight) &&
+                (area >= CLOSE_ROUTE_AREA || box[3] / frame.frameHeight >= ROUTE_NEAR_CONTACT_Y)
         }
         // Keep a confirmed route track in the blocking state for one detector
         // dip. Otherwise a central approaching target can flash back to
@@ -62,7 +66,8 @@ class GuidanceEngine(
             box.size == 4 && box[2] > box[0] && box[3] > box[1] &&
                 contact != null && track.roadHistory.size >= 2 &&
                 contact.y >= frame.frameHeight * ROUTE_CONTACT_Y &&
-                ((box[0] + box[2]) / 2f) / frame.frameWidth in ROUTE_LEFT..ROUTE_RIGHT
+                ((box[0] + box[2]) / 2f) / frame.frameWidth in ROUTE_LEFT..ROUTE_RIGHT &&
+                (track.riskLevel >= 1 || contact.y >= frame.frameHeight * ROUTE_NEAR_CONTACT_Y)
         }
         val blocking = blockingDetection || blockingTrack
         blockingStreak = if (blocking && consecutive) blockingStreak + 1 else if (blocking) 1 else 0
@@ -212,5 +217,7 @@ class GuidanceEngine(
         const val ROUTE_LEFT = 0.36f
         const val ROUTE_RIGHT = 0.64f
         const val ROUTE_CONTACT_Y = 0.38f
+        const val ROUTE_NEAR_CONTACT_Y = 0.58f
+        const val CLOSE_ROUTE_AREA = 0.04f
     }
 }

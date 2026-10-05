@@ -16,6 +16,7 @@ CAUTION = "CAUTION"
 DANGER = "DANGER"
 UNKNOWN_SLOW_DOWN = "UNKNOWN_SLOW_DOWN"
 CLOSE_ROUTE_AREA = 0.04
+ROUTE_NEAR_CONTACT_Y = 0.58
 
 
 @dataclass(frozen=True)
@@ -61,7 +62,7 @@ class GuidanceEngine:
     def update(self, frame, records, region=None, uncertain=False, motion_reliable=False):
         region = region or WalkableRegion()
         consecutive = self.last_frame is None or frame == self.last_frame + 1
-        blockers = []
+        candidates = []
         for record in records:
             box = record.get("box") or []
             if len(box) != 4 or float(record.get("conf", 0.0)) < self.min_confidence:
@@ -72,10 +73,20 @@ class GuidanceEngine:
             y = float(box[3]) / height
             area = max(float(box[2]) - float(box[0]), 0.0) * max(float(box[3]) - float(box[1]), 0.0) / (width * height)
             if region.contains(x, y):
-                blockers.append((record, x, y, area))
+                candidates.append((record, x, y, area))
             tid = str(record.get("track_id", "unknown"))
             self.history.setdefault(tid, []).append((frame, area, x, y))
             self.history[tid] = self.history[tid][-6:]
+
+        # A distant central detection is evidence that something is visible,
+        # not yet evidence that the route is blocked. Require either a close
+        # contact point, a large visible footprint, or temporal approach.
+        blockers = [
+            item for item in candidates
+            if item[3] >= CLOSE_ROUTE_AREA
+            or item[2] >= ROUTE_NEAR_CONTACT_Y
+            or self._approaching(item[0])
+        ]
 
         self.blocking_streak = (
             self.blocking_streak + 1 if blockers and consecutive else 1 if blockers else 0
@@ -152,7 +163,15 @@ class GuidanceEngine:
         recent = history[-3:]
         growth = [recent[index][1] / max(recent[index - 1][1], 1e-6) - 1.0
                   for index in range(1, len(recent))]
-        return min(growth) >= 0.04 and sum(growth) / len(growth) >= 0.08
+        # Area jitter alone is not approach evidence. A parked scooter can
+        # change size by a few pixels while the camera or detector moves. The
+        # contact point must also move toward the camera across the same
+        # observations. This keeps the desktop route reference aligned with
+        # the Android risk engine's bottom-edge motion gate.
+        contact_motion = [recent[index][3] - recent[index - 1][3]
+                          for index in range(1, len(recent))]
+        return (min(growth) >= 0.04 and sum(growth) / len(growth) >= 0.08 and
+                min(contact_motion) >= 0.003)
 
     @staticmethod
     def _supported_direction(region):

@@ -86,6 +86,23 @@ class GuidanceEngineTests(unittest.TestCase):
         self.assertEqual(engine.update(1, [parked]).state, UNKNOWN_SLOW_DOWN)
         self.assertEqual(engine.update(2, [same]).state, CAUTION)
 
+    def test_area_jitter_without_contact_motion_is_not_approach(self):
+        engine = GuidanceEngine()
+        frames = [
+            record(1, [250, 140, 390, 340]),
+            record(2, [240, 100, 400, 340]),
+            record(3, [220, 20, 420, 340]),
+        ]
+        decisions = [engine.update(item["frame"], [item]).state for item in frames]
+        self.assertEqual(decisions[-1], CAUTION)
+        self.assertNotEqual(decisions[-1], STOP)
+
+    def test_distant_central_detection_does_not_immediately_warn(self):
+        engine = GuidanceEngine()
+        far = record(1, [300, 80, 340, 170])
+        self.assertEqual(engine.update(1, [far]).state, UNKNOWN_SLOW_DOWN)
+        self.assertEqual(engine.update(2, [far]).state, UNKNOWN_SLOW_DOWN)
+
     def test_warning_feedback_has_cooldown_across_state_flap(self):
         engine = GuidanceEngine(repeat_frames=10)
         first = record(1, [250, 80, 390, 260])
