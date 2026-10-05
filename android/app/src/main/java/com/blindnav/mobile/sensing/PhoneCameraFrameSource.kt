@@ -49,7 +49,10 @@ class PhoneCameraFrameSource(
             val useCase = ImageAnalysis.Builder()
                 // Keep camera-to-RGB work bounded. The model consumes 320x320;
                 // analyzing a full 1080p stream only burns CPU before inference.
-                .setTargetResolution(Size(640, 360))
+                // The detector input is 320x320.  480x270 keeps enough
+                // context for contact-point routing while reducing the YUV to
+                // RGB copy and rotation cost on mid-range phones.
+                .setTargetResolution(Size(480, 270))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
             useCase.setAnalyzer(executor) { image -> onImage(image) }

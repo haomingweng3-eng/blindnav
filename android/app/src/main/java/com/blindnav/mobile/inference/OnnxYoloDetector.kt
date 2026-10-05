@@ -86,9 +86,14 @@ class OnnxYoloDetector(
     }
 
     private fun createSession(modelBytes: ByteArray): SessionHandle {
+        // XNNPACK is tried first because NNAPI often accepts a graph while
+        // silently falling back for unsupported YOLO operators.  That fallback
+        // can make live inference much slower than the predictable CPU path.
+        // NNAPI remains an available fallback for devices with a complete
+        // accelerator implementation.
         val attempts = listOf(
-            "NNAPI" to { options: OrtSession.SessionOptions -> options.addNnapi() },
             "XNNPACK" to { options: OrtSession.SessionOptions -> options.addXnnpack(emptyMap()) },
+            "NNAPI" to { options: OrtSession.SessionOptions -> options.addNnapi() },
             "CPU" to { _: OrtSession.SessionOptions -> },
         )
         var lastError: Throwable? = null

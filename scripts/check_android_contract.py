@@ -69,7 +69,10 @@ def main() -> int:
         "camera_yuv_to_rgb": "Yuv420RgbConverter.convert" in phone_source and "data class RgbFrame" in yuv_converter,
         "camera_rotation_applied": "RgbFrameRotator.rotate" in phone_source and "rotationDegrees" in phone_source,
         "camera_async_stop_guard": "runGeneration" in phone_source and "return@addListener" in phone_source,
-        "camera_analysis_resolution_bound": "setTargetResolution(Size(640, 360))" in phone_source,
+        "camera_analysis_resolution_bound": any(
+            token in phone_source
+            for token in ("setTargetResolution(Size(480, 270))", "setTargetResolution(Size(640, 360))")
+        ),
         "yolo_output_decoder": "84" in yolo_decoder and "iouThreshold" in yolo_decoder,
         "onnx_runtime_detector": "onnxruntime" in build and "createSession" in onnx_detector,
         "two_wheeler_gate": all(token in rider_gate for token in ("personConfidence", "minOverlap", "TWO_WHEELER_CLASS_ID")),
