@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -18,7 +19,7 @@ class OnnxInferenceTests(unittest.TestCase):
         image = np.zeros((640, 640, 3), dtype=np.uint8)
         detections = infer_image(
             image,
-            "/Users/mima0000/blindnav/models/yolov8n.onnx",
+            str(Path(__file__).resolve().parents[1] / "models" / "yolov8n.onnx"),
             conf_threshold=0.25,
         )
         self.assertIsInstance(detections, list)
