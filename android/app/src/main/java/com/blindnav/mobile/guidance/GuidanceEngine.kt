@@ -53,12 +53,18 @@ class GuidanceEngine(
             tracks.any { it.riskLevel >= 2 }
         val warning = alerts.any { it.feedback.priority == FeedbackPriority.WARNING } ||
             tracks.any { it.riskLevel >= 1 }
+        // A missing or failed camera-motion estimate leaves route motion
+        // ambiguous. Keep the user in the conservative state until a fresh
+        // reliable estimate arrives; never announce a clear route solely
+        // because the detector saw no urgent track.
+        val motionUncertain = frame.backgroundMotion != null &&
+            frame.backgroundMotion.reliable.not()
         val decision = when {
             urgent ->
                 GuidanceDecision(GuidanceState.DANGER, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
             warning || (blocking && blockingStreak >= 2) ->
                 GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f, action("注意，前方可能有障碍", FeedbackPriority.WARNING))
-            region.confidence < MIN_REGION_CONFIDENCE ->
+            motionUncertain || region.confidence < MIN_REGION_CONFIDENCE ->
                 GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "可行走区域不确定", region.confidence,
                     action("前方情况不明，请减速", FeedbackPriority.WARNING))
             else -> guidanceDirection(region)

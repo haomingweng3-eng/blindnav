@@ -2,6 +2,7 @@ package com.blindnav.mobile.guidance
 
 import com.blindnav.mobile.inference.Detection
 import com.blindnav.mobile.inference.FrameDetections
+import com.blindnav.mobile.inference.BackgroundMotion
 import com.blindnav.mobile.risk.RiskTrackSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -45,6 +46,22 @@ class GuidanceEngineTest {
         val decision = engine.update(frame, region, listOf(track), emptyList())
         assertEquals(GuidanceState.DANGER, decision.state)
         assertNotNull(decision.feedback)
+    }
+
+    @Test
+    fun unavailableCameraMotionUsesSlowDownState() {
+        val engine = GuidanceEngine()
+        val frame = frame(0, emptyList()).copy(
+            backgroundMotion = BackgroundMotion(
+                fromTimestampMs = 0L,
+                toTimestampMs = 0L,
+                reliable = false,
+                reason = "initial",
+            ),
+        )
+        val region = GeometryWalkableRegionEstimator().estimate(frame)
+        val decision = engine.update(frame, region, emptyList(), emptyList())
+        assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, decision.state)
     }
 
     private fun frame(sourceFrame: Long, detections: List<Detection>) = FrameDetections(
