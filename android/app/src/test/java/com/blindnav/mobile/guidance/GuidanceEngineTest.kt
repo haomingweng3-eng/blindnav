@@ -3,6 +3,7 @@ package com.blindnav.mobile.guidance
 import com.blindnav.mobile.inference.Detection
 import com.blindnav.mobile.inference.FrameDetections
 import com.blindnav.mobile.inference.BackgroundMotion
+import com.blindnav.mobile.inference.RgbFrame
 import com.blindnav.mobile.risk.RiskTrackSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -84,6 +85,40 @@ class GuidanceEngineTest {
         assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, region.copy(source = "geometry_fallback", leftSupport = 1f).supportedDirection())
     }
 
+    @Test
+    fun phoneSurfaceEstimatorCanAuthorizeStraightOnlyAfterTemporalConfirmation() {
+        val estimator = RgbWalkableRegionEstimator()
+        val engine = GuidanceEngine()
+        val region = estimator.estimate(frame(0, emptyList()).copy(rgbFrame = uniformRgb()))
+        assertEquals("rgb_surface", region.source)
+        assertEquals(GuidanceState.KEEP_STRAIGHT, region.supportedDirection())
+        for (i in 0L..1L) {
+            assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN,
+                engine.update(reliableFrame(i, emptyList()).copy(rgbFrame = uniformRgb()), region,
+                    emptyList(), emptyList()).state)
+        }
+        assertEquals(GuidanceState.KEEP_STRAIGHT,
+            engine.update(reliableFrame(2, emptyList()).copy(rgbFrame = uniformRgb()), region,
+                emptyList(), emptyList()).state)
+    }
+
+    @Test
+    fun phoneSurfaceEstimatorDoesNotTreatCentralObjectAsClearGround() {
+        val estimator = RgbWalkableRegionEstimator()
+        val central = listOf(Detection(1, .9f, floatArrayOf(35f, 25f, 65f, 90f)))
+        val region = estimator.estimate(frame(0, central).copy(rgbFrame = uniformRgb()))
+        assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, region.supportedDirection())
+        assertEquals(0f, region.forwardSupport, .001f)
+    }
+
+    @Test
+    fun phoneSurfaceEstimatorUsesVerifiedOpenSideForDetour() {
+        val estimator = RgbWalkableRegionEstimator()
+        val rightBlocker = listOf(Detection(1, .9f, floatArrayOf(45f, 25f, 80f, 90f)))
+        val region = estimator.estimate(frame(0, rightBlocker).copy(rgbFrame = uniformRgb()))
+        assertEquals("region=$region", GuidanceState.MOVE_LEFT, region.supportedDirection())
+    }
+
     private fun evidence(forward: Float = 0f, left: Float = 0f, right: Float = 0f) = WalkableRegion(
         0.36f, 0.64f, 0.48f, 0.9f, "segformer_ade20k", surface = "road",
         forwardSupport = forward, leftSupport = left, rightSupport = right,
@@ -146,4 +181,6 @@ class GuidanceEngineTest {
         frameHeight = 100,
         detections = detections,
     )
+
+    private fun uniformRgb() = RgbFrame(100, 100, ByteArray(100 * 100 * 3) { 96.toByte() })
 }

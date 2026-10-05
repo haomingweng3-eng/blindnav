@@ -15,9 +15,9 @@ import com.blindnav.mobile.inference.RuntimeMetrics
 import com.blindnav.mobile.feedback.FeedbackAction
 import com.blindnav.mobile.feedback.FeedbackDispatcher
 import com.blindnav.mobile.feedback.FeedbackPriority
-import com.blindnav.mobile.guidance.GeometryWalkableRegionEstimator
 import com.blindnav.mobile.guidance.GuidanceEngine
 import com.blindnav.mobile.guidance.GuidanceState
+import com.blindnav.mobile.guidance.RgbWalkableRegionEstimator
 import com.blindnav.mobile.overlay.TrajectoryOverlayView
 import com.blindnav.mobile.risk.TemporalRiskEngine
 import com.blindnav.mobile.sensing.PhoneCameraFrameSource
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     // targets are filtered by the temporal risk engine; a second person model
     // made the first phone build too slow for live use.
     private val riskEngine = TwoWheelerRuntimeConfig.createRiskEngine()
-    private val walkableRegionEstimator = GeometryWalkableRegionEstimator()
+    private val walkableRegionEstimator = RgbWalkableRegionEstimator()
     private val guidanceEngine = GuidanceEngine()
     private val runtimeMetrics = RuntimeMetrics()
     private var statusText: TextView? = null
@@ -87,6 +87,9 @@ class MainActivity : ComponentActivity() {
                     val tracks = riskEngine.currentTracks
                     val region = walkableRegionEstimator.estimate(result)
                     val guidance = guidanceEngine.update(result, region, tracks, alerts)
+                    // Do not retain the full RGB buffer in queued UI work;
+                    // it is needed only for this frame's route estimate.
+                    val displayResult = result.copy(rgbFrame = null)
                     runOnUiThread {
                         alerts.sortedBy { it.feedback.priority.ordinal }.forEach { alert ->
                             feedbackDispatcher?.dispatch(alert.trackId, alert.feedback)
@@ -94,7 +97,7 @@ class MainActivity : ComponentActivity() {
                         guidance.feedback?.let { feedback ->
                             feedbackDispatcher?.dispatch("guidance", feedback)
                         }
-                        trajectoryOverlay?.submit(result, tracks, guidance.state)
+                        trajectoryOverlay?.submit(displayResult, tracks, guidance.state)
                         val alertText = if (alerts.isEmpty()) "" else " · 告警 ${alerts.size}"
                         val motionText = if (result.backgroundMotion?.reliable == true) "背景平移补偿" else "背景补偿不可用"
                         val guidanceText = guidanceLabel(guidance.state)

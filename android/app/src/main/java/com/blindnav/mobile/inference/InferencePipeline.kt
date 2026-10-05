@@ -15,6 +15,8 @@ data class FrameDetections(
     val droppedSinceLast: Int = 0,
     val detections: List<Detection>,
     val backgroundMotion: BackgroundMotion? = null,
+    /** Owned camera pixels for the lightweight phone free-space estimator. */
+    val rgbFrame: RgbFrame? = null,
 )
 
 class InferencePipeline(
@@ -40,6 +42,7 @@ class InferencePipeline(
                     droppedSinceLast = packet.droppedSinceLast,
                     detections = detections,
                     backgroundMotion = motion,
+                    rgbFrame = frame,
                 ),
             )
         } catch (error: Throwable) {

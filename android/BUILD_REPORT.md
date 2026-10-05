@@ -200,3 +200,15 @@ ONNX Runtime 现在优先尝试 XNNPACK，再回退到 NNAPI 和 CPU；任一端
 - APK 大小：`106726764` bytes
 - APK SHA-256：`C645F580B5EEFB9680534D99E70A4E94F84750D0BEDC4474449C49417072E6A8`
 - 由于当前环境没有可用 `adb`，尚未完成真机 FPS、端到端延迟、温度和路线方向验收；安全预警保持关闭。
+
+## 2026-10-06 手机端轻量路线证据
+
+手机实时链路已接入 `RgbWalkableRegionEstimator`。它从相机 RGB 帧下方区域计算中央、左侧和右侧的连续表面支持率，并把当前检测框覆盖区域视为未知；支持率不足、表面不连续或相机补偿不可信时仍反馈减速，不授权直行或绕行。无 RGB 的离线 ONNX 回放保持几何保守回退。
+
+- Android 单元测试 55 项（1 项可选回放跳过）通过。
+- Python 单元测试 140 项通过。
+- Debug 构建和静态契约检查通过。
+- APK：`android/app/build/outputs/apk/debug/app-debug.apk`
+- APK 大小：`106727068` bytes
+- APK SHA-256：`B645F6807346CDA7841A4FECD874B835D841DE8DD40EB97F5AF7D4670F4FCE50`
+- 真实手机 FPS、端到端延迟、温度和路线方向仍待 `adb` 可用后验收；安全预警保持关闭。

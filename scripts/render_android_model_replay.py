@@ -210,7 +210,7 @@ def render(args):
                    phone_fps_verified=False, risk_engine="Actual Android Kotlin TemporalRiskEngine", new_training=False)
     summary.update(guidance_state_counts=dict(sorted(guidance_counts.items())),
                    first_guidance_frame=first_guidance,
-                   guidance_engine="Android GuidanceEngine + GeometryWalkableRegionEstimator")
+                   guidance_engine="Android GuidanceEngine + RgbWalkableRegionEstimator (replay fallback without RGB)")
     motions = [item["background_motion"] for item in trace["frames"] if "background_motion" in item]
     summary.update(sample_fps=replay_fps, background_motion_evaluated=bool(motions),
                    background_motion_reliable_frames=sum(item["reliable"] for item in motions))

@@ -32,7 +32,10 @@ def inspect(video, report, output, frames, estimator=None):
             if not ok:
                 raise RuntimeError(f"Cannot read frame {index}: {video}")
             started = time.perf_counter()
-            region = estimator.estimate(original)
+            frame_records = by_frame.get(index, [])
+            # Remove known detector boxes before measuring surface support so
+            # an occluded central target cannot be mistaken for clear ground.
+            region = estimator.estimate(original, frame_records)
             seconds = time.perf_counter() - started
             height, width = original.shape[:2]
             scale = min(960 / width, 540 / height)
@@ -49,7 +52,7 @@ def inspect(video, report, output, frames, estimator=None):
             cv2.rectangle(vis, (int(region.route_left*w), int(region.floor_y*h)),
                           (int(region.route_right*w), h-1), (255, 255, 0), 1)
             observations = []
-            for record in by_frame.get(index, []):
+            for record in frame_records:
                 x1, y1, x2, y2 = record["box"]
                 contact = ((x1+x2)/2/width, y2/height)
                 inside = region.contains(*contact)

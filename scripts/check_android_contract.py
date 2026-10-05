@@ -25,6 +25,7 @@ def main() -> int:
         "risk_engine": ANDROID / "app/src/main/java/com/blindnav/mobile/risk/TemporalRiskEngine.kt",
         "guidance_engine": ANDROID / "app/src/main/java/com/blindnav/mobile/guidance/GuidanceEngine.kt",
         "walkable_region": ANDROID / "app/src/main/java/com/blindnav/mobile/guidance/WalkableRegion.kt",
+        "rgb_walkable_region": ANDROID / "app/src/main/java/com/blindnav/mobile/guidance/RgbWalkableRegion.kt",
         "model_asset": ANDROID / "app/src/main/assets/yolov8n.onnx",
         "two_wheeler_asset": ANDROID / "app/src/main/assets/two_wheeler_candidate.onnx",
         "two_wheeler_fast_asset": ANDROID / "app/src/main/assets/two_wheeler_candidate_320.onnx",
@@ -55,6 +56,7 @@ def main() -> int:
     onnx_detector = read(required["onnx_detector"])
     rider_gate = read(required["rider_gate"])
     inference_pipeline = read(required["inference_pipeline"])
+    rgb_walkable_region = read(required["rgb_walkable_region"])
     background_motion = read(required["background_motion"])
     feedback_action = read(required["feedback_action"])
     feedback_dispatcher = read(required["feedback_dispatcher"])
@@ -93,6 +95,10 @@ def main() -> int:
             token in read(required["walkable_region"])
             for token in ("WalkableRegion", "WalkableRegionEstimator", "GeometryWalkableRegionEstimator")
         ),
+        "phone_rgb_free_space": all(
+            token in rgb_walkable_region
+            for token in ("class RgbWalkableRegionEstimator", "rgbFrame", "local_surface", "insideDetection")
+        ) and "rgbFrame = frame" in inference_pipeline and "RgbWalkableRegionEstimator" in main_activity,
         "model_asset_present": required["model_asset"].stat().st_size > 1_000_000,
         "two_wheeler_asset_present": required["two_wheeler_asset"].stat().st_size > 1_000_000,
         "two_wheeler_fast_asset_present": required["two_wheeler_fast_asset"].stat().st_size > 1_000_000,

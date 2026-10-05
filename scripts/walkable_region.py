@@ -121,7 +121,8 @@ class SegformerWalkableRegionEstimator:
         return ids
 
     @classmethod
-    def corridor_support(cls, component, probabilities, top_left, top_right):
+    def corridor_support(cls, component, probabilities, top_left, top_right,
+                         bottom_left=None, bottom_right=None):
         """Minimum row support of a corridor connected to the user's feet.
 
         Keep holes and unknown pixels. A min/max outline of a mask would fill
@@ -130,12 +131,14 @@ class SegformerWalkableRegionEstimator:
         """
         import numpy as np
         height, width = component.shape
+        bottom_left = top_left if bottom_left is None else bottom_left
+        bottom_right = top_right if bottom_right is None else bottom_right
         support = []
         for row in range(int(height * 0.60), max(int(height * 0.60) + 1, int(height * 0.98))):
             y = row / height
             progress = (y - 0.60) / 0.38
-            left = top_left + (0.40 - top_left) * progress
-            right = top_right + (0.60 - top_right) * progress
+            left = top_left + (bottom_left - top_left) * progress
+            right = top_right + (bottom_right - top_right) * progress
             x1, x2 = int(left * width), max(int(left * width) + 1, int(right * width))
             band = component[row, x1:x2] & (probabilities[row, x1:x2] >= 0.65)
             support.append(float(np.mean(band)) if band.size else 0.0)
@@ -214,7 +217,7 @@ class SegformerWalkableRegionEstimator:
                              float(np.percentile(band_x, 98) / width)))
         return WalkableRegionEstimate(
             left, right, floor_y, confidence, "segformer_ade20k", surface, tuple(rows),
-            forward_support=cls.corridor_support(component, probabilities, 0.36, 0.64),
-            left_support=cls.corridor_support(component, probabilities, 0.15, 0.35),
-            right_support=cls.corridor_support(component, probabilities, 0.65, 0.85),
+            forward_support=cls.corridor_support(component, probabilities, 0.36, 0.64, 0.40, 0.60),
+            left_support=cls.corridor_support(component, probabilities, 0.15, 0.35, 0.15, 0.35),
+            right_support=cls.corridor_support(component, probabilities, 0.65, 0.85, 0.65, 0.85),
         )
