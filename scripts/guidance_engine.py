@@ -24,6 +24,7 @@ class WalkableRegion:
     floor_y: float = 0.48
     confidence: float = 0.55
     source: str = "geometry_fallback"
+    surface: str = "unknown"
 
     def contains(self, x: float, y: float) -> bool:
         return self.left <= x <= self.right and y >= self.floor_y
@@ -149,5 +150,10 @@ def evaluate_guidance_records(records, width, height, uncertain=False, regions=N
             "confidence": round(decision.confidence, 3),
             "speech": decision.speech if emitted else None,
             "region_source": getattr(region, "source", None),
+            "region_surface": getattr(region, "surface", "unknown"),
+            "region_left": round(float(getattr(region, "left", 0.32)), 4) if region else None,
+            "region_right": round(float(getattr(region, "right", 0.68)), 4) if region else None,
+            "region_floor_y": round(float(getattr(region, "floor_y", 0.48)), 4) if region else None,
+            "region_confidence": round(float(getattr(region, "confidence", 0.0)), 4) if region else None,
         })
     return {"trace": trace, "state_counts": counts}

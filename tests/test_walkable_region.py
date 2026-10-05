@@ -14,6 +14,7 @@ class WalkableRegionTests(unittest.TestCase):
             labels, probabilities, {6}
         )
         self.assertEqual(region.source, "segformer_ade20k")
+        self.assertEqual(region.surface, "road")
         self.assertLess(region.left, 0.25)
         self.assertGreater(region.right, 0.75)
         self.assertTrue(region.contains(0.5, 0.8))

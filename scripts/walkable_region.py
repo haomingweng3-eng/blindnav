@@ -16,6 +16,7 @@ class WalkableRegionEstimate:
     floor_y: float
     confidence: float
     source: str
+    surface: str = "unknown"
 
     def contains(self, x: float, y: float) -> bool:
         return self.left <= x <= self.right and y >= self.floor_y
@@ -30,7 +31,7 @@ class SegformerWalkableRegionEstimator:
 
     DEFAULT_MODEL = "nvidia/segformer-b0-finetuned-ade-512-512"
     FALLBACK = WalkableRegionEstimate(
-        0.32, 0.68, 0.48, 0.25, "geometry_fallback"
+        0.32, 0.68, 0.48, 0.25, "geometry_fallback", "unknown"
     )
 
     def __init__(self, model_name: str = DEFAULT_MODEL, device: Optional[str] = None,
@@ -149,4 +150,15 @@ class SegformerWalkableRegionEstimator:
         confidence = max(0.15, min(0.95, 0.35 + 0.6 * coverage))
         if right - left < 0.16:
             return cls.FALLBACK
-        return WalkableRegionEstimate(left, right, floor_y, confidence, "segformer_ade20k")
+        component_labels = labels[component]
+        if np.all(component_labels == 6):
+            surface = "road"
+        elif np.all(component_labels == 11):
+            surface = "sidewalk"
+        elif np.all(np.isin(component_labels, (3, 52))):
+            surface = "floor_or_path"
+        else:
+            surface = "mixed_walkable"
+        return WalkableRegionEstimate(
+            left, right, floor_y, confidence, "segformer_ade20k", surface
+        )
