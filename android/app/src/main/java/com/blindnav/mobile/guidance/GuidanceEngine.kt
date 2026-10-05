@@ -46,13 +46,25 @@ class GuidanceEngine(
         require(frame.frameWidth > 0 && frame.frameHeight > 0)
         val consecutive = lastFrame == null || (frame.sourceFrame == lastFrame!! + 1 &&
             lastCaptureMs?.let { frame.captureTsMs - it in 1L..500L } == true)
-        val blocking = frame.detections.any { detection ->
+        val blockingDetection = frame.detections.any { detection ->
             val box = detection.box
             box.size == 4 && box.all { it.isFinite() } && box[2] > box[0] && box[3] > box[1] &&
                 detection.confidence >= MIN_CONFIDENCE &&
                 region.containsContact((box[0] + box[2]) / 2f / frame.frameWidth,
                     box[3] / frame.frameHeight)
         }
+        // Keep a confirmed route track in the blocking state for one detector
+        // dip. Otherwise a central approaching target can flash back to
+        // KEEP_STRAIGHT merely because the current detection was dropped.
+        val blockingTrack = tracks.any { track ->
+            val box = track.box
+            val contact = track.roadHistory.lastOrNull()
+            box.size == 4 && box[2] > box[0] && box[3] > box[1] &&
+                contact != null && track.roadHistory.size >= 2 &&
+                contact.y >= frame.frameHeight * ROUTE_CONTACT_Y &&
+                ((box[0] + box[2]) / 2f) / frame.frameWidth in ROUTE_LEFT..ROUTE_RIGHT
+        }
+        val blocking = blockingDetection || blockingTrack
         blockingStreak = if (blocking && consecutive) blockingStreak + 1 else if (blocking) 1 else 0
         lastFrame = frame.sourceFrame
         lastCaptureMs = frame.captureTsMs
@@ -197,5 +209,8 @@ class GuidanceEngine(
 
     private companion object {
         const val MIN_CONFIDENCE = 0.25f
+        const val ROUTE_LEFT = 0.36f
+        const val ROUTE_RIGHT = 0.64f
+        const val ROUTE_CONTACT_Y = 0.38f
     }
 }

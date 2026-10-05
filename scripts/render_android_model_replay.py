@@ -145,6 +145,14 @@ def render(args):
         # Use only the current snapshot, never retain an earlier alert as
         # perpetual danger when a vehicle disappears or leaves the route.
         max_level = max((track["risk_level"] for track in record["tracks"]), default=0)
+        guidance_state = record.get("guidance_state")
+        # Keep the replay title and box colors consistent with the guidance
+        # state. A central blocker can be CAUTION before temporal risk reaches
+        # level 1; showing "tracking"/green in that frame is misleading.
+        if guidance_state in ("CAUTION", "MOVE_LEFT", "MOVE_RIGHT"):
+            max_level = max(max_level, 1)
+        elif guidance_state in ("DANGER", "STOP"):
+            max_level = max(max_level, 2)
         if max_level >= 1 and first_notice is None:
             first_notice = index
         if max_level == 2 and first_danger is None:
@@ -158,14 +166,15 @@ def render(args):
             if track["risk_level"] == 0 and not route_relevant:
                 continue
             x1, y1, x2, y2 = [round(value * scale) for value in track["box"]]
-            uncertain_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "UNKNOWN_SLOW_DOWN"
-            stopped_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "STOP"
-            detour_left_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "MOVE_LEFT"
-            detour_right_route_track = track["risk_level"] == 0 and route_relevant and record.get("guidance_state") == "MOVE_RIGHT"
-            display_level = 2 if stopped_route_track else 1 if uncertain_route_track or detour_left_route_track or detour_right_route_track else track["risk_level"]
+            uncertain_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "UNKNOWN_SLOW_DOWN"
+            guidance_route_warning = track["risk_level"] == 0 and route_relevant and guidance_state == "CAUTION"
+            stopped_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "STOP"
+            detour_left_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "MOVE_LEFT"
+            detour_right_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "MOVE_RIGHT"
+            display_level = 2 if stopped_route_track or guidance_state == "DANGER" else 1 if guidance_route_warning or uncertain_route_track or detour_left_route_track or detour_right_route_track else track["risk_level"]
             color = [(30, 220, 70), (0, 180, 255), (30, 30, 255)][display_level]
             cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
-            label = track["track_id"] + (" MOVE LEFT" if detour_left_route_track else " MOVE RIGHT" if detour_right_route_track else " SLOW DOWN" if uncertain_route_track else " DANGER" if stopped_route_track else "")
+            label = track["track_id"] + (" MOVE LEFT" if detour_left_route_track else " MOVE RIGHT" if detour_right_route_track else " SLOW DOWN" if uncertain_route_track else " NOTICE" if guidance_route_warning else " DANGER" if stopped_route_track or guidance_state == "DANGER" else "")
             cv2.putText(vis, label, (x1, max(26, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, .65, color, 2)
             points = track["history"]
             for old, new in zip(points, points[1:]):

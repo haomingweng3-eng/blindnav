@@ -174,6 +174,21 @@ class GuidanceEngineTest {
         assertEquals(null, repeated.feedback)
     }
 
+    @Test
+    fun confirmedCentralTrackDoesNotFlashBackToStraightDuringDetectionDip() {
+        val engine = GuidanceEngine()
+        val region = evidence(forward = 0.96f)
+        val history = listOf(
+            com.blindnav.mobile.risk.RoadObservation(50f, 60f, 0L),
+            com.blindnav.mobile.risk.RoadObservation(50f, 64f, 100L),
+        )
+        val track = RiskTrackSnapshot("two-wheeler-1", floatArrayOf(40f, 25f, 60f, 64f), history, 0)
+        assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN,
+            engine.update(reliableFrame(0, emptyList()), region, listOf(track), emptyList()).state)
+        assertEquals(GuidanceState.CAUTION,
+            engine.update(reliableFrame(1, emptyList()), region, listOf(track), emptyList()).state)
+    }
+
     private fun frame(sourceFrame: Long, detections: List<Detection>) = FrameDetections(
         sourceFrame = sourceFrame,
         captureTsMs = sourceFrame * 100L,
