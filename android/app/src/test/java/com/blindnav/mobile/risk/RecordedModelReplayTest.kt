@@ -3,9 +3,10 @@ package com.blindnav.mobile.risk
 import com.blindnav.mobile.TwoWheelerRuntimeConfig
 import com.blindnav.mobile.inference.FrameDetections
 import com.blindnav.mobile.inference.BackgroundMotionEstimator
+import com.blindnav.mobile.inference.RgbFrame
 import com.blindnav.mobile.inference.YoloOutputDecoder
-import com.blindnav.mobile.guidance.GeometryWalkableRegionEstimator
 import com.blindnav.mobile.guidance.GuidanceEngine
+import com.blindnav.mobile.guidance.RgbWalkableRegionEstimator
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -39,7 +40,7 @@ class RecordedModelReplayTest {
         assertEquals(frames.length().toLong() * rawCount * 4, rawFile.length())
         val engine = TwoWheelerRuntimeConfig.createRiskEngine()
         val guidanceEngine = GuidanceEngine()
-        val regionEstimator = GeometryWalkableRegionEstimator()
+        val regionEstimator = RgbWalkableRegionEstimator()
         val motionEstimator = BackgroundMotionEstimator()
         val stride = fixture.optInt("sample_stride", 1)
         require(stride > 0)
@@ -47,6 +48,14 @@ class RecordedModelReplayTest {
         val grayBytes = ByteArray(fixture.optInt("gray_width", 0) * fixture.optInt("gray_height", 0))
         if (grayStream != null) {
             assertEquals(frames.length().toLong() * grayBytes.size, File(fixture.getString("gray_file")).length())
+        }
+        val rgbWidth = fixture.optInt("rgb_width", 0)
+        val rgbHeight = fixture.optInt("rgb_height", 0)
+        val rgbBytes = ByteArray(rgbWidth * rgbHeight * 3)
+        val rgbStream = if (fixture.has("rgb_file")) File(fixture.getString("rgb_file")).inputStream().buffered() else null
+        if (rgbStream != null) {
+            require(rgbWidth > 0 && rgbHeight > 0) { "rgb_width/rgb_height are required with rgb_file" }
+            assertEquals(frames.length().toLong() * rgbBytes.size, File(fixture.getString("rgb_file")).length())
         }
         val output = JSONArray()
         try { rawFile.inputStream().buffered().use { stream ->
@@ -64,6 +73,14 @@ class RecordedModelReplayTest {
                         val count = grayStream.read(grayBytes, grayRead, grayBytes.size - grayRead)
                         check(count > 0) { "Truncated background pixels" }
                         grayRead += count
+                    }
+                }
+                if (rgbStream != null) {
+                    var rgbRead = 0
+                    while (rgbRead < rgbBytes.size) {
+                        val count = rgbStream.read(rgbBytes, rgbRead, rgbBytes.size - rgbRead)
+                        check(count > 0) { "Truncated RGB frames" }
+                        rgbRead += count
                     }
                 }
                 if (i % stride != 0) continue
@@ -85,12 +102,14 @@ class RecordedModelReplayTest {
                 ) else null
                 val motionMs = (System.nanoTime() - motionStarted) / 1_000_000.0
                 // CameraX numbers analyzed frames, not the frames it dropped.
+                val rgbFrame = if (rgbStream != null) RgbFrame(rgbWidth, rgbHeight, rgbBytes.copyOf()) else null
                 val frame = FrameDetections((i / stride).toLong(), meta.getLong("timestamp_ms"), width, height,
-                    detections = detections, backgroundMotion = motion)
+                    detections = detections, backgroundMotion = motion, rgbFrame = rgbFrame)
                 val alerts = engine.update(frame)
+                val region = regionEstimator.estimate(frame)
                 val guidance = guidanceEngine.update(
                     frame,
-                    regionEstimator.estimate(frame),
+                    region,
                     engine.currentTracks,
                     alerts,
                 )
@@ -112,13 +131,18 @@ class RecordedModelReplayTest {
                     .put("guidance_state", guidance.state.name)
                     .put("guidance_reason", guidance.reason)
                     .put("guidance_confidence", guidance.confidence)
+                    .put("region_source", region.source)
+                    .put("region_surface", region.surface)
+                    .put("region_forward_support", region.forwardSupport)
+                    .put("region_left_support", region.leftSupport)
+                    .put("region_right_support", region.rightSupport)
                 if (motion != null) record.put("background_motion", JSONObject()
                     .put("reliable", motion.reliable).put("dx_pixels", motion.dxPixels).put("dy_pixels", motion.dyPixels)
                     .put("matches", motion.matches).put("inliers", motion.inliers).put("reason", motion.reason)
                     .put("desktop_ms", motionMs))
                 output.put(record)
             }
-        } } finally { grayStream?.close() }
+        } } finally { grayStream?.close(); rgbStream?.close() }
         File(fixture.getString("trace_file")).writeText(
             JSONObject().put("model_sha256", fixture.getString("model_sha256"))
                 .put("config", "TwoWheelerRuntimeConfig").put("frames", output)

@@ -16,7 +16,10 @@ import kotlin.math.sqrt
 class RgbWalkableRegionEstimator(
     private val routeLeft: Float = 0.36f,
     private val routeRight: Float = 0.64f,
-    private val floorY: Float = 0.58f,
+    // Contact points around the middle of a 16:9 frame can already be on the
+    // road for a distant incoming rider. Keep this aligned with the desktop
+    // route corridor; RGB surface sampling still starts lower at y=0.62.
+    private val floorY: Float = 0.48f,
 ) : WalkableRegionEstimator {
     override fun estimate(frame: FrameDetections): WalkableRegion {
         val rgb = frame.rgbFrame ?: return fallback(frame)

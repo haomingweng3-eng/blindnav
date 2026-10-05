@@ -159,7 +159,7 @@ class GuidanceEngine:
         if (region.source == "geometry_fallback" or region.surface == "unknown" or
                 region.confidence < 0.65):
             return UNKNOWN_SLOW_DOWN
-        if getattr(region, "forward_support", 0.0) >= 0.90:
+        if getattr(region, "forward_support", 0.0) >= 0.80:
             return KEEP_STRAIGHT
         if getattr(region, "left_support", 0.0) >= 0.90 and getattr(region, "right_support", 0.0) <= 0.65:
             return MOVE_LEFT

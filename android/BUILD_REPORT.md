@@ -201,6 +201,16 @@ ONNX Runtime 现在优先尝试 XNNPACK，再回退到 NNAPI 和 CPU；任一端
 - APK SHA-256：`C645F580B5EEFB9680534D99E70A4E94F84750D0BEDC4474449C49417072E6A8`
 - 由于当前环境没有可用 `adb`，尚未完成真机 FPS、端到端延迟、温度和路线方向验收；安全预警保持关闭。
 
+## 2026-10-06 真实 RGB/运动回放
+
+回放测试增加了 249 帧 640×360 RGB 和 96×54 灰度运动流，直接送入 Android 同款 `RgbWalkableRegionEstimator`、相机补偿和 `GuidanceEngine`。结果：第 82 帧进入 `CAUTION`，第 157 帧进入 `DANGER`；在无路线阻挡且支持率连续满足门槛时出现 `KEEP_STRAIGHT`，中央目标被确认阻挡后不再保持直行。该回放仍不代表手机实时性能。
+
+- RGB/运动回放测试通过，输出：`C:/Users/19770/Documents/Codex/blindnav_external/android320_verified_20261005/android_trace.json`
+- 视觉复核帧：`frame_0082.jpg`、`frame_0112.jpg`、`frame_0157.jpg`
+- 最新 APK：`android/app/build/outputs/apk/debug/app-debug.apk`
+- 最新 APK SHA-256：`1A05EA8B33417CC2B9CC334A4F0425FCE8F3BE9C2F65C3257C70615AAE9AE595`
+- 真机 FPS、端到端延迟、温度和路线方向仍待 `adb` 可用后验收；安全预警保持关闭。
+
 ## 2026-10-06 手机端轻量路线证据
 
 手机实时链路已接入 `RgbWalkableRegionEstimator`。它从相机 RGB 帧下方区域计算中央、左侧和右侧的连续表面支持率，并把当前检测框覆盖区域视为未知；支持率不足、表面不连续或相机补偿不可信时仍反馈减速，不授权直行或绕行。无 RGB 的离线 ONNX 回放保持几何保守回退。
