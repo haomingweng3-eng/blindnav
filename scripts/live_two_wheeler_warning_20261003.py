@@ -381,7 +381,7 @@ def main():
         default=1.2,
         help="预计进入近距离的剩余秒数小于该值时提前升级危险",
     )
-    parser.add_argument("--corridor-half-width", type=float, default=0.18)
+    parser.add_argument("--corridor-half-width", type=float, default=0.14)
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)

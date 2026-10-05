@@ -150,7 +150,7 @@ def evaluate_detection_records(
     alert_cooldown_frames=30,
     min_approach_area=0.01,
     corridor_center=0.0,
-    corridor_half_width=0.18,
+    corridor_half_width=0.14,
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,

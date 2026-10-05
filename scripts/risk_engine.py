@@ -30,7 +30,7 @@ class TrackState:
         tid,
         cls,
         looming_threshold=0.06,
-        corridor_half_width=0.18,
+        corridor_half_width=0.14,
         corridor_center=0.0,
         entry_lateral_threshold=0.04,
         entry_confirm_frames=3,

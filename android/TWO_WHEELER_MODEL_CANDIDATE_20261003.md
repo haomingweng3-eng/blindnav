@@ -14,7 +14,7 @@ two-wheeler warning prototype.  The phone risk path now requires four matched
 observations, keeps a short history, checks the median area-growth trend and
 downward image motion, and limits warnings to a central corridor.  Its default
 parameters correspond to the recorded-video candidate rule (`min area 0.005`,
-vertical/bottom approach `0.09/s`, corridor half-width `0.18`).  The Android
+vertical/bottom approach `0.09/s`, corridor half-width `0.14`).  The Android
 rider gate also runs the existing COCO person asset every second candidate
 frame and retains a two-wheeler only when a person overlaps at least 25% of its
 box.  This is a false-alert filter for parked rows, not a training label.  The

@@ -160,7 +160,7 @@ def main():
     parser.add_argument("--looming-threshold", type=float, default=0.06)
     parser.add_argument("--min-approach-area", type=float, default=0.01)
     parser.add_argument("--corridor-center", type=float, default=0.0)
-    parser.add_argument("--corridor-half-width", type=float, default=0.18)
+    parser.add_argument("--corridor-half-width", type=float, default=0.14)
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)

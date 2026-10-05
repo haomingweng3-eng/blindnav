@@ -183,7 +183,7 @@ def evaluate_labeled_videos(
     thresholds=(0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10),
     min_approach_area=0.01,
     corridor_center=0.0,
-    corridor_half_width=0.18,
+    corridor_half_width=0.14,
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
@@ -256,7 +256,7 @@ def main():
     )
     parser.add_argument("--min-approach-area", type=float, default=0.01)
     parser.add_argument("--corridor-center", type=float, default=0.0)
-    parser.add_argument("--corridor-half-width", type=float, default=0.18)
+    parser.add_argument("--corridor-half-width", type=float, default=0.14)
     parser.add_argument("--entry-lateral-threshold", type=float, default=0.04)
     parser.add_argument("--entry-confirm-frames", type=int, default=3)
     parser.add_argument("--prediction-frames", type=int, default=5)

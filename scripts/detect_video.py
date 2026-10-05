@@ -71,7 +71,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--corridor-half-width",
         type=float,
-        default=0.18,
+        default=0.14,
         help="行走路线半宽，归一化坐标，默认 0.18",
     )
     parser.add_argument(
@@ -120,7 +120,7 @@ def process_video(
     conf=0.25,
     min_approach_area=0.01,
     corridor_center=0.0,
-    corridor_half_width=0.18,
+    corridor_half_width=0.14,
     entry_lateral_threshold=0.04,
     entry_confirm_frames=3,
     prediction_frames=5,
