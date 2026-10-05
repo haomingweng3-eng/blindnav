@@ -94,14 +94,18 @@ class TrajectoryOverlayView @JvmOverloads constructor(
                 track.roadHistory.size >= 2
             val uncertainRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.UNKNOWN_SLOW_DOWN
+            val cautionRouteTrack = track.riskLevel == 0 && routeRelevant &&
+                guidanceState == GuidanceState.CAUTION
+            val stoppedRouteTrack = track.riskLevel == 0 && routeRelevant &&
+                guidanceState == GuidanceState.STOP
             boxPaint.color = when {
-                track.riskLevel >= 2 -> Color.RED
-                track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack -> Color.rgb(255, 165, 0)
+                track.riskLevel >= 2 || stoppedRouteTrack -> Color.RED
+                track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack || cautionRouteTrack -> Color.rgb(255, 165, 0)
                 else -> Color.GREEN
             }
             val displayRisk = when {
-                track.riskLevel >= 2 -> " DANGER"
-                track.riskLevel == 1 || closeCentralTrack -> " NOTICE"
+                track.riskLevel >= 2 || stoppedRouteTrack -> " DANGER"
+                track.riskLevel == 1 || closeCentralTrack || cautionRouteTrack -> " NOTICE"
                 uncertainRouteTrack -> " SLOW DOWN"
                 else -> " TRACK"
             }
