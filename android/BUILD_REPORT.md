@@ -160,3 +160,14 @@ ONNX Runtime 现在优先尝试 XNNPACK，再回退到 NNAPI 和 CPU；任一端
 
 本机 `gradlew.bat test assembleDebug`、相机补偿单元测试和静态契约检查通过；
 仍未安装手机，端侧 FPS、温度和真实道路效果仍待负责人确认后验收。
+
+## 2026-10-05 端侧预处理优化构建
+
+本轮只调整端侧执行路径：优先尝试 XNNPACK，摄像头分析目标分辨率改为
+`480x270`，保持 `two_wheeler_candidate_320.onnx`、风险阈值和反馈语义不变。
+单元测试、Debug 构建和静态契约检查均通过。
+
+- APK：`android/app/build/outputs/apk/debug/app-debug.apk`
+- APK 大小：`106726705` bytes
+- APK SHA-256：`C128B2ED8FE7BFAF3C485572C25754123449626EFD0E7FE5748EF3C48530E881`
+- 尚未安装手机，实际 FPS、端到端延迟和温度仍未验证；安全预警保持关闭。
