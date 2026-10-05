@@ -17,9 +17,24 @@ class WalkableRegionEstimate:
     confidence: float
     source: str
     surface: str = "unknown"
+    # Road extent and the intended central route are different quantities.
+    row_bounds: tuple = ()
+    route_left: float = 0.32
+    route_right: float = 0.68
 
     def contains(self, x: float, y: float) -> bool:
-        return self.left <= x <= self.right and y >= self.floor_y
+        if not self.route_left <= x <= self.route_right or y < self.floor_y:
+            return False
+        if not self.row_bounds:
+            return self.left <= x <= self.right
+        _, left, right = min(self.row_bounds, key=lambda row: abs(row[0] - y))
+        if left <= x <= right:
+            return True
+        # A close vehicle/person can occlude the road mask all the way to the
+        # bottom edge. Never turn that occlusion into a safe classification:
+        # retain the central route for contact points in the lowest 15% and let
+        # the temporal risk layer decide whether to warn.
+        return y >= 0.85
 
 
 class SegformerWalkableRegionEstimator:
@@ -42,6 +57,7 @@ class SegformerWalkableRegionEstimator:
         self._model = None
         self._device = device
         self.load_error = None
+        self.inference_error = None
 
     @property
     def available(self) -> bool:
@@ -87,7 +103,8 @@ class SegformerWalkableRegionEstimator:
             labels = logits.argmax(dim=0).detach().cpu().numpy()
             probabilities = logits.softmax(dim=0).max(dim=0).values.detach().cpu().numpy()
             return self.mask_to_region(labels, probabilities, self._walkable_ids(), detections)
-        except Exception:
+        except Exception as exc:
+            self.inference_error = f"{type(exc).__name__}: {exc}"
             return self.FALLBACK
 
     def _walkable_ids(self):
@@ -145,7 +162,9 @@ class SegformerWalkableRegionEstimator:
             lower_xs = xs
         left = float(np.percentile(lower_xs, 5) / width)
         right = float(np.percentile(lower_xs, 95) / width)
-        floor_y = float(np.percentile(ys, 35) / height)
+        # A lower-image percentile delayed detection of a vehicle already on
+        # the road. Use the near horizon instead, then check local row bounds.
+        floor_y = float(np.percentile(ys, 2) / height)
         coverage = min(1.0, len(xs) / float(width * height * 0.35))
         confidence = max(0.15, min(0.95, 0.35 + 0.6 * coverage))
         if right - left < 0.16:
@@ -159,6 +178,14 @@ class SegformerWalkableRegionEstimator:
             surface = "floor_or_path"
         else:
             surface = "mixed_walkable"
+        rows = []
+        for fraction in np.linspace(floor_y, 0.98, 16):
+            row_y = int(fraction * height)
+            band = component[max(0, row_y - 2):min(height, row_y + 3)]
+            _, band_x = np.where(band)
+            if len(band_x) >= 5:
+                rows.append((float(fraction), float(np.percentile(band_x, 2) / width),
+                             float(np.percentile(band_x, 98) / width)))
         return WalkableRegionEstimate(
-            left, right, floor_y, confidence, "segformer_ade20k", surface
+            left, right, floor_y, confidence, "segformer_ade20k", surface, tuple(rows)
         )
