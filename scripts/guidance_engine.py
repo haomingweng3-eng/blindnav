@@ -73,10 +73,13 @@ class GuidanceEngine:
         )
         self.last_frame = frame
         approaching = any(self._approaching(record) for record, _, _, _ in blockers)
-        large = any(area >= 0.06 for _, _, _, area in blockers)
         if uncertain:
             decision = GuidanceDecision(UNKNOWN_SLOW_DOWN, "可行走区域不确定", 0.25, "前方情况不明，请减速")
-        elif blockers and self.blocking_streak >= 2 and (approaching or large):
+        # A large box alone is not evidence of an incoming collision: a
+        # parked vehicle can remain large for the whole clip.  STOP requires
+        # temporal approach evidence (or the Android risk engine's urgent
+        # alert, which is handled by the phone-side GuidanceEngine).
+        elif blockers and self.blocking_streak >= 2 and approaching:
             decision = GuidanceDecision(STOP, "路线内持续接近", 0.9, "停止，前方有危险")
         elif blockers and self.blocking_streak >= 2:
             decision = GuidanceDecision(CAUTION, "目标可能进入行走路线", 0.75, "注意，前方可能有障碍")

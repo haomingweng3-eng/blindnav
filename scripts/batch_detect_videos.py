@@ -46,6 +46,8 @@ def process_batch(
     videos = discover_videos(raw_dir)
     processed = []
     failed = []
+    guidance_state_counts = {}
+    guidance_alert_videos = 0
 
     for video_path in videos:
         try:
@@ -67,12 +69,27 @@ def process_batch(
                 json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+            guidance = report.get("guidance") or {}
+            state_counts = guidance.get("state_counts") or {}
+            for state, count in state_counts.items():
+                guidance_state_counts[state] = guidance_state_counts.get(state, 0) + int(count)
+            if any(state in state_counts for state in ("CAUTION", "DANGER", "STOP", "UNKNOWN_SLOW_DOWN")):
+                guidance_alert_videos += 1
             processed.append(
                 {
                     "video": str(video_path),
                     "report": str(target),
                     "track_count": report["track_count"],
                     "alert_count": report["alert_count"],
+                    "guidance_state_counts": dict(sorted(state_counts.items())),
+                    "first_guidance_frame": next(
+                        (
+                            item.get("frame")
+                            for item in (guidance.get("trace") or [])
+                            if item.get("state") in {"CAUTION", "DANGER", "STOP", "UNKNOWN_SLOW_DOWN"}
+                        ),
+                        None,
+                    ),
                 }
             )
         except Exception as exc:  # 单段失败不应吞掉其他视频的结果
@@ -92,6 +109,8 @@ def process_batch(
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
+        "guidance_state_counts": dict(sorted(guidance_state_counts.items())),
+        "guidance_alert_video_count": guidance_alert_videos,
         "ready_for_calibration": bool(videos) and not failed and bool(processed),
     }
     (output_dir / "summary.json").write_text(

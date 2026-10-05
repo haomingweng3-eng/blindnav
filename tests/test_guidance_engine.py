@@ -44,6 +44,13 @@ class GuidanceEngineTests(unittest.TestCase):
         self.assertEqual(speech[0], "注意，前方目标")
         self.assertEqual(speech[1], "停止，前方有危险")
 
+    def test_large_stationary_blocker_does_not_escalate_to_stop(self):
+        engine = GuidanceEngine()
+        parked = record(1, [180, 40, 460, 350])
+        same = record(2, [180, 40, 460, 350])
+        self.assertEqual(engine.update(1, [parked]).state, CAUTION)
+        self.assertEqual(engine.update(2, [same]).state, CAUTION)
+
 
 if __name__ == "__main__":
     unittest.main()
