@@ -94,8 +94,6 @@ class TrajectoryOverlayView @JvmOverloads constructor(
                 track.roadHistory.size >= 2
             val uncertainRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.UNKNOWN_SLOW_DOWN
-            val cautionRouteTrack = track.riskLevel == 0 && routeRelevant &&
-                guidanceState == GuidanceState.CAUTION
             val stoppedRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.STOP
             val detourLeftRouteTrack = track.riskLevel == 0 && routeRelevant &&
@@ -104,7 +102,7 @@ class TrajectoryOverlayView @JvmOverloads constructor(
                 guidanceState == GuidanceState.MOVE_RIGHT
             boxPaint.color = when {
                 track.riskLevel >= 2 || stoppedRouteTrack -> Color.RED
-                track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack || cautionRouteTrack ||
+                track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack ||
                     detourLeftRouteTrack || detourRightRouteTrack -> Color.rgb(255, 165, 0)
                 else -> Color.GREEN
             }
@@ -112,7 +110,7 @@ class TrajectoryOverlayView @JvmOverloads constructor(
                 track.riskLevel >= 2 || stoppedRouteTrack -> " DANGER"
                 detourLeftRouteTrack -> " MOVE LEFT"
                 detourRightRouteTrack -> " MOVE RIGHT"
-                track.riskLevel == 1 || closeCentralTrack || cautionRouteTrack -> " NOTICE"
+                track.riskLevel == 1 || closeCentralTrack -> " NOTICE"
                 uncertainRouteTrack -> " SLOW DOWN"
                 else -> " TRACK"
             }
