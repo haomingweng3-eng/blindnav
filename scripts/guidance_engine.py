@@ -87,7 +87,13 @@ class GuidanceEngine:
         elif blockers and self.blocking_streak >= 2 and approaching and close_blocker:
             decision = GuidanceDecision(STOP, "路线内持续接近", 0.9, "停止，前方有危险")
         elif blockers and self.blocking_streak >= 2:
-            decision = GuidanceDecision(CAUTION, "目标可能进入行走路线", 0.75, "注意，前方可能有障碍")
+            detour = self._open_direction(blockers, region)
+            if detour == MOVE_LEFT:
+                decision = GuidanceDecision(MOVE_LEFT, "中央路线受阻，左侧更空", region.confidence, "注意，向左绕行")
+            elif detour == MOVE_RIGHT:
+                decision = GuidanceDecision(MOVE_RIGHT, "中央路线受阻，右侧更空", region.confidence, "注意，向右绕行")
+            else:
+                decision = GuidanceDecision(CAUTION, "目标可能进入行走路线", 0.75, "注意，前方可能有障碍")
         elif blockers:
             decision = GuidanceDecision(
                 UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25, "前方情况不明，请减速"

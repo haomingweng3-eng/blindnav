@@ -74,7 +74,15 @@ class GuidanceEngine(
             urgent ->
                 GuidanceDecision(GuidanceState.DANGER, "路线内持续接近", 0.9f, action("停止，前方有危险", FeedbackPriority.URGENT))
             warning || (blocking && blockingStreak >= 2) ->
-                GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f, action("注意，前方可能有障碍", FeedbackPriority.WARNING))
+                if (warning) {
+                    GuidanceDecision(GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f,
+                        action("注意，前方可能有障碍", FeedbackPriority.WARNING))
+                } else {
+                    detourDecision(region) ?: GuidanceDecision(
+                        GuidanceState.CAUTION, "目标可能进入行走路线", 0.75f,
+                        action("注意，前方可能有障碍", FeedbackPriority.WARNING),
+                    )
+                }
             blocking ->
                 GuidanceDecision(GuidanceState.UNKNOWN_SLOW_DOWN, "等待连续帧确认", 0.25f,
                     action("前方情况不明，请减速", FeedbackPriority.WARNING))
@@ -110,6 +118,18 @@ class GuidanceEngine(
             action("停止，前方路线不明确", FeedbackPriority.URGENT))
         else -> GuidanceDecision(GuidanceState.KEEP_STRAIGHT, "中央路线可通行", region.confidence,
             action("保持直行", FeedbackPriority.LOW))
+    }
+
+    private fun detourDecision(region: WalkableRegion): GuidanceDecision? = when (region.suggestedDirection) {
+        GuidanceState.MOVE_LEFT -> GuidanceDecision(GuidanceState.MOVE_LEFT, "中央路线受阻，左侧更空", region.confidence,
+            action("注意，向左绕行", FeedbackPriority.WARNING))
+        GuidanceState.MOVE_RIGHT -> GuidanceDecision(GuidanceState.MOVE_RIGHT, "中央路线受阻，右侧更空", region.confidence,
+            action("注意，向右绕行", FeedbackPriority.WARNING))
+        // Keep the established two-frame central-blocker contract as CAUTION
+        // when neither side is demonstrably open. STOP is reserved for the
+        // urgent risk branch or the normal direction decision above.
+        GuidanceState.STOP -> null
+        else -> null
     }
 
     private fun shouldEmit(state: GuidanceState, nowMs: Long): Boolean {

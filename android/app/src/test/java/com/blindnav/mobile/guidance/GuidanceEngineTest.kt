@@ -33,6 +33,17 @@ class GuidanceEngineTest {
     }
 
     @Test
+    fun asymmetricRouteBlockerSuggestsOpenSideAfterConfirmation() {
+        val engine = GuidanceEngine()
+        val detections = listOf(Detection(1, 0.9f, floatArrayOf(45f, 30f, 70f, 95f)))
+        val first = frame(0, detections)
+        val region = GeometryWalkableRegionEstimator().estimate(first)
+        assertEquals(GuidanceState.UNKNOWN_SLOW_DOWN, engine.update(first, region, emptyList(), emptyList()).state)
+        val second = frame(1, detections)
+        assertEquals(GuidanceState.MOVE_LEFT, engine.update(second, region, emptyList(), emptyList()).state)
+    }
+
+    @Test
     fun urgentRiskUsesDangerState() {
         val engine = GuidanceEngine()
         val frame = frame(0, emptyList())
