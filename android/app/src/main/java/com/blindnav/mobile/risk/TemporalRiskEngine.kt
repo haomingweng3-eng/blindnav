@@ -292,6 +292,22 @@ class TemporalRiskEngine(
                 bottomVelocity >= approachVerticalThresholdPerSecond
             val approachMotion = positiveApproachMotion &&
                 looming >= -MAX_SHRINK_RATE_FOR_APPROACH
+            // Once a continuous target has earned a warning, a short flat or
+            // noisy growth sample must not make the same route threat look
+            // safe again. Release the hold when the target leaves the
+            // corridor, becomes too small, or supplies fresh approach motion
+            // that should continue through the normal escalation path.
+            val warningHold = previous?.riskLevel == 1 &&
+                currentInside &&
+                insideConfirmed &&
+                areaFraction >= WARNING_HOLD_AREA_FRACTION &&
+                !approachMotion
+            if (warningHold) {
+                val evaluated = next.copy(riskLevel = 1)
+                classStates.remove(next)
+                classStates += evaluated
+                continue
+            }
             // A close target in the confirmed route must never remain green
             // merely because camera compensation or a growth sample is
             // unavailable. Escalate conservatively to a warning; only the
@@ -459,6 +475,7 @@ class TemporalRiskEngine(
         const val URGENT_AREA_FRACTION = 0.06f
         const val EARLY_URGENT_AREA_FRACTION = URGENT_AREA_FRACTION * 0.70f
         const val DANGER_HOLD_AREA_FRACTION = URGENT_AREA_FRACTION * 0.45f
+        const val WARNING_HOLD_AREA_FRACTION = 0.005f
         const val CLOSE_ROUTE_AREA_FRACTION = 0.04f
         const val MAX_SHRINK_RATE_FOR_APPROACH = 0.15f
         val CLASS_NAMES = mapOf(0 to "行人", 1 to "自行车", 2 to "汽车", 3 to "摩托车", 5 to "公交车", 7 to "卡车")

@@ -267,6 +267,15 @@ ONNX Runtime 现在优先尝试 XNNPACK，再回退到 NNAPI 和 CPU；任一端
 - Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`，SHA-256 `98616F253FDE0D4EB13F70EA7F1DC37F92A6469A2CDE1C5930D0C8515DFC505D`。
 - 真机 FPS、端到端延迟和温度仍未验收，安全预警保持关闭。
 
+## 2026-10-06 注意状态滞后
+
+同一中央连续轨迹在获得一次注意后，若仍在中央路线内且没有明确离开证据，短暂的面积或接地点抖动不会让状态退回“不明/保持直行”；一旦出现新的接近运动，仍会沿正常路径升级为危险。真实 RGB/灰度回放中第 82 帧进入注意，第 157 帧进入危险，第 82 至 156 帧保持注意。
+
+- Android 单元测试：通过（新增注意滞后回归测试）。
+- 249 帧真实 RGB/灰度回放：通过，状态转换已重新渲染并视觉复核。
+- Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`，SHA-256 `8E19938EF57B738FCE0C4CB91DD7ECE06DC8162AB6B71225DCD2E2141F53BC8E`。
+- 真机 FPS、端到端延迟和温度仍未验收，安全预警保持关闭。
+
 - Android 单元测试 57 项通过（1 项可选回放跳过）。
 - Python 单元测试 140 项通过，静态契约检查通过。
 - 249 帧真实 RGB/灰度回放通过；手机实时性能仍待实机验收。
