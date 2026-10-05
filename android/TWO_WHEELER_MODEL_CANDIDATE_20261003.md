@@ -34,5 +34,7 @@ The shipped 320 input asset was read with ONNX Runtime. Its metadata reports
 four broad classes in this order: `pedestrian`, `2-wheeler`, `3-wheeler`, and
 `4-wheeler`. Therefore phone class 1 is a broad two-wheeler candidate, not a
 bicycle-only class; bicycles, electric scooters, and motorcycles use the same
-route-risk logic. The phone path still ignores classes 0, 2, and 3 for this
-first safety scope.
+route-risk logic. The phone path now sends all four classes through the same
+route and temporal risk rules, so a person or larger vehicle blocking the
+walking corridor can also produce a warning while static or route-outside
+detections remain filtered.

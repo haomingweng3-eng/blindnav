@@ -142,6 +142,28 @@ class TemporalRiskEngineTest {
     }
 
     @Test
+    fun broadPhoneModelClassesUseTheSameRouteRiskPath() {
+        for (classId in listOf(0, 2, 3)) {
+            val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
+            engine.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f, classId)))
+            val alerts = engine.update(
+                frameWithDetections(100, 1, detection(35f, 35f, 55f, 55f, classId)),
+            )
+
+            assertEquals(1, alerts.size)
+            assertEquals(
+                classId,
+                when (engine.currentTracks.single().className) {
+                    "行人" -> 0
+                    "三轮车" -> 2
+                    "四轮车" -> 3
+                    else -> -1
+                },
+            )
+        }
+    }
+
+    @Test
     fun unreliableBackgroundDoesNotInventLateralEntry() {
         val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
         val unavailable = com.blindnav.mobile.inference.BackgroundMotion(0, 100, reason = "insufficient_matches")
@@ -192,6 +214,6 @@ class TemporalRiskEngineTest {
             detections = detections.toList(),
         )
 
-    private fun detection(left: Float, top: Float, right: Float, bottom: Float) =
-        Detection(1, 0.9f, floatArrayOf(left, top, right, bottom))
+    private fun detection(left: Float, top: Float, right: Float, bottom: Float, classId: Int = 1) =
+        Detection(classId, 0.9f, floatArrayOf(left, top, right, bottom))
 }

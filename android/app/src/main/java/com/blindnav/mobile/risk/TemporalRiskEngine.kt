@@ -361,7 +361,7 @@ class TemporalRiskEngine(
                 // Align earlier observed contact points with the current
                 // background. This is a stabilized history, never a future path.
                 RoadObservation(it.centerX + cameraX - it.cameraX, it.bottom + cameraY - it.cameraY, it.timestampMs)
-            }, state.riskLevel, classNames[state.trackId.substringBefore('-').let { key ->
+            }, state.riskLevel, classNames[state.trackId.substringBeforeLast('-').let { key ->
                 classKeys.entries.firstOrNull { it.value == key }?.key ?: -1
             }] ?: "目标")
         }
@@ -447,8 +447,21 @@ class TemporalRiskEngine(
         const val MAX_SHRINK_RATE_FOR_APPROACH = 0.15f
         val CLASS_NAMES = mapOf(0 to "行人", 1 to "自行车", 2 to "汽车", 3 to "摩托车", 5 to "公交车", 7 to "卡车")
         val CLASS_KEYS = mapOf(0 to "person", 1 to "bicycle", 2 to "car", 3 to "motorcycle", 5 to "bus", 7 to "truck")
-        val TWO_WHEELER_NAMES = mapOf(1 to "两轮车")
-        val TWO_WHEELER_KEYS = mapOf(1 to "two-wheeler")
+        // The phone candidate has four broad traffic classes. Apply the same
+        // route and temporal risk rules to each class so an obstacle that
+        // blocks the walking corridor can be announced as well.
+        val TWO_WHEELER_NAMES = mapOf(
+            0 to "行人",
+            1 to "两轮车",
+            2 to "三轮车",
+            3 to "四轮车",
+        )
+        val TWO_WHEELER_KEYS = mapOf(
+            0 to "pedestrian",
+            1 to "two-wheeler",
+            2 to "three-wheeler",
+            3 to "four-wheeler",
+        )
         val FeedbackPriority.contractName: String
             get() = when (this) {
                 FeedbackPriority.LOW -> "low"

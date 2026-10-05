@@ -222,3 +222,17 @@ ONNX Runtime 现在优先尝试 XNNPACK，再回退到 NNAPI 和 CPU；任一端
 - APK 大小：`106727068` bytes
 - APK SHA-256：`B645F6807346CDA7841A4FECD874B835D841DE8DD40EB97F5AF7D4670F4FCE50`
 - 真实手机 FPS、端到端延迟、温度和路线方向仍待 `adb` 可用后验收；安全预警保持关闭。
+
+## 2026-10-06 广义障碍物类别与轨迹标签修正
+
+手机候选模型元数据确认四类为 `pedestrian`、`2-wheeler`、`3-wheeler`、
+`4-wheeler`。风险引擎现将四类统一送入路线和时间风险判断，停放或路线外目标仍由
+连续运动、接地点和走廊条件过滤。另修正带连字符类别键的轨迹快照回读，避免已识别类别
+显示为“目标”。
+
+- Android 单元测试 56 项通过（1 项可选回放跳过）。
+- Python 单元测试 140 项通过，静态契约检查通过。
+- APK：`android/app/build/outputs/apk/debug/app-debug.apk`
+- APK 大小：`106727068` bytes
+- APK SHA-256：`F4E0CCEAEACF21C4ACF6B9952A2417A1A80C007E25CB05810E0C2350637E9DCF`
+- 真机 FPS、端到端延迟、温度和路线方向仍待 `adb` 可用后验收；安全预警保持关闭。
