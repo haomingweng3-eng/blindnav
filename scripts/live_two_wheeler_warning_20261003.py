@@ -232,15 +232,14 @@ def run(args):
                         }
                         if arbiter.accept(candidate):
                             alerts.append(candidate)
-                    if args.output_video:
+                    # Keep no-rider detections in the audit CSV, but do not
+                    # draw them in the user-facing video. Parked scooters and
+                    # detector-only boxes must not look like active targets.
+                    if args.output_video and gate_pass:
                         color = colors.get(level, colors[0])
                         x1, y1, x2, y2 = [int(value) for value in box]
                         cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
-                        label = (
-                            f"2w {track_key} {LVL_NAME[level]}"
-                            if gate_pass
-                            else f"2w {track_key} no-rider"
-                        )
+                        label = f"2w {track_key} {LVL_NAME[level]}"
                         cv2.putText(
                             vis,
                             label,
