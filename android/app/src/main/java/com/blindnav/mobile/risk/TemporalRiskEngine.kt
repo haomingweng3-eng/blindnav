@@ -209,6 +209,13 @@ class TemporalRiskEngine(
             val currentX = centerX / frame.frameWidth
             val contactY = next.history.last().bottom / frame.frameHeight
             val corridor = (0.5f - corridorHalfWidth)..(0.5f + corridorHalfWidth)
+            // In the broad phone candidate, class 3 is a four-wheeler. Keep
+            // it available as a close obstacle, but never let detector/box
+            // jitter promote a parked car into a moving-vehicle danger or a
+            // predicted travel direction. Two-wheeler approach logic remains
+            // unchanged; the obstacle can still produce a WARNING when it
+            // actually occupies the central corridor.
+            val staticObstacleClass = twoWheelerMode && classId == 3
 
             val pairs = next.history.takeLast(GROWTH_WINDOW).zipWithNext()
             val growthRates = pairs.mapNotNull { (old, new) ->
@@ -242,6 +249,11 @@ class TemporalRiskEngine(
             // The box edge can touch the corridor while the vehicle itself
             // remains in a parking row. Use the road contact point instead.
             val currentInside = contactY >= minRoadContactY && currentX in corridor
+            // A distant/edge four-wheeler is not a route obstacle. Do not let
+            // box-size jitter or a camera pan create a warning for it.
+            if (staticObstacleClass && areaFraction < CLOSE_ROUTE_AREA_FRACTION) {
+                continue
+            }
             // Test the whole projected segment, since a crossing vehicle may
             // have already passed the corridor at the horizon endpoint.
             val crossesCorridor = minOf(currentX, futureX) <= corridor.endInclusive &&
@@ -276,7 +288,7 @@ class TemporalRiskEngine(
             // safe again. The state is released when the target leaves the
             // corridor, the track is lost, or it shrinks below this hold
             // floor.
-            val dangerHold = previous?.riskLevel == 2 &&
+            val dangerHold = !staticObstacleClass && previous?.riskLevel == 2 &&
                 currentInside &&
                 insideConfirmed &&
                 areaFraction >= DANGER_HOLD_AREA_FRACTION
@@ -341,7 +353,8 @@ class TemporalRiskEngine(
             val potentialCollisionMotion = approachMotion ||
                 looming >= loomingThresholdPerSecond || predictedEntry
             val routeBlocked = routeBlockedWarning && currentInside && insideConfirmed &&
-                insideStreak >= ROUTE_CONFIRM_FRAMES && approachMotion && potentialCollisionMotion
+                insideStreak >= ROUTE_CONFIRM_FRAMES && approachMotion && potentialCollisionMotion &&
+                (!staticObstacleClass || areaFraction >= CLOSE_ROUTE_AREA_FRACTION)
             if (!routeBlocked && !predictedEntry && !approachMotion) continue
             if (!routeBlocked && !predictedEntry && looming < loomingThresholdPerSecond) continue
 
@@ -355,7 +368,7 @@ class TemporalRiskEngine(
             val predictedClose = predictedAreaFraction >= EARLY_URGENT_AREA_FRACTION ||
                 (timeToCloseSeconds != null &&
                     timeToCloseSeconds <= earlyUrgentTimeToCloseSeconds)
-            val urgentMotion = approachMotion && (
+            val urgentMotion = !staticObstacleClass && approachMotion && (
                 looming >= urgentThresholdPerSecond ||
                     (earlyUrgentTimeToCloseSeconds > 0f &&
                         looming >= loomingThresholdPerSecond && predictedClose)

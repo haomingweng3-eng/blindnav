@@ -37,10 +37,11 @@ def motion_fixture(args):
     assert hashlib.sha256(Path(fixture["model"]).read_bytes()).hexdigest() == fixture["model_sha256"]
     assert args.sample_stride > 0
     gray_file = directory / "background_gray.u8"
+    rgb_file = directory / "frames_rgb.u8"
     cap = cv2.VideoCapture(fixture["video"])
     assert cap.isOpened()
     try:
-        with gray_file.open("xb") as handle:
+        with gray_file.open("xb") as handle, rgb_file.open("xb") as rgb_handle:
             for meta in fixture["frames"]:
                 ok, frame = cap.read()
                 if not ok:
@@ -48,10 +49,12 @@ def motion_fixture(args):
                 rgb = cv2.cvtColor(cv2.resize(frame, (meta["width"], meta["height"])), cv2.COLOR_BGR2RGB)
                 gray = motion_gray(rgb)
                 handle.write(gray.tobytes())
+                rgb_handle.write(rgb.tobytes())
             gray_height, gray_width = gray.shape
     finally:
         cap.release()
     fixture.update(gray_file=str(gray_file), gray_width=gray_width, gray_height=gray_height,
+                   rgb_file=str(rgb_file), rgb_width=rgb.shape[1], rgb_height=rgb.shape[0],
                    sample_stride=args.sample_stride, trace_file=str(directory / "android_trace.json"))
     with (directory / "fixture.json").open("x", encoding="utf-8") as handle:
         json.dump(fixture, handle, indent=2)
@@ -112,6 +115,10 @@ def prepare(args):
 
 def render(args):
     from PIL import Image, ImageDraw, ImageFont
+    try:
+        from .trajectory_projection import project_contact_motion, track_display_level
+    except ImportError:
+        from trajectory_projection import project_contact_motion, track_display_level
     directory = Path(args.output_dir).resolve()
     fixture = json.loads((directory / "fixture.json").read_text(encoding="utf-8"))
     trace = json.loads((directory / "android_trace.json").read_text(encoding="utf-8"))
@@ -130,6 +137,7 @@ def render(args):
     guidance_counts = Counter()
     first_guidance = {}
     render_count = 0
+    projection_count = 0
     source_index = -1
     for record in trace["frames"]:
         index = record["source_frame"]
@@ -171,15 +179,30 @@ def render(args):
             stopped_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "STOP"
             detour_left_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "MOVE_LEFT"
             detour_right_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "MOVE_RIGHT"
-            display_level = 2 if stopped_route_track or guidance_state == "DANGER" else 1 if guidance_route_warning or uncertain_route_track or detour_left_route_track or detour_right_route_track else track["risk_level"]
+            display_level = track_display_level(track['risk_level'], route_relevant, guidance_state)
             color = [(30, 220, 70), (0, 180, 255), (30, 30, 255)][display_level]
             cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
-            label = track["track_id"] + (" MOVE LEFT" if detour_left_route_track else " MOVE RIGHT" if detour_right_route_track else " SLOW DOWN" if uncertain_route_track else " NOTICE" if guidance_route_warning else " DANGER" if stopped_route_track or guidance_state == "DANGER" else "")
+            label = track["track_id"] + (" DANGER" if display_level >= 2 else " MOVE LEFT" if detour_left_route_track else " MOVE RIGHT" if detour_right_route_track else " SLOW DOWN" if uncertain_route_track else " NOTICE" if display_level == 1 else " TRACK")
             cv2.putText(vis, label, (x1, max(26, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, .65, color, 2)
             points = track["history"]
             for old, new in zip(points, points[1:]):
                 cv2.line(vis, (round(old["x"] * scale), round(old["y"] * scale)),
                          (round(new["x"] * scale), round(new["y"] * scale)), (255, 210, 0), 4)
+            if args.show_projection:
+                # All history and motion come from this frame's causal Kotlin
+                # snapshot. No future frames, old alert carry-over or scene
+                # warning-to-object assignment is permitted here.
+                meta = fixture['frames'][index]
+                forecast = project_contact_motion(
+                    points, meta['width'], meta['height'],
+                    bool(record.get('background_motion', {}).get('reliable')),
+                    bottom_clipped=box[3] >= meta['height'] * 0.985,
+                )
+                if forecast is not None:
+                    start = tuple(round(v * scale) for v in forecast['start'])
+                    end = tuple(round(v * scale) for v in forecast['end'])
+                    cv2.arrowedLine(vis, start, end, (230, 40, 230), 4, tipLength=.2)
+                    projection_count += 1
         canvas = np.full((height + 96, width, 3), 18, dtype=np.uint8)
         canvas[:height] = vis
         pil = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
@@ -205,7 +228,10 @@ def render(args):
         motion = record.get("background_motion", {})
         compensation = "背景平移补偿" if motion.get("reliable") else "补偿不可用"
         draw.text((20, height + 8), f"手机同款模型 + Kotlin | {index / fixture['fps']:.2f}s | 帧 {index} | {compensation}", font=font, fill=(240, 240, 240))
-        draw.text((20, height + 47), "青色：已走轨迹  淡蓝：中央路线  |  离线回放，不代表手机实测速度或碰撞保证", font=font_small, fill=(180, 200, 220))
+        legend = "青色：已观测轨迹  淡蓝：中央路线"
+        if args.show_projection:
+            legend += "  紫色：有证据时的0.6秒相对运动外推"
+        draw.text((20, height + 47), legend + " | 离线复核", font=font_small, fill=(180, 200, 220))
         writer.write(cv2.cvtColor(np.asarray(pil), cv2.COLOR_RGB2BGR))
         if index in (100, 130, 167) or index in (first_notice, first_danger):
             pil.save(directory / f"frame_{index:04d}.jpg")
@@ -222,7 +248,9 @@ def render(args):
                    guidance_engine="Android GuidanceEngine + RgbWalkableRegionEstimator (RGB replay)")
     motions = [item["background_motion"] for item in trace["frames"] if "background_motion" in item]
     summary.update(sample_fps=replay_fps, background_motion_evaluated=bool(motions),
-                   background_motion_reliable_frames=sum(item["reliable"] for item in motions))
+                   background_motion_reliable_frames=sum(item["reliable"] for item in motions),
+                   projection_count=projection_count, projection_enabled=args.show_projection,
+                   projection_does_not_drive_risk=True)
     (directory / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False))
 
@@ -235,5 +263,6 @@ if __name__ == "__main__":
     parser.add_argument("--model")
     parser.add_argument("--source-fixture")
     parser.add_argument("--sample-stride", type=int, default=1)
+    parser.add_argument("--show-projection", action="store_true")
     parsed = parser.parse_args()
     {"prepare": prepare, "render": render, "motion-fixture": motion_fixture}[parsed.mode](parsed)

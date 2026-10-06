@@ -143,7 +143,7 @@ class TemporalRiskEngineTest {
 
     @Test
     fun broadPhoneModelClassesUseTheSameRouteRiskPath() {
-        for (classId in listOf(0, 2, 3)) {
+        for (classId in listOf(0, 2)) {
             val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
             engine.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f, classId)))
             val alerts = engine.update(
@@ -161,6 +161,20 @@ class TemporalRiskEngineTest {
                 },
             )
         }
+        val parkedFourWheeler = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
+        parkedFourWheeler.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f, 3)))
+        assertTrue(parkedFourWheeler.update(frameWithDetections(100, 1, detection(39f, 40f, 51f, 50f, 3))).isEmpty())
+    }
+
+    @Test
+    fun parkedFourWheelerCanWarnAsObstacleButNeverBecomesDanger() {
+        val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
+        engine.update(frameWithDetections(0, 0, detection(30f, 20f, 70f, 80f, classId = 3)))
+        val first = engine.update(frameWithDetections(100, 1, detection(29f, 20f, 71f, 80f, classId = 3)))
+        assertTrue(first.all { it.feedback.priority != FeedbackPriority.URGENT })
+        assertTrue(engine.currentTracks.single().riskLevel <= 1)
+        engine.update(frameWithDetections(200, 2, detection(30f, 20f, 70f, 80f, classId = 3)))
+        assertTrue(engine.currentTracks.single().riskLevel <= 1)
     }
 
     @Test

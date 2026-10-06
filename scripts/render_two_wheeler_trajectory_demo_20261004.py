@@ -9,6 +9,7 @@ phone path.
 
 import argparse
 import json
+from statistics import median
 from collections import defaultdict, deque
 from pathlib import Path
 
@@ -22,6 +23,28 @@ def _road_contact(row):
     """Approximate the vehicle's road contact point from the box bottom."""
     return ((float(row["x1"]) + float(row["x2"])) / 2.0,
             float(row["y2"]))
+
+
+def _relative_motion_is_stable(motions, width, height):
+    """Return true only for coherent motion after scene-motion removal.
+
+    Parking rows often move together when the camera pans.  A raw contact
+    point displacement would turn that camera motion into a fake future path.
+    The caller stores per-track motion after subtracting the frame-wide median;
+    require a few same-direction samples before drawing a prediction.
+    """
+    if len(motions) < 3:
+        return False
+    threshold = max(2.0, min(width, height) * 0.002)
+    dx = [float(item[0]) for item in motions]
+    dy = [float(item[1]) for item in motions]
+    axis = dx if median(abs(value) for value in dx) >= median(abs(value) for value in dy) else dy
+    active = [value for value in axis if abs(value) >= threshold * 0.35]
+    if len(active) < 3:
+        return False
+    dominant_sign = 1 if median(active) >= 0 else -1
+    agreement = sum(1 for value in active if value * dominant_sign >= 0) / len(active)
+    return agreement >= 0.75 and median(abs(value) for value in active) >= threshold
 
 
 def _read_tracks(path, video_name):
@@ -48,11 +71,9 @@ def _load_alerts(path, video_name):
 
 
 def _risk_for(frame, track_id, alerts):
-    candidates = [item for (item_frame, item_track), item in alerts.items()
-                  if item_track == track_id and item_frame <= frame]
-    if not candidates:
-        return None
-    return max(candidates, key=lambda item: int(item["frame"]))
+    # Sparse alert events are not a persistent risk snapshot. Never leave an
+    # object red indefinitely after it has stopped or left the route.
+    return alerts.get((frame, track_id))
 
 
 def render(args):
@@ -77,6 +98,8 @@ def render(args):
     alerts = _load_alerts(args.alerts, args.video)
     trails = defaultdict(lambda: deque(maxlen=args.trail_length))
     road_trails = defaultdict(lambda: deque(maxlen=args.trail_length))
+    relative_motions = defaultdict(lambda: deque(maxlen=6))
+    previous_contacts = {}
     trail_thickness = max(5, width // 320)
     arrow_thickness = max(6, width // 240)
     dot_radius = max(8, width // 160)
@@ -92,12 +115,28 @@ def render(args):
         if not ok:
             break
         current = tracks.get(frame_index, {})
+        current_contacts = {
+            track_id: _road_contact(row) for track_id, row in current.items()
+        }
+        scene_deltas = [
+            (point[0] - previous_contacts[track_id][0],
+             point[1] - previous_contacts[track_id][1])
+            for track_id, point in current_contacts.items()
+            if track_id in previous_contacts
+        ]
+        scene_dx = median([item[0] for item in scene_deltas]) if scene_deltas else 0.0
+        scene_dy = median([item[1] for item in scene_deltas]) if scene_deltas else 0.0
         for track_id, row in current.items():
             x1, y1, x2, y2 = [int(float(row[name])) for name in ("x1", "y1", "x2", "y2")]
             center = _box_center(row)
             road_contact = _road_contact(row)
             trails[track_id].append(center)
             road_trails[track_id].append(road_contact)
+            if track_id in previous_contacts:
+                relative_motions[track_id].append((
+                    road_contact[0] - previous_contacts[track_id][0] - scene_dx,
+                    road_contact[1] - previous_contacts[track_id][1] - scene_dy,
+                ))
             alert = _risk_for(frame_index, track_id, alerts)
             level = int(alert["level"]) if alert else 0
             color = (0, 190, 255) if level < 3 else (0, 0, 255)
@@ -120,10 +159,13 @@ def render(args):
             for old, new in zip(road_points, road_points[1:]):
                 cv2.line(frame, tuple(map(int, old)), tuple(map(int, new)), trail_color,
                          max(4, trail_thickness - 1))
-            if len(road_points) >= 2:
+            if args.allow_archived_projection and len(road_points) >= 2 and _relative_motion_is_stable(
+                relative_motions[track_id], width, height
+            ):
                 use = road_points[-min(args.prediction_points, len(road_points)):]
-                dx = (use[-1][0] - use[0][0]) / max(len(use) - 1, 1)
-                dy = (use[-1][1] - use[0][1]) / max(len(use) - 1, 1)
+                motion = list(relative_motions[track_id])[-min(args.prediction_points - 1, len(relative_motions[track_id])):]
+                dx = median(item[0] for item in motion)
+                dy = median(item[1] for item in motion)
                 projected = (use[-1][0] + dx * args.horizon_frames,
                              use[-1][1] + dy * args.horizon_frames)
                 start = tuple(map(int, use[-1]))
@@ -135,7 +177,8 @@ def render(args):
                 cv2.circle(frame, start, dot_radius, projection_color, -1)
                 cv2.circle(frame, end, dot_radius + 4, (0, 0, 0), -1)
                 cv2.circle(frame, end, dot_radius, projection_color, -1)
-                for fraction, label in ((1 / 3, "0.5s"), (2 / 3, "1.0s"), (1.0, "1.5s")):
+                for fraction in (1 / 3, 2 / 3, 1.0):
+                    label = f"{args.horizon_frames * fraction / fps:.2f}s"
                     future = (
                         use[-1][0] + dx * args.horizon_frames * fraction,
                         use[-1][1] + dy * args.horizon_frames * fraction,
@@ -152,7 +195,8 @@ def render(args):
                 ty = min(max(int(projected[1]) - dot_radius - 8, 28), height - 8)
                 cv2.putText(frame, "FUTURE ROAD PATH", (tx, ty),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, projection_color, 2, cv2.LINE_AA)
-        cv2.putText(frame, f"frame {frame_index}  cyan=history  magenta=future path  orange=warning  red=approach",
+        previous_contacts = current_contacts
+        cv2.putText(frame, f"ARCHIVED frame {frame_index}  cyan=observed trail  risk=current event only",
                     (18, 34), cv2.FONT_HERSHEY_SIMPLEX, 0.78, (255, 255, 255), 2, cv2.LINE_AA)
         writer.write(frame)
         frame_index += 1
@@ -187,6 +231,8 @@ def main():
     parser.add_argument("--trail-length", type=int, default=24)
     parser.add_argument("--prediction-points", type=int, default=8)
     parser.add_argument("--horizon-frames", type=int, default=20)
+    parser.add_argument("--allow-archived-projection", action="store_true",
+                        help="Historical comparison only; disabled without reliable camera motion")
     args = parser.parse_args()
     print(json.dumps(render(args), ensure_ascii=False, indent=2))
 
