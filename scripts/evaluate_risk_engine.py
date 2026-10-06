@@ -157,6 +157,9 @@ def evaluate_detection_records(
     approach_vertical_threshold=0.0,
     guidance_uncertain=False,
     guidance_regions=None,
+    route_blocked_warning=False,
+    predictive_urgent=False,
+    early_urgent_time_to_close_s=None,
 ):
     """消费视频检测记录，统一缩放后按 track_id 跑风险引擎。
 
@@ -206,6 +209,9 @@ def evaluate_detection_records(
                 entry_confirm_frames=entry_confirm_frames,
                 prediction_frames=prediction_frames,
                 approach_vertical_threshold=approach_vertical_threshold,
+                route_blocked_warning=route_blocked_warning,
+                predictive_urgent=predictive_urgent,
+                early_urgent_time_to_close_s=early_urgent_time_to_close_s,
                 coordinate_width=width * scale,
                 coordinate_height=height * scale,
             ),

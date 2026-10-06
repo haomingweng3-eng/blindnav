@@ -342,6 +342,13 @@ class TrackState:
         ):
             lvl = LVL_MID
             reason = "横向穿过"
+        elif route_blocked and route_entry and close_high and approach_motion:
+            # A target that has just entered the corridor and already occupies
+            # a large nearby area is an immediate blocker, even when its
+            # looming rate is low because it is crossing laterally.  This is
+            # distinct from a large static object that was already in view.
+            lvl = LVL_HIGH
+            reason = "路线被近距离占用"
         elif route_blocked:
             lvl = LVL_MID
             reason = "路线被占用"

@@ -109,6 +109,11 @@ def parse_args(argv=None):
         default=4,
         help="可行走区域模型每隔多少帧运行一次，默认 4；中间帧复用上一结果",
     )
+    parser.add_argument(
+        "--route-blocked-warning",
+        action="store_true",
+        help="对已连续占用中央路线且正在接近的近距离目标触发路线占用提醒",
+    )
     return parser.parse_args(argv)
 
 
@@ -127,6 +132,7 @@ def process_video(
     approach_vertical_threshold=0.001,
     walkable_model=None,
     walkable_interval=4,
+    route_blocked_warning=False,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -220,6 +226,7 @@ def process_video(
         entry_confirm_frames=entry_confirm_frames,
         prediction_frames=prediction_frames,
         approach_vertical_threshold=approach_vertical_threshold,
+        route_blocked_warning=route_blocked_warning,
         guidance_regions=guidance_regions or None,
     )
     return {
@@ -240,6 +247,7 @@ def process_video(
         "prediction_frames": prediction_frames,
         "walkable_model": walkable_model,
         "walkable_interval": walkable_interval,
+        "route_blocked_warning": route_blocked_warning,
         "reference_fps": 30.0,
         "records": detection_records,
         **report,
@@ -263,6 +271,7 @@ def main(argv=None):
         approach_vertical_threshold=args.approach_vertical_threshold,
         walkable_model=args.walkable_model,
         walkable_interval=args.walkable_interval,
+        route_blocked_warning=args.route_blocked_warning,
     )
     print(
         f"视频: {args.video}  fps={report['fps']:.0f} "
