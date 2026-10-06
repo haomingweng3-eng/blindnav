@@ -43,6 +43,9 @@ def process_batch(
     approach_vertical_threshold=0.001,
     walkable_model=None,
     walkable_interval=4,
+    predictive_urgent=False,
+    early_urgent_time_to_close_s=None,
+    route_blocked_warning=False,
 ):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -69,6 +72,9 @@ def process_batch(
                 approach_vertical_threshold=approach_vertical_threshold,
                 walkable_model=walkable_model,
                 walkable_interval=walkable_interval,
+                predictive_urgent=predictive_urgent,
+                early_urgent_time_to_close_s=early_urgent_time_to_close_s,
+                route_blocked_warning=route_blocked_warning,
             )
             target = output_dir / report_name(video_path)
             target.write_text(
@@ -115,6 +121,7 @@ def process_batch(
         "approach_vertical_threshold": approach_vertical_threshold,
         "walkable_model": walkable_model,
         "walkable_interval": walkable_interval,
+        "route_blocked_warning": route_blocked_warning,
         "video_count": len(videos),
         "processed": processed,
         "failed": failed,
@@ -146,6 +153,9 @@ def main():
     parser.add_argument("--approach-vertical-threshold", type=float, default=0.001)
     parser.add_argument("--walkable-model", default=None)
     parser.add_argument("--walkable-interval", type=int, default=4)
+    parser.add_argument("--predictive-urgent", action="store_true", help="Enable predictive urgent warnings")
+    parser.add_argument("--early-urgent-time-to-close", type=float, default=None, help="Time to close threshold for early urgent warnings (seconds)")
+    parser.add_argument("--route-blocked-warning", action="store_true", help="Warn when a moving target has occupied the central route")
     args = parser.parse_args()
     summary = process_batch(
         raw_dir=args.raw_dir,
@@ -161,6 +171,9 @@ def main():
         approach_vertical_threshold=args.approach_vertical_threshold,
         walkable_model=args.walkable_model,
         walkable_interval=args.walkable_interval,
+        predictive_urgent=args.predictive_urgent,
+        early_urgent_time_to_close_s=args.early_urgent_time_to_close,
+        route_blocked_warning=args.route_blocked_warning,
         device=args.device,
         conf=args.conf,
     )

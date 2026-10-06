@@ -133,6 +133,8 @@ def process_video(
     walkable_model=None,
     walkable_interval=4,
     route_blocked_warning=False,
+    predictive_urgent=False,
+    early_urgent_time_to_close_s=None,
 ):
     """运行一次视频检测并返回可序列化报告。"""
     import cv2
@@ -227,6 +229,8 @@ def process_video(
         prediction_frames=prediction_frames,
         approach_vertical_threshold=approach_vertical_threshold,
         route_blocked_warning=route_blocked_warning,
+        predictive_urgent=predictive_urgent,
+        early_urgent_time_to_close_s=early_urgent_time_to_close_s,
         guidance_regions=guidance_regions or None,
     )
     return {
