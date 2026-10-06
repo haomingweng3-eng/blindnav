@@ -11,6 +11,7 @@ import com.blindnav.mobile.guidance.GuidanceState
 import com.blindnav.mobile.inference.FrameDetections
 import com.blindnav.mobile.risk.RiskTrackSnapshot
 import kotlin.math.max
+import kotlin.math.sqrt
 
 /**
  * Camera preview overlay for the phone MVP.
@@ -81,17 +82,20 @@ class TrajectoryOverlayView @JvmOverloads constructor(
             val contactX = (track.box[0] + track.box[2]) / 2f
             val routeRelevant = contactY >= imageHeight * MIN_ROAD_CONTACT_Y &&
                 contactX / imageWidth in ROUTE_LEFT..ROUTE_RIGHT
+            val closeCentralTrack = track.riskLevel == 0 && routeRelevant &&
+                contactY >= imageHeight * CLOSE_CONTACT_Y &&
+                track.roadHistory.size >= 2 &&
+                boxAreaFraction(track.box) >= CLOSE_ROUTE_AREA_FRACTION
+            val observedMotion = hasObservedMotion(track.roadHistory)
             // The phone is for route-risk feedback. Hide stable detections in
-            // parking rows from the user-facing overlay; risk tracks remain
-            // visible even while entering from outside the corridor.
-            if (track.riskLevel == 0 && !routeRelevant) continue
+            // parking rows from the user-facing overlay. A green track is
+            // shown only when it has observed motion; a close central static
+            // obstacle remains visible as NOTICE for cautious detouring.
+            if (track.riskLevel == 0 && (!routeRelevant || (!observedMotion && !closeCentralTrack))) continue
             // Keep the display conservative even before the temporal risk
             // engine promotes a track: a close central target with a short
             // observed trail is shown as NOTICE, never as an apparently safe
             // green track. This is display-only and does not emit feedback.
-            val closeCentralTrack = track.riskLevel == 0 && routeRelevant &&
-                contactY >= imageHeight * CLOSE_CONTACT_Y &&
-                track.roadHistory.size >= 2
             val uncertainRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.UNKNOWN_SLOW_DOWN
             val guidanceRouteWarning = track.riskLevel == 0 && routeRelevant &&
@@ -152,6 +156,24 @@ class TrajectoryOverlayView @JvmOverloads constructor(
     private fun validBox(box: FloatArray): Boolean =
         box.size == 4 && box[2] > box[0] && box[3] > box[1]
 
+    private fun boxAreaFraction(box: FloatArray): Float {
+        if (!validBox(box)) return 0f
+        return ((box[2] - box[0]) * (box[3] - box[1])) /
+            (imageWidth.toFloat() * imageHeight.toFloat()).coerceAtLeast(1f)
+    }
+
+    private fun hasObservedMotion(history: List<com.blindnav.mobile.risk.RoadObservation>): Boolean {
+        val recent = history.takeLast(MOTION_SAMPLE_COUNT)
+        if (recent.size < MOTION_SAMPLE_COUNT) return false
+        val threshold = max(MOTION_MIN_PIXELS, minOf(imageWidth, imageHeight) * MOTION_THRESHOLD_FRACTION)
+        val movingSteps = recent.zipWithNext().count { (previous, current) ->
+            val dx = current.x - previous.x
+            val dy = current.y - previous.y
+            sqrt(dx * dx + dy * dy) >= threshold
+        }
+        return movingSteps >= MOTION_REQUIRED_STEPS
+    }
+
     private fun Paint.asTextPaint(): Paint = Paint(this).apply {
         style = Paint.Style.FILL
         color = this@TrajectoryOverlayView.boxPaint.color
@@ -166,5 +188,10 @@ class TrajectoryOverlayView @JvmOverloads constructor(
         const val ROUTE_LEFT = 0.36f
         const val ROUTE_RIGHT = 0.64f
         const val CLOSE_CONTACT_Y = 0.72f
+        const val CLOSE_ROUTE_AREA_FRACTION = 0.04f
+        const val MOTION_SAMPLE_COUNT = 4
+        const val MOTION_REQUIRED_STEPS = 2
+        const val MOTION_THRESHOLD_FRACTION = 0.006f
+        const val MOTION_MIN_PIXELS = 2f
     }
 }
