@@ -181,12 +181,32 @@ class TemporalRiskEngineTest {
     fun phoneModelNeedsThreeObservationsBeforeDangerEscalation() {
         val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
 
-        engine.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f)))
-        engine.update(frameWithDetections(100, 1, detection(35f, 35f, 55f, 55f)))
+        engine.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f),
+            backgroundMotion = com.blindnav.mobile.inference.BackgroundMotion(0, 0, reliable = true)))
+        engine.update(frameWithDetections(100, 1, detection(35f, 35f, 55f, 55f),
+            backgroundMotion = com.blindnav.mobile.inference.BackgroundMotion(0, 100, reliable = true)))
         assertTrue(engine.currentTracks.single().riskLevel <= 1)
 
-        engine.update(frameWithDetections(200, 2, detection(30f, 30f, 60f, 60f)))
+        engine.update(frameWithDetections(200, 2, detection(30f, 30f, 60f, 60f),
+            backgroundMotion = com.blindnav.mobile.inference.BackgroundMotion(100, 200, reliable = true)))
+        engine.update(frameWithDetections(300, 3, detection(25f, 25f, 65f, 65f),
+            backgroundMotion = com.blindnav.mobile.inference.BackgroundMotion(200, 300, reliable = true)))
         assertEquals(2, engine.currentTracks.single().riskLevel)
+    }
+
+    @Test
+    fun missingOrFailedMotionCannotPromotePhoneTrackToDanger() {
+        for (missing in listOf(true, false)) {
+            val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
+            for (i in 0..5) {
+                val size = 5f + i * 3f
+                engine.update(frameWithDetections(i * 100L, i.toLong(),
+                    detection(50f - size, 50f - size, 50f + size, 50f + size),
+                    backgroundMotion = if (missing) null else
+                        com.blindnav.mobile.inference.BackgroundMotion((i - 1) * 100L, i * 100L)))
+                assertTrue(engine.currentTracks.single().riskLevel <= 1)
+            }
+        }
     }
 
     @Test

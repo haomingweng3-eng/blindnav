@@ -380,7 +380,14 @@ class TemporalRiskEngine(
             // track on a parked scooter with a large box jump. Keep the
             // first two observations at NOTICE; a DANGER state needs three
             // continuous observations so one spurious box cannot escalate.
-            val urgentObservationReady = !twoWheelerMode || next.observations >= 3
+            // Small boxes on a turning/retreating target can grow from a
+            // camera pan or an occluding barrier. An urgent motion estimate
+            // needs measured background motion, not missing compensation
+            // silently treated as zero camera motion. A close ambiguous
+            // blocker can still produce NOTICE above.
+            val urgentObservationReady = !twoWheelerMode ||
+                (next.observations >= 3 && motion != null && motionReliable &&
+                    next.history.takeLast(GROWTH_WINDOW).count { it.motionReliable } >= 3)
             val urgentMotion = !staticObstacleClass && urgentObservationReady && approachMotion && (
                 looming >= urgentThresholdPerSecond ||
                     (earlyUrgentTimeToCloseSeconds > 0f &&

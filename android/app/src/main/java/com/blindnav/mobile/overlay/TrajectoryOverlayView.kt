@@ -99,7 +99,7 @@ class TrajectoryOverlayView @JvmOverloads constructor(
             val uncertainRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.UNKNOWN_SLOW_DOWN
             val guidanceRouteWarning = track.riskLevel == 0 && routeRelevant &&
-                guidanceState == GuidanceState.CAUTION
+                guidanceState in listOf(GuidanceState.CAUTION, GuidanceState.DANGER)
             val stoppedRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.STOP
             val detourLeftRouteTrack = track.riskLevel == 0 && routeRelevant &&
@@ -107,16 +107,16 @@ class TrajectoryOverlayView @JvmOverloads constructor(
             val detourRightRouteTrack = track.riskLevel == 0 && routeRelevant &&
                 guidanceState == GuidanceState.MOVE_RIGHT
             boxPaint.color = when {
-                track.riskLevel >= 2 || stoppedRouteTrack || guidanceState == GuidanceState.DANGER -> Color.RED
+                track.riskLevel >= 2 -> Color.RED
                 track.riskLevel == 1 || closeCentralTrack || uncertainRouteTrack ||
-                    guidanceRouteWarning || detourLeftRouteTrack || detourRightRouteTrack -> Color.rgb(255, 165, 0)
+                    guidanceRouteWarning || stoppedRouteTrack || detourLeftRouteTrack || detourRightRouteTrack -> Color.rgb(255, 165, 0)
                 else -> Color.GREEN
             }
             val displayRisk = when {
-                track.riskLevel >= 2 || stoppedRouteTrack || guidanceState == GuidanceState.DANGER -> " DANGER"
+                track.riskLevel >= 2 -> " DANGER"
                 detourLeftRouteTrack -> " MOVE LEFT"
                 detourRightRouteTrack -> " MOVE RIGHT"
-                track.riskLevel == 1 || closeCentralTrack || guidanceRouteWarning -> " NOTICE"
+                track.riskLevel == 1 || closeCentralTrack || guidanceRouteWarning || stoppedRouteTrack -> " NOTICE"
                 uncertainRouteTrack -> " SLOW DOWN"
                 else -> " TRACK"
             }
