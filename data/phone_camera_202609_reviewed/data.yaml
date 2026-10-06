@@ -1,4 +1,4 @@
-path: .
+path: data/phone_camera_202609_reviewed
 train: images/train
 val: images/val
 test: images/test
