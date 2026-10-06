@@ -487,7 +487,11 @@ class TemporalRiskEngine(
         const val LATERAL_EXIT_THRESHOLD_PER_SECOND = 0.2f
         const val URGENT_AREA_FRACTION = 0.06f
         const val EARLY_URGENT_AREA_FRACTION = URGENT_AREA_FRACTION * 0.70f
-        const val DANGER_HOLD_AREA_FRACTION = URGENT_AREA_FRACTION * 0.45f
+        // Once danger is confirmed, keep it stable for the same central
+        // target down to a smaller close-range box. Requiring the full
+        // urgent area here made detector jitter flash danger/safe on the next
+        // frame even though the rider was still in the corridor.
+        const val DANGER_HOLD_AREA_FRACTION = 0.015f
         const val WARNING_HOLD_AREA_FRACTION = 0.005f
         const val CLOSE_ROUTE_AREA_FRACTION = 0.04f
         const val MAX_SHRINK_RATE_FOR_APPROACH = 0.15f
