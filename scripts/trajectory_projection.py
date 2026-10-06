@@ -10,6 +10,27 @@ import math
 from statistics import median
 
 
+def has_observed_motion(history, width, height, sample_count=4,
+                        required_steps=2, threshold_fraction=0.006,
+                        min_pixels=2.0):
+    """Return true only when recent compensated contact points really move.
+
+    This mirrors the phone overlay's display gate: small detector jitter in a
+    parked row must not become a green tracked object or a direction cue.
+    """
+    points = list(history)[-sample_count:]
+    if len(points) < sample_count or width <= 0 or height <= 0:
+        return False
+    threshold = max(float(min_pixels), min(width, height) * threshold_fraction)
+    moving_steps = 0
+    for old, new in zip(points, points[1:]):
+        dx = float(new['x']) - float(old['x'])
+        dy = float(new['y']) - float(old['y'])
+        if math.hypot(dx, dy) >= threshold:
+            moving_steps += 1
+    return moving_steps >= required_steps
+
+
 def project_contact_motion(history, width, height, motion_reliable,
                            bottom_clipped=False, horizon_seconds=0.6):
     if not motion_reliable or bottom_clipped or width <= 0 or height <= 0:

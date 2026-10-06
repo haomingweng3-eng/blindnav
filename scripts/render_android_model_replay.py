@@ -116,9 +116,9 @@ def prepare(args):
 def render(args):
     from PIL import Image, ImageDraw, ImageFont
     try:
-        from .trajectory_projection import project_contact_motion, track_display_level
+        from .trajectory_projection import has_observed_motion, project_contact_motion, track_display_level
     except ImportError:
-        from trajectory_projection import project_contact_motion, track_display_level
+        from trajectory_projection import has_observed_motion, project_contact_motion, track_display_level
     directory = Path(args.output_dir).resolve()
     fixture = json.loads((directory / "fixture.json").read_text(encoding="utf-8"))
     trace = json.loads((directory / "android_trace.json").read_text(encoding="utf-8"))
@@ -171,7 +171,15 @@ def render(args):
             contact_y = track["history"][-1]["y"] if track["history"] else 0.0
             contact_x = (box[0] + box[2]) / 2.0
             route_relevant = contact_y >= fixture["frames"][index]["height"] * 0.38 and 0.36 <= contact_x / fixture["frames"][index]["width"] <= 0.64
-            if track["risk_level"] == 0 and not route_relevant:
+            meta = fixture["frames"][index]
+            box_area_fraction = max(0.0, (box[2] - box[0]) * (box[3] - box[1])) / max(1.0, meta["width"] * meta["height"])
+            close_central_track = (track["risk_level"] == 0 and route_relevant and
+                                   contact_y >= meta["height"] * 0.72 and
+                                   len(track["history"]) >= 2 and
+                                   box_area_fraction >= 0.04)
+            observed_motion = has_observed_motion(track["history"], meta["width"], meta["height"])
+            if track["risk_level"] == 0 and (not route_relevant or
+                                              (not observed_motion and not close_central_track)):
                 continue
             x1, y1, x2, y2 = [round(value * scale) for value in track["box"]]
             uncertain_route_track = track["risk_level"] == 0 and route_relevant and guidance_state == "UNKNOWN_SLOW_DOWN"
@@ -192,7 +200,6 @@ def render(args):
                 # All history and motion come from this frame's causal Kotlin
                 # snapshot. No future frames, old alert carry-over or scene
                 # warning-to-object assignment is permitted here.
-                meta = fixture['frames'][index]
                 forecast = project_contact_motion(
                     points, meta['width'], meta['height'],
                     bool(record.get('background_motion', {}).get('reliable')),

@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.trajectory_projection import project_contact_motion, track_display_level
+from scripts.trajectory_projection import has_observed_motion, project_contact_motion, track_display_level
 from scripts.render_two_wheeler_trajectory_demo_20261004 import _risk_for
 
 
@@ -9,6 +9,13 @@ def history(points):
 
 
 class TrajectoryProjectionTest(unittest.TestCase):
+    def test_stationary_history_is_not_observed_motion(self):
+        self.assertFalse(has_observed_motion(history([(320, 230)] * 6), 640, 360))
+        self.assertFalse(has_observed_motion(history([(320 + (-1)**i, 230) for i in range(6)]), 640, 360))
+
+    def test_coherent_history_is_observed_motion(self):
+        self.assertTrue(has_observed_motion(history([(320, 200 + i * 6) for i in range(6)]), 640, 360))
+
     def test_stationary_and_jitter_have_no_forecast(self):
         for points in ([(320, 230)] * 6,
                        [(320 + (-1)**i, 230 + (-1)**i) for i in range(6)]):
