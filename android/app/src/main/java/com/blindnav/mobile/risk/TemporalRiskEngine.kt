@@ -349,6 +349,14 @@ class TemporalRiskEngine(
                 output += AndroidRiskAlert(trackId, className, direction, looming, feedback)
                 continue
             }
+            // A small phone-model box can jump into the corridor for one
+            // frame when it is actually a parked scooter. Require one more
+            // continuous observation before allowing a normal route warning;
+            // genuinely close blockers still use the conservative branch
+            // above.
+            if (twoWheelerMode && !staticObstacleClass &&
+                next.observations < 3 && areaFraction < CLOSE_ROUTE_AREA_FRACTION
+            ) continue
             if (areaFraction < minApproachArea) continue
             val potentialCollisionMotion = approachMotion ||
                 looming >= loomingThresholdPerSecond || predictedEntry
@@ -368,7 +376,12 @@ class TemporalRiskEngine(
             val predictedClose = predictedAreaFraction >= EARLY_URGENT_AREA_FRACTION ||
                 (timeToCloseSeconds != null &&
                     timeToCloseSeconds <= earlyUrgentTimeToCloseSeconds)
-            val urgentMotion = !staticObstacleClass && approachMotion && (
+            // The broad phone model occasionally creates a fresh two-frame
+            // track on a parked scooter with a large box jump. Keep the
+            // first two observations at NOTICE; a DANGER state needs three
+            // continuous observations so one spurious box cannot escalate.
+            val urgentObservationReady = !twoWheelerMode || next.observations >= 3
+            val urgentMotion = !staticObstacleClass && urgentObservationReady && approachMotion && (
                 looming >= urgentThresholdPerSecond ||
                     (earlyUrgentTimeToCloseSeconds > 0f &&
                         looming >= loomingThresholdPerSecond && predictedClose)

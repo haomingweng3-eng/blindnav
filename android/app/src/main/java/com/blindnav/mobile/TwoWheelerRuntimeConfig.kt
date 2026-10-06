@@ -10,7 +10,10 @@ object TwoWheelerRuntimeConfig {
     // the risk engine only allows the higher floor to create a new track.
     const val CONFIDENCE = 0.10f
     const val NEW_TRACK_CONFIDENCE = 0.25f
-    const val NMS_IOU = 0.7f
+    // The 320 model occasionally emits two boxes for the same rider with
+    // IoU around 0.64. Suppress that duplicate before tracking so one rider
+    // cannot split into alternating IDs and flash the risk state.
+    const val NMS_IOU = 0.6f
 
     fun createRiskEngine() = TemporalRiskEngine(
         loomingThresholdPerSecond = 0.5f,

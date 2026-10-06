@@ -178,6 +178,18 @@ class TemporalRiskEngineTest {
     }
 
     @Test
+    fun phoneModelNeedsThreeObservationsBeforeDangerEscalation() {
+        val engine = com.blindnav.mobile.TwoWheelerRuntimeConfig.createRiskEngine()
+
+        engine.update(frameWithDetections(0, 0, detection(40f, 40f, 50f, 50f)))
+        engine.update(frameWithDetections(100, 1, detection(35f, 35f, 55f, 55f)))
+        assertTrue(engine.currentTracks.single().riskLevel <= 1)
+
+        engine.update(frameWithDetections(200, 2, detection(30f, 30f, 60f, 60f)))
+        assertEquals(2, engine.currentTracks.single().riskLevel)
+    }
+
+    @Test
     fun confirmedDangerDoesNotFlickerBackToSafeOnOneFlatFrame() {
         val engine = TemporalRiskEngine(
             loomingThresholdPerSecond = 0.1f,
