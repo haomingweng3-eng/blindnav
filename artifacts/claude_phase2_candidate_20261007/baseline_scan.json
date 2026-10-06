@@ -1,0 +1,1216 @@
+{
+  "detector": "C:\\Users\\19770\\Documents\\Codex\\2026-09-29\\https-github-com-haomingweng3-eng-blindnav\\outputs\\phone_camera_202609_baseline\\best.pt",
+  "video_count": 35,
+  "total_detections": 75,
+  "conf_threshold": 0.25,
+  "target_classes": [
+    "electric_bicycle",
+    "person",
+    "bicycle",
+    "motorcycle",
+    "car"
+  ],
+  "sample_interval": 30,
+  "detections": [
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.44113689661026,
+      "box": [
+        405.2026062011719,
+        474.99774169921875,
+        519.3822021484375,
+        583.4983520507812
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3560909926891327,
+      "box": [
+        726.464599609375,
+        473.4282531738281,
+        789.3896484375,
+        523.8031005859375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2727656960487366,
+      "box": [
+        740.1925048828125,
+        469.86065673828125,
+        808.89990234375,
+        521.9714965820312
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 30,
+      "timestamp": 0.9934991624790619,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.33063581585884094,
+      "box": [
+        721.8876953125,
+        446.0284423828125,
+        795.4503173828125,
+        502.3103942871094
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 30,
+      "timestamp": 0.9934991624790619,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.31356486678123474,
+      "box": [
+        403.7643127441406,
+        454.8505554199219,
+        531.92919921875,
+        556.942626953125
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 30,
+      "timestamp": 0.9934991624790619,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2935197651386261,
+      "box": [
+        741.297119140625,
+        441.87530517578125,
+        813.6263427734375,
+        500.588134765625
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 30,
+      "timestamp": 0.9934991624790619,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2679782807826996,
+      "box": [
+        41.3701171875,
+        465.69110107421875,
+        177.36007690429688,
+        564.9747924804688
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 60,
+      "timestamp": 1.9869983249581238,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.5263411402702332,
+      "box": [
+        400.80908203125,
+        414.6003112792969,
+        522.1869506835938,
+        519.55712890625
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 60,
+      "timestamp": 1.9869983249581238,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2841314971446991,
+      "box": [
+        734.9840698242188,
+        410.40936279296875,
+        812.551025390625,
+        474.99212646484375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 60,
+      "timestamp": 1.9869983249581238,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2766447067260742,
+      "box": [
+        822.2122192382812,
+        401.3678283691406,
+        903.8953857421875,
+        483.0146484375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 90,
+      "timestamp": 2.980497487437186,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.6075917482376099,
+      "box": [
+        382.76605224609375,
+        381.92315673828125,
+        515.7088623046875,
+        491.16949462890625
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 90,
+      "timestamp": 2.980497487437186,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.49773743748664856,
+      "box": [
+        36.23809814453125,
+        388.82354736328125,
+        165.9847869873047,
+        492.0208740234375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 150,
+      "timestamp": 4.96749581239531,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.30618029832839966,
+      "box": [
+        739.6351318359375,
+        342.70635986328125,
+        816.2206420898438,
+        405.7984619140625
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 150,
+      "timestamp": 4.96749581239531,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.29279598593711853,
+      "box": [
+        423.829833984375,
+        346.5017395019531,
+        543.1380615234375,
+        445.85174560546875
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153750",
+      "frame": 180,
+      "timestamp": 5.960994974874372,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.4747653603553772,
+      "box": [
+        482.1405029296875,
+        329.45574951171875,
+        608.671142578125,
+        425.3670654296875
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_153814",
+      "frame": 120,
+      "timestamp": 3.973531459170013,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2627401351928711,
+      "box": [
+        852.6290283203125,
+        272.60491943359375,
+        1011.190185546875,
+        450.25042724609375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_154223",
+      "frame": 210,
+      "timestamp": 6.994845454545455,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.46873295307159424,
+      "box": [
+        0.0,
+        204.95498657226562,
+        74.6292724609375,
+        325.9875183105469
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260917_154223",
+      "frame": 240,
+      "timestamp": 7.994109090909092,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3742063045501709,
+      "box": [
+        88.91542053222656,
+        222.0630340576172,
+        232.36651611328125,
+        355.28271484375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_164502",
+      "frame": 90,
+      "timestamp": 2.999059322033898,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.28168368339538574,
+      "box": [
+        189.99227905273438,
+        846.7587890625,
+        244.46463012695312,
+        953.9205322265625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164541",
+      "frame": 60,
+      "timestamp": 1.9993546325878593,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2541426420211792,
+      "box": [
+        373.7423095703125,
+        829.8429565429688,
+        418.99853515625,
+        907.1918334960938
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164541",
+      "frame": 90,
+      "timestamp": 2.999031948881789,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.25055402517318726,
+      "box": [
+        126.35758209228516,
+        817.9620361328125,
+        189.87832641601562,
+        934.1248779296875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164541",
+      "frame": 240,
+      "timestamp": 7.997418530351437,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.35281190276145935,
+      "box": [
+        240.00563049316406,
+        811.732177734375,
+        327.90777587890625,
+        997.2753295898438
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164541",
+      "frame": 300,
+      "timestamp": 9.996773162939297,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2722213864326477,
+      "box": [
+        178.92691040039062,
+        799.4826049804688,
+        312.97119140625,
+        1031.9130859375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164629",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.26609569787979126,
+      "box": [
+        197.96241760253906,
+        808.1895751953125,
+        238.8046417236328,
+        908.3387451171875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164629",
+      "frame": 30,
+      "timestamp": 0.9996925465838509,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2626611590385437,
+      "box": [
+        241.23593139648438,
+        814.1563110351562,
+        290.119140625,
+        905.4783325195312
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164629",
+      "frame": 120,
+      "timestamp": 3.9987701863354035,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.36119332909584045,
+      "box": [
+        131.94076538085938,
+        773.6856079101562,
+        206.5323944091797,
+        921.9345703125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164629",
+      "frame": 150,
+      "timestamp": 4.998462732919254,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.46123406291007996,
+      "box": [
+        76.58926391601562,
+        755.7720947265625,
+        157.45669555664062,
+        921.921142578125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164629",
+      "frame": 180,
+      "timestamp": 5.998155279503106,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2526725232601166,
+      "box": [
+        54.65602111816406,
+        745.4993896484375,
+        141.53497314453125,
+        936.8622436523438
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164658",
+      "frame": 60,
+      "timestamp": 1.9993548387096773,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.31156378984451294,
+      "box": [
+        277.7720947265625,
+        790.7924194335938,
+        323.8486328125,
+        879.5355834960938
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164658",
+      "frame": 210,
+      "timestamp": 6.99774193548387,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.30737608671188354,
+      "box": [
+        130.2051239013672,
+        738.6139526367188,
+        215.50515747070312,
+        909.8206787109375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164658",
+      "frame": 240,
+      "timestamp": 7.997419354838709,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3967408835887909,
+      "box": [
+        87.57666778564453,
+        727.074951171875,
+        180.51171875,
+        915.915283203125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164658",
+      "frame": 270,
+      "timestamp": 8.997096774193547,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.36657005548477173,
+      "box": [
+        44.93989562988281,
+        731.810791015625,
+        166.4638671875,
+        966.2374267578125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 150,
+      "timestamp": 4.998442265795207,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.29503074288368225,
+      "box": [
+        23.544158935546875,
+        740.9342041015625,
+        106.60004425048828,
+        924.8153076171875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 210,
+      "timestamp": 6.99781917211329,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2768879234790802,
+      "box": [
+        241.44676208496094,
+        756.7674560546875,
+        321.326171875,
+        908.9185791015625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 240,
+      "timestamp": 7.997507625272331,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.32743239402770996,
+      "box": [
+        213.8319854736328,
+        751.2660522460938,
+        312.26190185546875,
+        940.5655517578125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164852",
+      "frame": 120,
+      "timestamp": 3.9987712418300654,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.28240710496902466,
+      "box": [
+        99.7203598022461,
+        786.0320434570312,
+        173.27813720703125,
+        919.8096313476562
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165051",
+      "frame": 180,
+      "timestamp": 5.998178861788618,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3664776682853699,
+      "box": [
+        79.35994720458984,
+        733.1519775390625,
+        153.208984375,
+        880.697509765625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165051",
+      "frame": 210,
+      "timestamp": 6.997875338753388,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3583263158798218,
+      "box": [
+        45.626312255859375,
+        740.0845336914062,
+        107.39994049072266,
+        882.262939453125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165051",
+      "frame": 210,
+      "timestamp": 6.997875338753388,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2536994516849518,
+      "box": [
+        46.66896057128906,
+        733.432861328125,
+        123.41954040527344,
+        893.271728515625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 60,
+      "timestamp": 1.9993333333333334,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.27342933416366577,
+      "box": [
+        649.8938598632812,
+        839.3057861328125,
+        757.9273681640625,
+        932.4014892578125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 60,
+      "timestamp": 1.9993333333333334,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2638597786426544,
+      "box": [
+        652.676513671875,
+        829.4782104492188,
+        753.8182983398438,
+        914.2657470703125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 90,
+      "timestamp": 2.999,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3384276330471039,
+      "box": [
+        673.8414306640625,
+        865.6203002929688,
+        783.508056640625,
+        960.4376220703125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 90,
+      "timestamp": 2.999,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2536774277687073,
+      "box": [
+        667.7986450195312,
+        860.0718383789062,
+        771.750732421875,
+        942.732421875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 120,
+      "timestamp": 3.998666666666667,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3441024124622345,
+      "box": [
+        706.7418212890625,
+        882.4114379882812,
+        833.395263671875,
+        986.7965698242188
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 150,
+      "timestamp": 4.998333333333333,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2742694616317749,
+      "box": [
+        731.9461669921875,
+        856.9616088867188,
+        866.9734497070312,
+        990.2281494140625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3394026458263397,
+      "box": [
+        740.491943359375,
+        753.304443359375,
+        847.4913330078125,
+        845.3538818359375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2571604251861572,
+      "box": [
+        730.5282592773438,
+        733.6829833984375,
+        832.6343994140625,
+        823.217529296875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 30,
+      "timestamp": 0.9996794380587484,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2867528796195984,
+      "box": [
+        742.7594604492188,
+        768.6268310546875,
+        852.7952270507812,
+        863.20703125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 60,
+      "timestamp": 1.9993588761174967,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.28747326135635376,
+      "box": [
+        722.3875732421875,
+        748.232666015625,
+        837.1510009765625,
+        842.5827026367188
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 90,
+      "timestamp": 2.999038314176245,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.27637237310409546,
+      "box": [
+        737.8887939453125,
+        748.176513671875,
+        871.9520263671875,
+        865.5718994140625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 90,
+      "timestamp": 2.999038314176245,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.26968833804130554,
+      "box": [
+        748.827392578125,
+        744.0061645507812,
+        877.3978271484375,
+        905.0797119140625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165429",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.299911230802536,
+      "box": [
+        767.9826049804688,
+        744.010498046875,
+        876.3744506835938,
+        845.4310302734375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165429",
+      "frame": 30,
+      "timestamp": 0.9996822308690013,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3488255739212036,
+      "box": [
+        775.8424072265625,
+        765.87109375,
+        913.232666015625,
+        887.2852783203125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165429",
+      "frame": 30,
+      "timestamp": 0.9996822308690013,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2603476643562317,
+      "box": [
+        686.8255615234375,
+        732.0276489257812,
+        780.9859619140625,
+        831.8410034179688
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165520",
+      "frame": 210,
+      "timestamp": 6.998084010840109,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.33005502820014954,
+      "box": [
+        12.698226928710938,
+        712.6260986328125,
+        73.85785675048828,
+        831.4212646484375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165520",
+      "frame": 240,
+      "timestamp": 7.997810298102981,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.254808634519577,
+      "box": [
+        246.69497680664062,
+        741.4910278320312,
+        302.4693603515625,
+        853.3634033203125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170259",
+      "frame": 150,
+      "timestamp": 4.997880539499036,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3588656783103943,
+      "box": [
+        247.26773071289062,
+        644.1529541015625,
+        300.0087890625,
+        730.1035766601562
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170259",
+      "frame": 150,
+      "timestamp": 4.997880539499036,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.29128533601760864,
+      "box": [
+        202.51275634765625,
+        650.3219604492188,
+        248.05035400390625,
+        736.3148803710938
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170345",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3774317502975464,
+      "box": [
+        428.8400573730469,
+        190.13232421875,
+        556.2882080078125,
+        409.7331848144531
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170345",
+      "frame": 30,
+      "timestamp": 0.999737913486005,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.399545282125473,
+      "box": [
+        418.30828857421875,
+        245.66519165039062,
+        547.6151123046875,
+        471.5783386230469
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170345",
+      "frame": 60,
+      "timestamp": 1.99947582697201,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.47209829092025757,
+      "box": [
+        381.1199951171875,
+        233.7198944091797,
+        524.619384765625,
+        490.055908203125
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.26866456866264343,
+      "box": [
+        432.407958984375,
+        177.3087615966797,
+        559.1085205078125,
+        393.78509521484375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 30,
+      "timestamp": 0.9993958333333334,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.48433005809783936,
+      "box": [
+        404.4081115722656,
+        163.6453857421875,
+        536.254638671875,
+        397.5191345214844
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 30,
+      "timestamp": 0.9993958333333334,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.32775822281837463,
+      "box": [
+        412.7518615722656,
+        183.94468688964844,
+        524.862060546875,
+        373.0331726074219
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 60,
+      "timestamp": 1.9987916666666667,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.4789029657840729,
+      "box": [
+        355.9205322265625,
+        181.4828338623047,
+        500.6424865722656,
+        425.56597900390625
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 90,
+      "timestamp": 2.9981875000000002,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.4577741026878357,
+      "box": [
+        294.6181640625,
+        176.9333038330078,
+        439.7332763671875,
+        434.63543701171875
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170405",
+      "frame": 120,
+      "timestamp": 3.9975833333333335,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.36688628792762756,
+      "box": [
+        297.0868835449219,
+        170.98338317871094,
+        441.31292724609375,
+        433.65325927734375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170500",
+      "frame": 90,
+      "timestamp": 2.9990662983425413,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.26232579350471497,
+      "box": [
+        91.21446990966797,
+        728.1919555664062,
+        176.72018432617188,
+        883.2705688476562
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170500",
+      "frame": 150,
+      "timestamp": 4.998443830570902,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.41055503487586975,
+      "box": [
+        104.33116149902344,
+        715.669677734375,
+        178.3667449951172,
+        875.2593994140625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170500",
+      "frame": 180,
+      "timestamp": 5.998132596685083,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.3660668432712555,
+      "box": [
+        83.58013916015625,
+        694.3714599609375,
+        153.73764038085938,
+        844.2806396484375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170741",
+      "frame": 90,
+      "timestamp": 2.9996565217391304,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2522425353527069,
+      "box": [
+        168.82302856445312,
+        414.79583740234375,
+        259.14324951171875,
+        544.8699340820312
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170741",
+      "frame": 210,
+      "timestamp": 6.999198550724637,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2642905116081238,
+      "box": [
+        587.942138671875,
+        318.8134765625,
+        676.3719482421875,
+        500.9610595703125
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170807",
+      "frame": 60,
+      "timestamp": 1.999408866995074,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.287036657333374,
+      "box": [
+        557.1551513671875,
+        358.2117004394531,
+        644.9555053710938,
+        505.450927734375
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170807",
+      "frame": 180,
+      "timestamp": 5.998226600985221,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.30657854676246643,
+      "box": [
+        159.06454467773438,
+        300.1652526855469,
+        313.863037109375,
+        560.2501220703125
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_170807",
+      "frame": 180,
+      "timestamp": 5.998226600985221,
+      "class_id": 0,
+      "class_name": "electric_bicycle",
+      "confidence": 0.2590646743774414,
+      "box": [
+        10.382320404052734,
+        334.8796691894531,
+        147.78781127929688,
+        580.7675170898438
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    }
+  ]
+}

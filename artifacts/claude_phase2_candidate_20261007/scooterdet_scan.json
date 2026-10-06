@@ -1,0 +1,367 @@
+{
+  "detector": "models\\scooterdet_yolov8n_320_v1.pt",
+  "video_count": 35,
+  "total_detections": 22,
+  "conf_threshold": 0.25,
+  "target_classes": [
+    "electric_bicycle",
+    "person",
+    "bicycle",
+    "motorcycle"
+  ],
+  "sample_interval": 30,
+  "detections": [
+    {
+      "video_id": "VID_20260917_153840",
+      "frame": 90,
+      "timestamp": 2.9800234604105573,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.3320603370666504,
+      "box": [
+        382.9673767089844,
+        353.8321838378906,
+        533.504638671875,
+        513.3673095703125
+      ],
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "video_id": "VID_20260922_164502",
+      "frame": 60,
+      "timestamp": 1.9993728813559322,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.4074874222278595,
+      "box": [
+        628.6431884765625,
+        849.208740234375,
+        683.36279296875,
+        950.5559692382812
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164541",
+      "frame": 120,
+      "timestamp": 3.9987092651757186,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.2874228358268738,
+      "box": [
+        868.10693359375,
+        796.0523681640625,
+        997.298828125,
+        1039.140869140625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.5127058029174805,
+      "box": [
+        726.798583984375,
+        763.7769775390625,
+        768.420654296875,
+        854.2318725585938
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.38672974705696106,
+      "box": [
+        732.8818359375,
+        763.6851806640625,
+        779.8372192382812,
+        853.122314453125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 90,
+      "timestamp": 2.9990653594771244,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.5191267728805542,
+      "box": [
+        715.512939453125,
+        753.9117431640625,
+        775.70263671875,
+        874.0701904296875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 90,
+      "timestamp": 2.9990653594771244,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.30621251463890076,
+      "box": [
+        707.8739013671875,
+        749.4515991210938,
+        763.6500244140625,
+        868.9434814453125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164819",
+      "frame": 150,
+      "timestamp": 4.998442265795207,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.2611292898654938,
+      "box": [
+        816.8051147460938,
+        748.397216796875,
+        955.5851440429688,
+        998.1484375
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_164852",
+      "frame": 30,
+      "timestamp": 0.9996928104575163,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.2913070023059845,
+      "box": [
+        922.5313110351562,
+        13.4652099609375,
+        1080.0,
+        214.02471923828125
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165015",
+      "frame": 330,
+      "timestamp": 10.996422764227642,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.4041963219642639,
+      "box": [
+        142.18499755859375,
+        727.4842529296875,
+        189.8872833251953,
+        824.017822265625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 60,
+      "timestamp": 1.9993333333333334,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.35101890563964844,
+      "box": [
+        36.703948974609375,
+        825.5262451171875,
+        113.38856506347656,
+        979.8299560546875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 270,
+      "timestamp": 8.997,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.4577644169330597,
+      "box": [
+        545.7893676757812,
+        764.4422607421875,
+        593.4057006835938,
+        857.8829956054688
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165129",
+      "frame": 270,
+      "timestamp": 8.997,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.4378264546394348,
+      "box": [
+        536.8805541992188,
+        765.2130126953125,
+        586.1021728515625,
+        860.179931640625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 180,
+      "timestamp": 5.99807662835249,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.30800461769104004,
+      "box": [
+        956.55078125,
+        79.93972778320312,
+        1080.0,
+        261.41796875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 210,
+      "timestamp": 6.997756066411239,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.5301958918571472,
+      "box": [
+        426.17059326171875,
+        748.0726318359375,
+        587.3357543945312,
+        991.160888671875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 210,
+      "timestamp": 6.997756066411239,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.2848655581474304,
+      "box": [
+        941.0930786132812,
+        83.32958221435547,
+        1080.0,
+        254.1898956298828
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 240,
+      "timestamp": 7.997435504469987,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.4900779724121094,
+      "box": [
+        424.7921447753906,
+        749.5036010742188,
+        590.9757080078125,
+        986.9258422851562
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165309",
+      "frame": 240,
+      "timestamp": 7.997435504469987,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.3625948429107666,
+      "box": [
+        954.4227905273438,
+        75.06768798828125,
+        1080.0,
+        253.95855712890625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165429",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.5297930836677551,
+      "box": [
+        40.433448791503906,
+        704.1091918945312,
+        163.76019287109375,
+        946.8751831054688
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_165520",
+      "frame": 120,
+      "timestamp": 3.9989051490514904,
+      "class_id": 1,
+      "class_name": "person",
+      "confidence": 0.29213646054267883,
+      "box": [
+        878.55810546875,
+        677.9706420898438,
+        1064.6563720703125,
+        1071.3599853515625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170259",
+      "frame": 60,
+      "timestamp": 1.9991522157996144,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.3912128508090973,
+      "box": [
+        440.904052734375,
+        774.4901123046875,
+        534.9193725585938,
+        875.892822265625
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    },
+    {
+      "video_id": "VID_20260922_170500",
+      "frame": 0,
+      "timestamp": 0.0,
+      "class_id": 2,
+      "class_name": "bicycle",
+      "confidence": 0.3963622450828552,
+      "box": [
+        418.6366882324219,
+        718.9505615234375,
+        519.84033203125,
+        830.8563232421875
+      ],
+      "image_width": 1080,
+      "image_height": 1920
+    }
+  ]
+}
