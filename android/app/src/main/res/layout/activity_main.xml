@@ -28,6 +28,22 @@
         android:textSize="18sp" />
 
     <Button
+        android:id="@+id/amap_walk_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="152dp"
+        android:text="高德步行导航" />
+
+    <Button
+        android:id="@+id/perception_start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="92dp"
+        android:text="启动视觉感知" />
+
+    <Button
         android:id="@+id/feedback_test_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -1,6 +1,7 @@
 package com.blindnav.mobile
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
@@ -51,6 +52,18 @@ class MainActivity : ComponentActivity() {
         previewView = findViewById(R.id.preview_view)
         trajectoryOverlay = findViewById(R.id.trajectory_overlay)
         feedbackDispatcher = FeedbackDispatcher(this)
+        findViewById<Button>(R.id.amap_walk_button).setOnClickListener {
+            startActivity(Intent(this, AmapWalkActivity::class.java))
+        }
+        findViewById<Button>(R.id.perception_start_button).setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                startInference()
+            } else {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
         findViewById<Button>(R.id.feedback_test_button).setOnClickListener {
             runFeedbackSelfTest()
         }
@@ -58,16 +71,13 @@ class MainActivity : ComponentActivity() {
             val count = feedbackDispatcher?.dispatchReport(reportJson) ?: 0
             showStatus("风险报告回放：执行 $count 条反馈")
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            startInference()
-        } else {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
+        if (intent.getStringExtra(EXTRA_RISK_REPORT_JSON) == null) {
+            showStatus("先测试高德步行导航；视觉感知可单独启动。")
         }
     }
 
     private fun startInference() {
+        if (cameraSource != null) return
         try {
             runtimeMetrics.reset()
             val model = OnnxYoloDetector(
