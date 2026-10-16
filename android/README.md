@@ -1,5 +1,7 @@
 # BlindNav Android 首轮工程
 
+新增高德独立验收入口：选目的地、取得定位、步行算路、实时导航回调与系统语音；构建与真机操作见 [AMAP_WALK_SETUP.md](AMAP_WALK_SETUP.md)。首页相机现在由“启动视觉感知”按钮单独打开，测试高德时不会先加载 ONNX 模型。
+
 这是 Android 端的第一阶段工程，当前目标是先冻结输入边界并保留可替换的端侧推理入口：
 
 - `PhoneCameraFrameSource`：默认手机 CameraX 摄像头输入；

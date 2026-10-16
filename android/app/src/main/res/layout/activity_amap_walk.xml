@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="高德步行导航测试"
+            android:textSize="24sp" />
+        <EditText
+            android:id="@+id/amap_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="城市，例如青岛；留空为全国"
+            android:inputType="text" />
+        <EditText
+            android:id="@+id/amap_keyword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="目的地，例如五四广场地铁站"
+            android:inputType="text" />
+        <Button
+            android:id="@+id/amap_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="搜索目的地" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:text="请选择准确的搜索结果，再开始步行导航。" />
+        <ListView
+            android:id="@+id/amap_results"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+        <Button
+            android:id="@+id/amap_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="开始步行导航" />
+        <Button
+            android:id="@+id/amap_stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="结束导航" />
+        <TextView
+            android:id="@+id/amap_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="尚未开始"
+            android:textIsSelectable="true"
+            android:textSize="18sp"
+            android:accessibilityLiveRegion="polite" />
+    </LinearLayout>
+</ScrollView>

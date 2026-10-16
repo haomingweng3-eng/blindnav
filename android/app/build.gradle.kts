@@ -14,6 +14,12 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Supply from ~/.gradle/gradle.properties or AMAP_API_KEY in the build environment.
+        // Never commit an Android key or its signing certificate to this repository.
+        manifestPlaceholders["AMAP_API_KEY"] = providers.gradleProperty("AMAP_API_KEY")
+            .orElse(providers.environmentVariable("AMAP_API_KEY"))
+            .getOrElse("")
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
 
     buildTypes {
@@ -40,6 +46,8 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
+    // Combined SDK supplies navigation, map, location and POI search without duplicate AMap jars.
+    implementation("com.amap.api:navi-3dmap-location-search:latest.integration")
 
     testImplementation("junit:junit:4.13.2")
     // Android provides org.json at runtime; this implementation makes the
