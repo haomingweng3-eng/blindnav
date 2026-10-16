@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
 import android.speech.tts.TextToSpeech
@@ -49,6 +51,7 @@ class AmapWalkActivity : ComponentActivity(), PoiSearch.OnPoiSearchListener {
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var routeRequested = false
+    private var gpsStarted = false
     private var navigationStarted = false
     private var active = false
     private var lastInstruction = ""
@@ -64,7 +67,13 @@ class AmapWalkActivity : ComponentActivity(), PoiSearch.OnPoiSearchListener {
     }
 
     private val listener = object : NaviListenerAdapter() {
-        override fun onInitNaviFailure() = onUi { showStatus("高德导航引擎初始化失败。") }
+        override fun onInitNaviFailure() = onUi {
+            stopWalkingRoute()
+            showStatus("高德导航引擎初始化失败。")
+        }
+        override fun onInitNaviSuccess() = onUi {
+            if (active && !gpsStarted) startGpsOrReportError()
+        }
 
         override fun onLocationChange(location: AMapNaviLocation) {
             if (!active || routeRequested || destination == null || location.coord == null) return
@@ -266,28 +275,38 @@ class AmapWalkActivity : ComponentActivity(), PoiSearch.OnPoiSearchListener {
             applyAmapPrivacyConsent()
             val engine = AMapNavi.getInstance(applicationContext)
             navi = engine
-            engine.addAMapNaviListener(listener)
-            engine.setUseInnerVoice(false, true)
             active = true
             routeRequested = false
+            gpsStarted = false
             navigationStarted = false
             lastInstruction = ""
             stopButton.isEnabled = true
-            if (engine.startGPS()) {
-                showStatus("正在获取当前位置，定位成功后规划步行路线…")
-            } else {
-                stopWalkingRoute()
-                showStatus("高德 GPS 未启动。请检查定位开关与权限。")
-            }
+            engine.addAMapNaviListener(listener)
+            engine.setUseInnerVoice(false, true)
+            // AMap can finish initialization asynchronously; retry on onInitNaviSuccess.
+            if (engine.startGPS()) gpsStarted = true
+            showStatus("正在获取当前位置，定位成功后规划步行路线…")
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (active && !routeRequested) showStatus("尚未取得有效定位。请到室外检查 GPS、网络和定位权限。")
+            }, 30_000L)
         } catch (error: Exception) {
             stopWalkingRoute()
             showStatus("高德导航启动失败：${error.message}")
         }
     }
 
+    private fun startGpsOrReportError() {
+        gpsStarted = navi?.startGPS() == true
+        if (!gpsStarted) {
+            stopWalkingRoute()
+            showStatus("高德 GPS 未启动。请检查系统定位开关与精确位置权限。")
+        }
+    }
+
     private fun stopWalkingRoute() {
         active = false
         routeRequested = false
+        gpsStarted = false
         navigationStarted = false
         navi?.let { engine ->
             engine.removeAMapNaviListener(listener)
